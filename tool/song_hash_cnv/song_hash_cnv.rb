@@ -41,6 +41,7 @@ end
 $KCODE='s'
 
 $db = SQLite3::Database.new(beatsaber_dbfile)
+$err_map = []
 
 #譜面ハッシュ読み込み処理
 def map_read(map_dir)
@@ -55,7 +56,13 @@ def map_read(map_dir)
         puts map_dir.gsub(/\//,'\\')
         info_file = File.read(map_dir)
         hash_file = info_file
-        info_data = JSON.parse(info_file)
+        begin
+          info_data = JSON.parse(info_file)
+        rescue
+          puts "****map data read error!****"
+          $err_map.push map_dir
+          return
+        end
         return unless info_data['_difficultyBeatmapSets'] #作成途中譜面などは除外
         info_data['_difficultyBeatmapSets'].each do |beatmap_sets|
           beatmap_sets['_difficultyBeatmaps'].each do |beatmap|
@@ -82,6 +89,15 @@ end
 
 map_read(song_dir.gsub(/\\/,'/'))
 $db.close
+unless $err_map == []
+  puts
+  puts "*****The following map data has been skipped due to an error*****"
+  $err_map.each do |map_dir|
+    puts map_dir.gsub(/\//,'\\')
+  end
+end
+puts
+puts "#{$err_map.size} data skipped." unless $err_map == []
 puts "#{$change_count} data updated."
 puts "Press the Enter key to finish."
 a = STDIN.gets
