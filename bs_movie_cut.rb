@@ -48,7 +48,7 @@ require '_frm_bs_movie_cut.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/04/13'
+SOFT_VER        = '2020/06/08'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル
@@ -68,7 +68,8 @@ DEFAULT_PREVIEW_FILE   = EXE_DIR + "temp.mp4"
 DEFAULT_SUBTITLE_FILE  = EXE_DIR + "subtitle_temp.mp4"
 DEFAULT_FFMPEG_OPTION  = ["#DEFALUT#  -c copy","#Twitter#  -vcodec libx264 -pix_fmt yuv420p -strict -2 -acodec aac -ab 256k -vb 10240k","#NO COPY#  "]
 DEFAULT_OUT_FILE_NAME  = ['#DEFALUT#  #{time_name}_#{cleared}_#{songName}_#{levelAuthorName}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}.mp4',
-                          '#SongNameTop#  #{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4']
+                          '#SongNameTop#  #{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4',
+                          '#bsrTop#  #{bsr}_#{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4']
 DEFALUT_SIMULTANEOUS_NOTES_TIME = 66 #同時ノーツと判定する時間[ms] 66・・・4フレーム分 1000ms/60fps*4frame
 DEFALUT_LAST_NOTES_TIME = 2.0       #最後の字幕表示時間[sec]
 DEFALUT_SUB_FONT        = "ＭＳ ゴシック"
@@ -77,7 +78,7 @@ DEFALUT_SUB_FONT_SIZE   = 20
 DEFALUT_SUB_ALIGNMENT   = 0
 DEFALUT_SUB_RED_NOTES   = "Red "
 DEFALUT_SUB_BLUE_NOTES  = "Blue"
-DEFALUT_SUB_CUT_FORMAT  = '"%4d:#{note_type}:%2d+%2d+%2d=%3d" % [noteID,initialScore,afterScore,cutDistanceScore,finalScore]'
+DEFALUT_SUB_CUT_FORMAT  = '"%4d:#{note_type}:%2d+%2d+%2d=%3d" % [noteID,(beforeScore == nil ? initialScore : beforeScore),afterScore,cutDistanceScore,finalScore]'
 DEFALUT_SUB_MISS_FORMAT = '"%4d:#{note_type}:Miss!" % noteID'
 
 #定数
@@ -198,6 +199,23 @@ def db_open
   end
 end
 
+def db_column_check(table,column,type)
+  #データベースのカラムチェック
+  sql = "PRAGMA table_info('#{table}');"
+  fields, *rows = @db.execute2(sql)
+  column_check = true
+  rows.each do |row|
+    if column == row[fields.index('name')]
+      column_check = false
+      break
+    end
+  end
+  if column_check && rows.size > 0
+    sql = "ALTER TABLE #{table} ADD COLUMN #{column} #{type};"
+    @db.execute(sql)
+  end
+end
+
 def db_check
   #データベースチェック
   db_open
@@ -214,6 +232,8 @@ def db_check
         "filename TEXT NOT NULL," +
         "stoptime INTEGER NOT NULL);"
   @db.execute(sql)
+  db_column_check('MovieCutRecord','levelId','TEXT')
+  db_column_check('NoteScore','beforeScore','INTEGER')
   @db.close
 end
 
@@ -1073,7 +1093,7 @@ class Form_main
   def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true)
       create_time = target[3]
       ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
-      cut_time = (stoptime - startTime).to_f / 1000.0 + @edit_end_offset.text.strip.to_f + $offset
+      cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
       if @checkBox_length.checked?
         length_time = @edit_length.text.strip.to_f
         if cut_time > length_time
@@ -1189,6 +1209,7 @@ class Form_main
               noteID           = rows[rows_idx][fields.index('noteID')]
               noteType         = rows[rows_idx][fields.index('noteType')]
               initialScore     = rows[rows_idx][fields.index('initialScore')]
+              beforeScore      = rows[rows_idx][fields.index('beforeScore')]
               afterScore       = rows[rows_idx][fields.index('afterScore')]
               cutDistanceScore = rows[rows_idx][fields.index('cutDistanceScore')]
               finalScore       = rows[rows_idx][fields.index('finalScore')]
@@ -1356,6 +1377,20 @@ class Form_main
       file_name = ''
       #分割後のファイル名決定
       file_name_code = '"' + @comboBox_filename.getTextOf(@comboBox_filename.selectedString).strip.sub(/^#[^#]+#/,'').strip + '"'
+      #bsrの取得
+      bsr = ''
+      if file_name_code =~ /bsr/
+        if songHash =~ /^[0-9A-F]{40}/i
+          begin
+            beatsaver_data = JSON.parse(`curl.exe https://beatsaver.com/api/maps/by-hash/#{songHash[0,40]}`)
+            bsr = beatsaver_data['key']
+          rescue
+            bsr = 'err'
+          end
+        else
+          bsr = 'nil'
+        end
+      end
       begin
         eval("file_name = " + file_name_code)
       rescue SyntaxError    #SyntaxErrorのrescueはクラス指定しないと取得できない

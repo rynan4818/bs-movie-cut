@@ -123,3 +123,7 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 - 製作者:Zeranoe
 - ライセンス：GPL
 
+#### curl 7.70.0 for Windows 32bit
+- https://curl.haxx.se/windows/
+- 製作者:Copyright (c) 1996 - 2020, Daniel Stenberg, daniel@haxx.se, and many contributors, see the THANKS file.
+- ライセンス:[The curl license](https://curl.haxx.se/docs/copyright.html)

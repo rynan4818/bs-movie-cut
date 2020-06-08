@@ -50,6 +50,14 @@ file:
   nkf.so:
     file: C:/ruby/lib/ruby/1.8/i386-mswin32/nkf.so
     type: extension-library
+  digest.so:
+    file: C:/ruby/lib/ruby/1.8/i386-mswin32/digest.so
+    type: extension-library
+  digest.rb:
+    file: C:/ruby/lib/ruby/1.8/digest.rb
+  digest/sha1.so:
+    file: C:/ruby/lib/ruby/1.8/i386-mswin32/digest/sha1.so
+    type: extension-library
 #gem
   rbconfig.rb:
     file: C:/ruby/lib/ruby/1.8/i386-mswin32/rbconfig.rb
@@ -206,3 +214,5 @@ file:
     file: C:/ruby/lib/ruby/gems/1.8/gems/sqlite3-1.3.3-x86-mswin32-60/lib/sqlite3/version.rb
   sqlite3.rb:
     file: C:/ruby/lib/ruby/gems/1.8/gems/sqlite3-1.3.3-x86-mswin32-60/lib/sqlite3.rb
+  sqlite3.dll:
+    type: dynamic-library
