@@ -48,11 +48,15 @@ require '_frm_bs_movie_cut.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/06/08'
+SOFT_VER        = '2020/06/14'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル
 SETTING_FILE = EXE_DIR + 'setting.json'
+
+#サイト設定
+BEATSAVER_URL  = "https://beatsaver.com/beatmap/#bsr#"
+BEASTSABER_URL = "https://bsaber.com/songs/#bsr#/"
 
 #デフォルト設定
 #beatsaberのデータベースファイル名 1,2は検索順序
@@ -80,11 +84,17 @@ DEFALUT_SUB_RED_NOTES   = "Red "
 DEFALUT_SUB_BLUE_NOTES  = "Blue"
 DEFALUT_SUB_CUT_FORMAT  = '"%4d:#{note_type}:%2d+%2d+%2d=%3d" % [noteID,(beforeScore == nil ? initialScore : beforeScore),afterScore,cutDistanceScore,finalScore]'
 DEFALUT_SUB_MISS_FORMAT = '"%4d:#{note_type}:Miss!" % noteID'
+DEFALUT_POST_COMMENT    = ["Song:#songname#\r\nMapper:#mapper#\r\n!bsr #bsr#\r\n\r\n\r\n#BeatSaber\r\n",
+                           "#songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#",
+                           "#songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#"]
 
 #定数
 BEATSABER_USERDATA_FOLDER = "[BeatSaber UserData folder]"
 SUBTITLE_ALIGNMENT_SETTING = [['1: Bottom left','2: Bottom center','3: Bottom right','5: Top left','6: Top center','7: Top right','9: Middle left',
                               '10: Middle center','11: Middle right'],[1,2,3,5,6,7,9,10,11]]
+CURL_TIMEOUT            = 5
+
+$winshell  = WIN32OLE.new("WScript.Shell")
 
 #切り出しファイルの保存先  .\\OUT\\はこの実行ファイルのあるフォルダ下の"OUT"フォルダ  フルパスでも可  \は\\にすること  末尾は\\必要
 DEFAULT_OUT_FOLDER     = ["#DEFAULT#  " + EXE_DIR + "OUT\\","#sample#  D:\\"]
@@ -278,6 +288,209 @@ def file_name_check(file_name)
     file_name.gsub!("|","｜")  #ファイル名に使えない文字を全角に変換
   end
   return file_name
+end
+
+def bsr_search(songHash)
+  beatsaver_data = {}
+  if songHash =~ /^[0-9A-F]{40}/i
+    begin
+      beatsaver_data = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT} https://beatsaver.com/api/maps/by-hash/#{songHash[0,40]}`)
+      bsr = beatsaver_data['key']
+    rescue
+      bsr = 'err'
+    end
+  else
+    bsr = 'nil'
+  end
+  return [bsr,beatsaver_data]
+end
+
+def open_url(url)
+  begin
+    #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
+    $winshell.Run(%Q!"#{url}"!)
+  rescue Exception => e
+    messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+  end
+end
+
+class Modaldlg_post_comment
+
+  def self.set(target,fields)
+    @@target = target
+    @@fields = fields
+  end
+  
+  def self_created
+    @save = false
+    @defalut_style = @checkBox_save.style
+    template(0)
+    self.caption += " : " + @@target[1][@@fields.index("songName")]
+  end
+  
+  def template(idx)
+    if @checkBox_save.checked?
+      $post_commnet[idx] = @text_main.text.gsub(/\r\n/,"\n").gsub(/\n/,"\r\n")
+      @checkBox_save.check(false)
+      @save = true
+    else
+      @text_main.text = $post_commnet[idx].gsub(/\r\n/,"\n").gsub(/\n/,"\r\n")
+    end
+    if @checkBox_save.style == 0x58000003
+      @checkBox_save.style = 0x50000003
+      @button_generate.style = 1342177280
+      refresh(true)
+    end
+  end
+  
+  def button_1_clicked
+    template(0)
+  end
+
+  def button_2_clicked
+    template(1)
+  end
+
+  def button_3_clicked
+    template(2)
+  end
+
+  def button_generate_clicked
+    @checkBox_save.check(false)
+    @checkBox_save.style = 0x58000003
+    @button_generate.style = 1476395008
+    refresh(true)
+    parameter = ["#songname#" , "#mapper#" , "#songauthor#" , "#bsr#" , "#difficulty#" , "#score#" , "#rank#" , "#miss#"]
+    convert   = [@@target[1][@@fields.index("songName")]]
+    convert.push @@target[1][@@fields.index("levelAuthorName")]
+    convert.push @@target[1][@@fields.index("songAuthorName")]
+    convert.push bsr_search(@@target[1][@@fields.index("songHash")])[0]
+    convert.push @@target[1][@@fields.index("difficulty")]
+    convert.push @@target[1][@@fields.index("scorePercentage")]
+    convert.push @@target[1][@@fields.index("rank")]
+    convert.push @@target[1][@@fields.index("missedNotes")]
+    generate_text = @text_main.text.gsub(/\r\n/,"\n").gsub(/\n/,"\r\n")
+    parameter.each_with_index do |param,idx|
+      generate_text = generate_text.gsub(Regexp.new("#{Regexp.escape(param)}"),convert[idx].to_s)
+    end
+    @text_main.text = generate_text
+  end
+
+  def button_copy_clicked
+    Clipboard.open(self.hWnd) do |cb|
+      cb.setText @text_main.text.gsub(/\r\n/,"\n").gsub(/\n/,"\r\n")
+    end
+    messageBox("Copying Post comment","Copy comment",0x40)
+  end
+
+  def button_close_clicked
+    close(@save)
+  end
+
+end
+
+class Modaldlg_db_view
+
+  def self.set(search_dir)
+    @@search_dir = []
+    search_dir.each do |dir|
+      @@search_dir.push dir.strip.sub(/\\$/,'') + '\\'
+    end
+  end
+
+  def self_created
+    #データベースに登録済みのファイルのタイムスタンプの確認
+    sql = "SELECT MIN(startTime) FROM MovieCutRecord;"
+    fields, startdate = db_execute(sql, true, false)
+    if startdate.size == 0
+      @db.close
+      return
+    end
+    startdate = startdate[0][0].to_i / 1000
+    @edit_start_year.text  = Time.at(startdate).localtime.strftime("%Y")
+    @edit_start_month.text = Time.at(startdate).localtime.strftime("%m").to_i.to_s
+    @edit_start_day.text   = Time.at(startdate).localtime.strftime("%d").to_i.to_s
+    sql = "SELECT MAX(menuTime) FROM MovieCutRecord;"
+    fields, enddate = db_execute(sql, false, true)
+    enddate = enddate[0][0].to_i / 1000
+    @edit_end_year.text  = Time.at(enddate).localtime.strftime("%Y")
+    @edit_end_month.text = Time.at(enddate).localtime.strftime("%m").to_i.to_s
+    @edit_end_day.text   = Time.at(enddate).localtime.strftime("%d").to_i.to_s
+    @checkBox_allread.check true
+    @edit_start_year.readonly = true
+    @edit_start_month.readonly = true
+    @edit_start_day.readonly = true
+    @edit_end_year.readonly = true
+    @edit_end_month.readonly = true
+    @edit_end_day.readonly = true
+    @search_dir_list = []
+    @search_dir_list.push $open_dir.strip.sub(/\\$/,'') + '\\' unless $open_dir.strip == ""
+    @search_dir_list += @@search_dir if @@search_dir.size > 0
+    $input_movie_search_dir.each do |dir|
+      @search_dir_list.push dir.strip.sub(/\\$/,'') + '\\'
+    end
+    @listBox_search_dir.setListStrings @search_dir_list
+  end
+  
+  def button_cancel_clicked
+    close(false)
+  end
+
+  def button_ok_clicked
+    start_time = Time.local(@edit_start_year.text,@edit_start_month.text,@edit_start_day.text,0,0,0).gmtime.to_i * 1000
+    end_time = Time.local(@edit_end_year.text,@edit_end_month.text,@edit_end_day.text,23,59,59).gmtime.to_i * 1000
+    close([@checkBox_allread.checked?, start_time, end_time, @search_dir_list])
+  end
+  
+  def checkBox_allread_clicked
+    if @checkBox_allread.checked?
+      @edit_start_year.readonly = true
+      @edit_start_month.readonly = true
+      @edit_start_day.readonly = true
+      @edit_end_year.readonly = true
+      @edit_end_month.readonly = true
+      @edit_end_day.readonly = true
+    else
+      @edit_start_year.readonly = false
+      @edit_start_month.readonly = false
+      @edit_start_day.readonly = false
+      @edit_end_year.readonly = false
+      @edit_end_month.readonly = false
+      @edit_end_day.readonly = false
+    end
+  end
+  
+end
+
+class Modaldlg_search
+
+  def self.set(target,fields)
+    @@target = target
+    @@fields = fields
+  end
+
+  def self_created
+    
+  end
+  
+  def button_songname_copy_clicked
+    return unless @@target
+    @edit_songname.text = @@target[1][@@fields.index("songName")]
+  end
+
+  def button_author_copy_clicked
+    return unless @@target
+    @edit_author.text = @@target[1][@@fields.index("levelAuthorName")]
+  end
+
+  def button_cancel_clicked
+    close(false)
+  end
+
+  def button_ok_clicked
+    close([@edit_songname.text.strip,@edit_author.text.strip])
+  end
+
 end
 
 class Modaldlg_subtitle_setting
@@ -615,12 +828,15 @@ end
 class Modaldlg_setting
 
   def self_created
-    @edit_dbfile.text       = $beatsaber_dbfile.to_s
-    @edit_previewtool.text  = $preview_tool.to_s
-    @edit_time_format.text  = $time_format.to_s
-    @edit_preview_temp.text = $preview_file.to_s
+    @edit_dbfile.text        = $beatsaber_dbfile.to_s
+    @edit_previewtool.text   = $preview_tool.to_s
+    @edit_previewtool_option.text = $preview_tool_option.to_s
+    @edit_time_format.text   = $time_format.to_s
+    @edit_preview_temp.text  = $preview_file.to_s
     @edit_subtitle_temp.text = $subtitle_file.to_s
-    @edit_offset.text       = $offset.to_s
+    @edit_offset.text        = $offset.to_s
+    @edit_opendir.text       = $open_dir.to_s
+    @edit_extension.text     = $movie_default_extension.to_s
     @checkBox_timesave.check $time_save
     @checkBox_ascii.check    $ascii_mode
     @checkBox_no_message.check $timestamp_nomsg
@@ -658,6 +874,18 @@ class Modaldlg_setting
     filename = SWin::CommonDialog::openFilename(self,[["db File (*.db)","*.db"],["All File (*.*)","*.*"]],0x4,"beatsaber.db select","*.db",folder,file)
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     @edit_dbfile.text = filename
+  end
+
+  def button_opendir_select_clicked
+    if @edit_opendir.text.to_s.strip == ""
+      defalut = nil
+    else
+      defalut = @edit_opendir.text.to_s.strip
+    end
+    folder = SWin::CommonDialog::selectDirectory(self,title="select open movie folder",defalut,1)
+    return unless folder                                 #ファイルが選択されなかった場合、キャンセルされた場合は戻る
+    return unless File.exist?(folder)                    #folderのファイルが存在しなければ戻る
+    @edit_opendir.text = folder
   end
 
   def button_cancel_clicked
@@ -708,10 +936,13 @@ class Modaldlg_setting
         return
       end
     end
-    $offset      = @edit_offset.text.strip.to_f
-    $time_format = @edit_time_format.text.to_s.strip
-    $time_save   = @checkBox_timesave.checked?
-    $ascii_mode  = @checkBox_ascii.checked?
+    $preview_tool_option = @edit_previewtool_option.text.to_s.strip
+    $offset       = @edit_offset.text.strip.to_f
+    $time_format  = @edit_time_format.text.to_s.strip
+    $open_dir      = @edit_opendir.text.to_s.strip
+    $movie_default_extension = @edit_extension.text.to_s.strip
+    $time_save    = @checkBox_timesave.checked?
+    $ascii_mode   = @checkBox_ascii.checked?
     $timestamp_nomsg = @checkBox_no_message.checked?
     $use_endtime = @checkBox_stop_time_menu.checked?
     $preview_encode = @groupBox_Preview.radioBtn_select.checked?
@@ -730,13 +961,7 @@ class Modaldlg_setting
   end
 
   def button_parameter_clicked
-    winshell = WIN32OLE.new("WScript.Shell")
-    begin
-      #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
-      winshell.Run(%Q!"https://docs.ruby-lang.org/ja/1.8.7/method/Time/i/strftime.html"!)
-    rescue Exception => e
-      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
-    end
+    open_url("https://docs.ruby-lang.org/ja/1.8.7/method/Time/i/strftime.html")
   end
   
   def button_preview_temp_clicked
@@ -775,8 +1000,11 @@ class Form_main
     end
     self.caption += "  Ver #{SOFT_VER}"
     @tz_static.caption = Time.now.zone
-    @movie_files = []
-    @convert_list = []     #切り出しマップリスト
+    @movie_files = []        #動画リスト
+    @convert_list = []       #切り出しマップリスト
+    @original_convert_list = [] #データベースから読みだした初期値
+    @list_sort = nil         #リストのソート対象
+    @list_desc_order = false #リストの降順
     setting_load
     printing_check
     if $beatsaber_dbfile
@@ -796,8 +1024,8 @@ class Form_main
     #リストボックスにタブストップを設定
     #[0x192,タブストップの数,[タブストップの位置,…]]  FormDesignerでstyleのLBS_USETABSTOPSのチェックが必要
     #0x192:LB_SETTABSTOPS  l*:32bit符号つき整数
-    @listBox_map.sendMessage(0x192, 10,[15,40,65,80,110,125,150,175,210,360].pack('l*'))
-    @listBox_file.sendMessage(0x192, 1,[15].pack('l*'))
+    @listBox_map.sendMessage(0x192, 11,[24,80,102,128,149,181,202,227,253,283,435].pack('l*'))
+    @listBox_file.sendMessage(0x192, 1,[24].pack('l*'))
   end
 
   #ドラッグ＆ドロップ貼り付け
@@ -822,49 +1050,182 @@ class Form_main
     end
     refresh(true)
   end
-  #リストボックスの更新
-  def listbox_load
-    @listBox_file.clearStrings
-    @listBox_map.clearStrings
-    @convert_list = []
-    listBox_map_idx_end = 0  #リストボックスの最終追加場所(idx)
-    #変換元動画ファイル リストボックスの設定
-    @movie_files.each_with_index do |f,idx|
-      @listBox_file.addString(idx,"#{idx + 1}\t#{f}")    #リストボックスに項目追加
-    end
-    @movie_files.each_with_index do |file,file_idx|
-      create_time, access_time, write_time = get_file_timestamp(file)
-      ##データベース処理
-      db_open
-      if $time_save
-        #データベースに登録済みのファイルのタイムスタンプの確認
-        sql = "SELECT * FROM MovieOriginalTime WHERE filename = '#{File.basename(file)}';"
-        if $ascii_mode
-          fields, *rows = @db.execute2(sql)
-        else
-          fields, *rows = array_sjiscnv(@db.execute2(utf8cv(sql)))
+  
+  #動画ファイルのタイムスタンプ取得処理
+  def movie_file_timestamp(file,db_save_check = false)
+    create_time, access_time, write_time = get_file_timestamp(file)
+    ##データベース処理
+    if $time_save
+      #データベースに登録済みのファイルのタイムスタンプの確認
+      sql = "SELECT * FROM MovieOriginalTime WHERE filename = '#{File.basename(file)}';"
+      if $ascii_mode
+        fields, *rows = @db.execute2(sql)
+      else
+        fields, *rows = array_sjiscnv(@db.execute2(utf8cv(sql)))
+      end
+      #データベースに未登録の時に追加する
+      if rows.size == 0
+        save = true
+        if db_save_check
+          unless messageBox("#{file}\r\nIs this video an original file of play recording?\r\nDo you want to save the file timestamps in the database?",
+             "Save time stamp in database",36) == 6 #はい
+            save = false
+          end
         end
-        #データベースに未登録の時に追加する
-        if rows.size == 0
+        if save
           sql = "INSERT INTO MovieOriginalTime(filename, create_time, access_time, write_time) VALUES (?, ?, ?, ?);"
           if $ascii_mode
             @db.execute(sql,File.basename(file),create_time,access_time,write_time)
           else
             @db.execute(utf8cv(sql),utf8cv(File.basename(file)),create_time,access_time,write_time)
           end
-        else
-          unless create_time == rows[0][fields.index("create_time")].to_i &&
-                 access_time == rows[0][fields.index("access_time")].to_i &&
-                 write_time  == rows[0][fields.index("write_time")].to_i
-            if $timestamp_nomsg || messageBox("#{file}\r\nIt is different from the time stamp recorded in the database.\r\nUse database timestamp?",
-               "Timestamp differs from database",36) == 6 #はい
-              create_time = rows[0][fields.index("create_time")].to_i
-              access_time = rows[0][fields.index("access_time")].to_i
-              write_time  = rows[0][fields.index("write_time")].to_i
+        end
+      else
+        unless create_time == rows[0][fields.index("create_time")].to_i &&
+               access_time == rows[0][fields.index("access_time")].to_i &&
+               write_time  == rows[0][fields.index("write_time")].to_i
+          if $timestamp_nomsg || messageBox("#{file}\r\nIt is different from the time stamp recorded in the database.\r\nUse database timestamp?\r\n\r\n(This message can be hidden in the settings.)",
+             "Timestamp differs from database",36) == 6 #はい
+            create_time = rows[0][fields.index("create_time")].to_i
+            access_time = rows[0][fields.index("access_time")].to_i
+            write_time  = rows[0][fields.index("write_time")].to_i
+          end
+        end
+      end
+    end
+    return [create_time, access_time, write_time]
+  end
+  
+  
+  #指定期間を元に、データベースからmap情報の読み込み
+  def db_map_load_time(allread, start_time, end_time, search_dir_list)
+    @original_convert_list = []
+    @convert_list = []
+    movie_file_list = []
+    movie_file_list_check = []
+    movie_cut_file = {}
+    movie_original_time = []
+    #カット済み記録の取得
+    sql = "SELECT * FROM MovieCutFile;"
+    result = db_execute(sql,true,false)
+    if result
+      fields,rows = result
+    else
+      return
+    end
+    rows.each do |record|
+      out_dir = record[fields.index("out_dir")]
+      filename = record[fields.index("filename")]
+      unless $ascii_mode
+        out_dir = sjiscv(out_dir)
+        filename = sjiscv(filename)
+      end
+      movie_cut_file[record[fields.index("startTime")].to_i] = [out_dir,filename]
+    end
+    #読込済み動画ファイルの取得
+    sql = "SELECT * FROM MovieOriginalTime;"
+    result = db_execute(sql,false,false)
+    if result
+      fields,rows = result
+    else
+      return
+    end
+    rows.each do |record|
+      filename = record[fields.index("filename")]
+      filename = sjiscv(filename) unless $ascii_mode
+      movie_original_time.push [filename, record[fields.index("create_time")].to_i, record[fields.index("access_time")].to_i, record[fields.index("write_time")].to_i]
+    end
+    #レコードの取得処理
+    if allread
+      sql = "SELECT * FROM MovieCutRecord;"
+    else
+      sql = "SELECT * FROM MovieCutRecord WHERE startTime >= #{start_time} AND menuTime <= #{end_time};"
+    end
+    result = db_execute(sql,false)
+    if result
+      @fields,rows = result
+    else
+      return
+    end
+    rows.each_with_index do |cols,idx|
+      file = nil
+      file_idx = nil
+      file_type = nil
+      check_file = nil
+      create_time = nil
+      access_time = nil
+      write_time = nil
+      start_time = cols[@fields.index("startTime")].to_i
+      menu_time  = cols[@fields.index("menuTime")].to_i
+      movie_original_time.each do |v|
+        if (v[1] <= start_time) && (v[3] >= menu_time)
+          search_dir_list.each do |dir|
+            check_file = dir + v[0]
+            if file_idx = movie_file_list_check.index(check_file)
+              break
+            else
+              if File.exist?(check_file)
+                movie_file_list_check.push check_file
+                file_idx = movie_file_list_check.size - 1
+                break
+              end
+            end
+          end
+        end
+        if file_idx
+          create_time = v[1]
+          access_time = v[2]
+          write_time  = v[3]
+          file = check_file
+          file_type = 1
+          break
+        end
+      end
+      unless file
+        if movie_cut_file[start_time]
+          ([movie_cut_file[start_time][0]] + search_dir_list).each do |dir|
+            check_file = dir + movie_cut_file[start_time][1]
+            if file_idx = movie_file_list_check.index(check_file)
+              file = check_file
+              file_type = 2
+              break
+            else
+              if File.exist?(check_file)
+                file = check_file
+                movie_file_list_check.push check_file
+                file_idx = movie_file_list_check.size - 1
+                file_type = 2
+                break
+              end
             end
           end
         end
       end
+      map_data = [file,cols,idx,create_time,access_time,write_time,file_idx,file_type]
+      @convert_list.push map_data
+      @original_convert_list.push map_data
+    end
+    movie_file_list_check.each_with_index do |file,i|
+      movie_file_list.push "#{i + 1}\t#{file}"
+    end
+    if movie_file_list == []
+      @listBox_file.clearStrings
+    else
+      @listBox_file.setListStrings movie_file_list
+    end
+  end
+  
+  
+  #動画ファイルを元に、データベースからmap情報の読み込み
+  def db_map_load_movie
+    @original_convert_list = []
+    @convert_list = []
+    movie_file_list = []
+    listBox_map_idx_end = 0  #リストボックスの最終追加場所(idx)
+    @movie_files.each_with_index do |file,file_idx|
+      movie_file_list.push "#{file_idx + 1}\t#{file}" #変換元動画ファイル リスト作成
+      db_open
+      create_time, access_time, write_time = movie_file_timestamp(file)
       #レコードの取得処理
       sql = "SELECT * FROM MovieCutRecord WHERE startTime > #{create_time} AND menuTime < #{write_time};"
       result = db_execute(sql,false)
@@ -873,42 +1234,103 @@ class Form_main
       else
         return
       end
-      
-      #マップ リストボックスの設定
       rows.each_with_index do |cols,idx|
-        time = ((cols[@fields.index('endTime')].to_i - cols[@fields.index('startTime')].to_i) / 1000).to_i
-        min = time.div(60)
-        sec = time % 60
-        length = (cols[@fields.index('length')].to_i / 1000).to_i
-        @convert_list.push [file,cols,listBox_map_idx_end + idx,create_time,access_time,write_time]
-        temp = [(file_idx + 1).to_s]
-        temp.push "#{min}:%02d" % sec
-        temp.push((time - length).to_s)
-        speed = ((cols[@fields.index("songSpeedMultiplier")].to_f * 10.0).round.to_f / 10.0)
-        if speed == 1.0
-          temp.push 1
-        else
-          temp.push speed
-        end
-        temp.push cols[@fields.index("cleared")]
-        temp.push cols[@fields.index("rank")].to_s
-        temp.push cols[@fields.index("scorePercentage")].to_s
-        temp.push cols[@fields.index("missedNotes")].to_s
-        temp.push cols[@fields.index("difficulty")].to_s
-        temp.push cols[@fields.index("songName")].to_s[0,39]
-        temp.push cols[@fields.index("levelAuthorName")].to_s[0,12]
-        if $ascii_mode
-          $KCODE='NONE'
-          temp = temp.join("\t").gsub(/[^ -~\t]/,' ')
-          $KCODE='s'
-        else
-          temp = temp.join("\t")
-        end
-        @listBox_map.addString(listBox_map_idx_end + idx,temp)                  #リストボックスに項目追加
-        @listBox_map.sendMessage(WMsg::LB_SETSEL,1,listBox_map_idx_end + idx)   #全て選択状態にする。
+        map_data = [file,cols,listBox_map_idx_end + idx,create_time,access_time,write_time,file_idx,1]
+        @convert_list.push map_data
+        @original_convert_list.push map_data
       end
       listBox_map_idx_end += rows.size
     end
+    if movie_file_list == []
+      @listBox_file.clearStrings
+    else
+      @listBox_file.setListStrings movie_file_list
+    end
+  end
+  
+  #動画の読み込み＆リストボックス更新
+  def listbox_load
+    db_map_load_movie
+    listbox_refresh
+  end
+  
+  #リストボックスの更新
+  def listbox_refresh
+    map_list = []
+    @convert_list.each do |map_cols|
+      cols = map_cols[1]
+      file_idx = map_cols[6]
+      time = ((cols[@fields.index('endTime')].to_i - cols[@fields.index('startTime')].to_i) / 1000).to_i
+      min = time.div(60)
+      sec = time % 60
+      length = (cols[@fields.index('length')].to_i / 1000).to_i
+      case map_cols[7]
+      when 1
+        temp = [(file_idx + 1).to_s]
+      when 2
+        temp = [(file_idx + 1).to_s + "C"]
+      else
+        temp = [""]
+      end
+      temp.push Time.at(cols[@fields.index('startTime')].to_i / 1000).localtime.strftime("%y/%m/%d %H:%M")
+      temp.push "#{min}:%02d" % sec
+      temp.push((time - length).to_s)
+      speed = ((cols[@fields.index("songSpeedMultiplier")].to_f * 10.0).round.to_f / 10.0)
+      if speed == 1.0
+        temp.push 1
+      else
+        temp.push speed
+      end
+      temp.push cols[@fields.index("cleared")]
+      temp.push cols[@fields.index("rank")].to_s
+      temp.push cols[@fields.index("scorePercentage")].to_s
+      temp.push cols[@fields.index("missedNotes")].to_s
+      temp.push cols[@fields.index("difficulty")].to_s
+      temp.push cols[@fields.index("songName")].to_s[0,39]
+      temp.push cols[@fields.index("levelAuthorName")].to_s[0,12]
+      if $ascii_mode
+        $KCODE='NONE'
+        temp = temp.join("\t").gsub(/[^ -~\t]/,' ')
+        $KCODE='s'
+      else
+        temp = temp.join("\t")
+      end
+      map_list.push temp
+    end
+    #リストボックスに項目追加
+    if map_list == []
+      @listBox_map.clearStrings
+    else
+      @listBox_map.setListStrings map_list
+    end
+  end
+
+  #リストボックスのソート
+  def listbox_sort(sort_target,cnv_type = nil)
+    i = 0
+    if @list_sort == sort_target
+      @list_desc_order = !@list_desc_order
+    else
+      @list_desc_order = false
+    end
+    @list_sort = sort_target
+    if sort_target == "File"
+      @convert_list = @convert_list.sort_by {|a| [a[6].to_i,i += 1] }
+    elsif sort_target == "Time"
+      @convert_list = @convert_list.sort_by {|a| [(a[1][@fields.index("endTime")].to_i - a[1][@fields.index("startTime")].to_i),i += 1] }
+    elsif sort_target == "Diff"
+      @convert_list = @convert_list.sort_by {|a| [((a[1][@fields.index("endTime")].to_i - a[1][@fields.index("startTime")].to_i) - a[1][@fields.index("length")].to_i),i += 1] }
+    else
+      if cnv_type == "i"
+        @convert_list = @convert_list.sort_by {|a| [a[1][@fields.index(sort_target)].to_i,i += 1] }
+      elsif cnv_type == "f"
+        @convert_list = @convert_list.sort_by {|a| [a[1][@fields.index(sort_target)].to_f,i += 1] }
+      else
+        @convert_list = @convert_list.sort_by {|a| [a[1][@fields.index(sort_target)].to_s,i += 1] }
+      end
+    end
+    @convert_list.reverse! if @list_desc_order
+    listbox_refresh
   end
 
   #設定読出し
@@ -916,6 +1338,7 @@ class Form_main
     $time_format          = DEFAULT_TIMEFORMAT
     $beatsaber_dbfile     = nil
     $preview_tool         = DEFAULT_PREVIEW_TOOL
+    $preview_tool_option  = ""
     $preview_file         = DEFAULT_PREVIEW_FILE
     $subtitle_file        = DEFAULT_SUBTITLE_FILE
     $mod_setting_file     = DEFAULT_MOD_SETTING_FILE
@@ -934,11 +1357,16 @@ class Form_main
     $subtitle_miss_format = DEFALUT_SUB_MISS_FORMAT
     $simultaneous_notes_time = DEFALUT_SIMULTANEOUS_NOTES_TIME
     $last_notes_time      = DEFALUT_LAST_NOTES_TIME
+    $open_dir             = ""
+    $movie_default_extension = "mkv"
+    $input_movie_search_dir  = []
+    $post_commnet         = DEFALUT_POST_COMMENT
     if File.exist?(SETTING_FILE)
       setting = JSON.parse(File.read(SETTING_FILE))
       $time_format      = setting['time_format'].to_s         if setting['time_format']
       $beatsaber_dbfile = setting['beatsaber_dbfile'].to_s    if setting['beatsaber_dbfile']
       $preview_tool     = setting['preview_tool'].to_s        if setting['preview_tool']
+      $preview_tool_option = setting['preview_tool_option'].to_s if setting['preview_tool_option']
       $preview_file     = setting['preview_file'].to_s        if setting['preview_file']
       $subtitle_file    = setting['subtitle_file'].to_s       if setting['subtitle_file']
       $offset           = setting['offset'].to_f              if setting['offset']
@@ -952,6 +1380,10 @@ class Form_main
       $subtitle_miss_format = setting['subtitle_miss_format'] if setting['subtitle_miss_format']
       $simultaneous_notes_time = setting['simultaneous_notes_time'] if setting['simultaneous_notes_time']
       $last_notes_time      = setting['last_notes_time']      if setting['last_notes_time']
+      $open_dir             = setting['open_dir']             if setting['open_dir']
+      $movie_default_extension = setting['movie_default_extension']  if setting['movie_default_extension']
+      $input_movie_search_dir  = setting['input_movie_search_dir']  if setting['input_movie_search_dir']
+      $post_commnet         = setting['post_commnet']         if setting['post_commnet']
       $ascii_mode       = setting['Remove non-ASCII code']    unless setting['Remove non-ASCII code'] == nil
       $time_save        = setting['time_save']                unless setting['time_save'] == nil
       $timestamp_nomsg  = setting['timestamp_nomsg']          unless setting['timestamp_nomsg'] == nil
@@ -1036,6 +1468,7 @@ class Form_main
     setting['time_format']           = $time_format
     setting['beatsaber_dbfile']      = $beatsaber_dbfile
     setting['preview_tool']          = $preview_tool
+    setting['preview_tool_option']   = $preview_tool_option
     setting['time_save']             = $time_save
     setting['timestamp_nomsg']       = $timestamp_nomsg
     setting['use_endtime']           = $use_endtime
@@ -1053,6 +1486,10 @@ class Form_main
     setting['subtitle_miss_format']  = $subtitle_miss_format
     setting['simultaneous_notes_time'] = $simultaneous_notes_time
     setting['last_notes_time']       = $last_notes_time
+    setting['open_dir']              = $open_dir
+    setting['movie_default_extension'] = $movie_default_extension
+    setting['input_movie_search_dir']  = $input_movie_search_dir
+    setting['post_commnet']            = $post_commnet
     if all
       setting['finished']              = @checkBox_finished.checked?
       setting['failed']                = @checkBox_failed.checked?
@@ -1296,13 +1733,14 @@ class Form_main
     refresh
     @static_message.caption = "### Now converting!! ###"
     show(0)
-    @convert_list.each do |target|
+    @convert_list.each_with_index do |target,idx|
       #マップ リストボックスの選択状態確認
       sel = 0
       @listBox_map.eachSelected do |i|
-        sel = 1 if i == target[2]
+        sel = 1 if i == idx
       end
       next if sel == 0
+      next unless target[7] == 1
       #データベースカラムの読み出し
       startTime           =  target[1][@fields.index('startTime')]
       endTime             =  target[1][@fields.index('endTime')]
@@ -1378,18 +1816,8 @@ class Form_main
       #分割後のファイル名決定
       file_name_code = '"' + @comboBox_filename.getTextOf(@comboBox_filename.selectedString).strip.sub(/^#[^#]+#/,'').strip + '"'
       #bsrの取得
-      bsr = ''
       if file_name_code =~ /bsr/
-        if songHash =~ /^[0-9A-F]{40}/i
-          begin
-            beatsaver_data = JSON.parse(`curl.exe https://beatsaver.com/api/maps/by-hash/#{songHash[0,40]}`)
-            bsr = beatsaver_data['key']
-          rescue
-            bsr = 'err'
-          end
-        else
-          bsr = 'nil'
-        end
+        bsr,beatsaver_data = bsr_search(songHash)
       end
       begin
         eval("file_name = " + file_name_code)
@@ -1504,54 +1932,197 @@ class Form_main
       messageBox("'#{$preview_tool.to_s}' File not found\r\nPlease set from option of menu.","Preview tool not found",48)
       return
     end
-    target = @convert_list[@listBox_map.selectedString]
-    file = target[0]
-    out_dir  = File.dirname($preview_file.to_s.strip) + "\\"
-    file_name = File.basename($preview_file.to_s.strip)
-    unless File.directory?(out_dir)
-      messageBox("'#{folder}'\r\mPreview temporary folder not found\r\nPlease set from option of menu.","Preview temporary folder not found",48)
+    return unless target = @convert_list[@listBox_map.selectedString]
+    case target[7]
+    when 1
+      file = target[0]
+      out_dir  = File.dirname($preview_file.to_s.strip) + "\\"
+      file_name = File.basename($preview_file.to_s.strip)
+      unless File.directory?(out_dir)
+        messageBox("'#{folder}'\r\mPreview temporary folder not found\r\nPlease set from option of menu.","Preview temporary folder not found",48)
+        return
+      end
+      if file_name.strip == ''
+        messageBox("Preview temporary file setting not found\r\nPlease set from option of menu.","Preview temporary file setting not found",48)
+        return
+      end
+      if $preview_encode
+        ffmpeg_option = ' ' + @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
+        vf = true
+      else
+        ffmpeg_option = " -c copy"
+        vf = false
+      end
+      startTime           =  target[1][@fields.index('startTime')]
+      endTime             =  target[1][@fields.index('endTime')]
+      menuTime            =  target[1][@fields.index('menuTime')]
+      if $use_endtime
+        stoptime = endTime
+      else
+        stoptime = menuTime
+      end
+      @button_preview.style     = 1476395008
+      show(0)
+      refresh
+      str_dir = File.dirname($subtitle_file.to_s.strip) + "\\"
+      str_file = File.basename($subtitle_file, ".*") + '.srt'
+      movie_sub_create(target,str_dir,str_file,startTime,stoptime)
+      ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf)
+      @button_preview.style     = 1342177280
+      refresh
+      show
+      preview_movie = out_dir + file_name
+    when 2
+      preview_movie = target[0]
+    else
       return
     end
-    if file_name.strip == ''
-      messageBox("Preview temporary file setting not found\r\nPlease set from option of menu.","Preview temporary file setting not found",48)
-      return
-    end
-    if $preview_encode
-      ffmpeg_option = ' ' + @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
-      vf = true
-    else
-      ffmpeg_option = " -c copy"
-      vf = false
-    end
-    startTime           =  target[1][@fields.index('startTime')]
-    endTime             =  target[1][@fields.index('endTime')]
-    menuTime            =  target[1][@fields.index('menuTime')]
-    if $use_endtime
-      stoptime = endTime
-    else
-      stoptime = menuTime
-    end
-    @button_preview.style     = 1476395008
-    show(0)
-    refresh
-    str_dir = File.dirname($subtitle_file.to_s.strip) + "\\"
-    str_file = File.basename($subtitle_file, ".*") + '.srt'
-    movie_sub_create(target,str_dir,str_file,startTime,stoptime)
-    ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf)
-    winshell = WIN32OLE.new("WScript.Shell")
     begin
       #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
-      winshell.Run(%Q!"#{$preview_tool.to_s}" "#{out_dir}#{file_name}"!)
+      option = ""
+      option = " " + $preview_tool_option.strip unless $preview_tool_option.strip == ""
+      $winshell.Run(%Q!"#{$preview_tool.to_s}"#{option} "#{preview_movie}"!)
     rescue Exception => e
       messageBox("Preview error\r\nWScript.Shell Error\r\n#{e.inspect}","Preview ERROR",48)
     end
-    @button_preview.style     = 1342177280
-    refresh
-    show
   end
   
+  def button_file_sort_clicked
+    listbox_sort("File")
+  end
+  
+  def button_datetime_sort_clicked
+    listbox_sort("startTime","i")
+  end
+
+  def button_time_sort_clicked
+    listbox_sort("Time")
+  end
+
+  def button_diff_sort_clicked
+    listbox_sort("Diff")
+  end
+
+  def button_speed_sort_clicked
+    listbox_sort("songSpeedMultiplier","f")
+  end
+
+  def button_cleared_sort_clicked
+    listbox_sort("cleared")
+  end
+
+  def button_rank_sort_clicked
+    listbox_sort("rank")
+  end
+
+  def button_score_sort_clicked
+    listbox_sort("scorePercentage","f")
+  end
+
+  def button_miss_sort_clicked
+    listbox_sort("missedNotes","i")
+  end
+
+  def button_difficulty_clicked
+    listbox_sort("difficulty")
+  end
+
+  def button_songname_sort_clicked
+    listbox_sort("songName")
+  end
+
+  def button_levelauthor_sort_clicked
+    listbox_sort("levelAuthorName")
+  end
+
+  def button_organizing_reversing_clicked
+    @listBox_map.countStrings.times do |idx|
+      select = false
+      @listBox_map.eachSelected do |i|
+        if i == idx
+          select = true
+          break
+        end
+      end
+      if select
+        @listBox_map.sendMessage(WMsg::LB_SETSEL,0,idx)
+      else
+        @listBox_map.sendMessage(WMsg::LB_SETSEL,1,idx)
+      end
+    end
+  end
+
+  def button_organizing_remove_clicked
+    temp = []
+    @convert_list.each_with_index do |target,idx|
+      select = false
+      @listBox_map.eachSelected do |i|
+        if idx == i
+          select = true
+          break
+        end
+      end
+      unless select
+        temp.push target
+      end
+    end
+    @convert_list = temp
+    listbox_refresh
+  end
+
+  def button_organizing_reset_clicked
+    @convert_list = []
+    @original_convert_list.each {|map_data| @convert_list.push map_data}
+    listbox_refresh
+  end
+
+  def button_search_clicked
+    Modaldlg_search.set(@convert_list[@listBox_map.selectedString],@fields)
+    return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_search,nil,nil)  #検索画面のモーダルダイアログを開く
+    songname,level_author = result
+    return if songname == "" && level_author == ""
+    temp = []
+    @convert_list.each do |target|
+      flag1 = false
+      flag2 = false
+      if songname == ""
+        flag1 = true
+      else
+        if target[1][@fields.index('songName')] =~ Regexp.new("#{Regexp.escape(songname)}",Regexp::IGNORECASE)
+          flag1 = true
+        else
+          flag1 = false
+        end
+      end
+      if level_author == ""
+        flag2 = true
+      else
+        if target[1][@fields.index('levelAuthorName')] =~ Regexp.new("#{Regexp.escape(level_author)}",Regexp::IGNORECASE)
+          flag2 = true
+        else
+          flag2 = false
+        end
+      end
+      temp.push target if flag1 && flag2
+    end
+    @convert_list = temp
+    listbox_refresh
+  end
+
+  def button_open_preview_dir_clicked
+    out_dir  = File.dirname($preview_file.to_s.strip) + "\\"
+    $winshell.Run("\"#{out_dir}\"") if File.directory?(out_dir)
+  end
+
   def menu_open_clicked
-    filenames = SWin::CommonDialog::openFilename(self,[["Mkv File (*.mkv)","*.mkv"],["Avi File (*.avi)","*.avi"],["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]],0x81204,"Movie file select","*.mkv") #ファイルを開くダイアログを開く
+    ext_set = [["Mkv File (*.mkv)","*.mkv"],["Avi File (*.avi)","*.avi"],["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]]
+    def_ext = "*.#{$movie_default_extension}"
+    if i = ext_set.index {|v| v[1] == def_ext}
+      ext_set.unshift ext_set.delete_at(i)
+    else
+      ext_set.unshift ["#{$movie_default_extension} File (#{def_ext})",def_ext]
+    end
+    filenames = SWin::CommonDialog::openFilename(self,ext_set,0x81204,"Movie file select",def_ext,$open_dir) #ファイルを開くダイアログを開く
     return unless filenames                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     if filenames =~ /\000/
       folder,*files = filenames.split("\000")
@@ -1622,8 +2193,8 @@ class Form_main
     fn = SWin::CommonDialog::saveFilename(self,[["CSV FIle(*.csv)","*.csv"],["All File(*.*)","*.*"]],0x1004,'Note Score File Save','*.csv',0,savefile)
     return unless fn
     CSV.open(fn,'w') do |record|
-      record << "unixTime,movieTime,event,score,score%,rank,hitNotes,missedNotes,combo,batteryEnergy,noteID,noteType,noteCutDirection,noteLine,noteLayer,initialScore,afterScore,cutDistanceScore,finalScore,cutMultiplier,saberSpeed,saberType,timeDeviation,cutDirectionDeviation,cutDistanceToCenter,timeToNextBasicNote".split(",")
-      record << "時間(unixtime ms),動画時間,イベント,スコア,スコア%,ランク,ヒット数,ミス数,コンボ数,ライフ,ノーツID,ノーツ種類,ノーツ矢印,水平位置(→),垂直位置(↑),カット前スコア,カット後スコア,中心分スコア,合計スコア,コンボ乗数,セイバー速度,セイバー種類,最適時間からオフセット,完全角度からのオフセット,中心からのカット距離,次のノーツまでの時間".split(",") unless $ascii_mode
+      record << "unixTime,movieTime,event,score,score%,rank,hitNotes,missedNotes,combo,batteryEnergy,noteID,noteType,noteCutDirection,noteLine,noteLayer,beforeScore,initialScore,afterScore,cutDistanceScore,finalScore,cutMultiplier,saberSpeed,saberType,timeDeviation,cutDirectionDeviation,cutDistanceToCenter,timeToNextBasicNote".split(",")
+      record << "時間(unixtime ms),動画時間,イベント,スコア,スコア%,ランク,ヒット数,ミス数,コンボ数,ライフ,ノーツID,ノーツ種類,ノーツ矢印,水平位置(→),垂直位置(↑),カット前角度スコア,カット前スコア,カット後スコア,中心分スコア,合計スコア,コンボ乗数,セイバー速度,セイバー種類,最適時間からオフセット,完全角度からのオフセット,中心からのカット距離,次のノーツまでの時間".split(",") unless $ascii_mode
       rows.each do |cols|
         line = []
         line << cols[fields.index("time")]
@@ -1644,6 +2215,7 @@ class Form_main
         line << cols[fields.index("noteCutDirection")]
         line << cols[fields.index("noteLine")]
         line << cols[fields.index("noteLayer")]
+        line << cols[fields.index("beforeScore")]
         line << cols[fields.index("initialScore")]
         line << cols[fields.index("afterScore")]
         line << cols[fields.index("cutDistanceScore")]
@@ -1659,11 +2231,171 @@ class Form_main
       end
     end
   end
+  
   def menu_subtitle_setting_clicked
     return unless VRLocalScreen.openModalDialog(self,nil,Modaldlg_subtitle_setting,nil,nil)  #設定画面のモーダルダイアログを開く
     setting_save(false)
   end
 
+  def menu_dbopen_clicked
+    search_dir = []
+    @comboBox_folder.eachString {|a| search_dir.push a.strip.sub(/^#[^#]+#/,'').strip}
+    Modaldlg_db_view.set(search_dir)
+    return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_db_view,nil,nil)  #日付範囲画面のモーダルダイアログを開く
+    allread, start_time, end_time, search_dir_list = result
+    db_map_load_time(allread, start_time, end_time, search_dir_list)
+    listbox_refresh
+  end
+  
+  def select_to_bsr
+    return false unless select = @convert_list[@listBox_map.selectedString]
+    songHash = select[1][@fields.index('songHash')]
+    bsr,beatsaver_data = bsr_search(songHash)
+    if bsr == "nil"
+      messageBox("There is no song id","No song ID",0x30)
+      return false
+    elsif bsr == "err"
+      messageBox("Not registered on beatsaver.","No bsr",0x30)
+      return false
+    else
+      return bsr
+    end
+  end
+  
+  def menu_copy_bsr_clicked
+    if bsr = select_to_bsr
+      Clipboard.open(self.hWnd) do |cb|
+        cb.setText "!bsr #{bsr}"
+      end
+      messageBox("Copying !bsr #{bsr}","Copy bsr",0x40)
+    end
+  end
+  
+  def menu_beatsaver_clicked
+    if bsr = select_to_bsr
+      open_url(BEATSAVER_URL.sub(/#bsr#/,bsr))
+    end
+  end
+  
+  def menu_beastsaber_clicked
+    if bsr = select_to_bsr
+      open_url(BEASTSABER_URL.sub(/#bsr#/,bsr))
+    end
+  end
+  
+  def menu_post_commnet_clicked
+    return unless target = @convert_list[@listBox_map.selectedString]
+    Modaldlg_post_comment.set(target,@fields)
+    return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_post_comment,nil,nil)  #検索画面のモーダルダイアログを開く
+    setting_save(false)
+  end
+  
+  def menu_maplist_clicked
+    output = []
+    file_list = {}
+    @convert_list.each_with_index do |target,idx|
+      select = false
+      @listBox_map.eachSelected do |i|
+        if idx == i
+          select = true
+          break
+        end
+      end
+      if select
+        file_list[target[6]] = true
+        output.push [@listBox_map.getTextOf(idx).split("\t"),target]
+      end
+    end
+    return if output.size == 0
+    savefile = Time.now.strftime($time_format) + ".csv"
+    fn = SWin::CommonDialog::saveFilename(self,[["CSV FIle(*.csv)","*.csv"],["All File(*.*)","*.*"]],0x1004,'Map List File Save','*.csv',0,savefile)
+    return unless fn
+    CSV.open(fn,'w') do |record|
+      list_file = []
+      @listBox_file.eachSelected do |i|
+        list_file << @listBox_file.getTextOf(i).split("\t") if file_list.index(i)
+      end
+      if list_file.size > 0
+        record << "File,MovieFile".split(",")
+        list_file.each { |a| record << a }
+        record << []
+        record << []
+      end
+      record << "File,DateTime,Time,Diff,Speed,Cleared,Rank,Score,Miss,Difficulty,SongName,levelAuthorName,songSubName,songAuthorName,mode,songBPM,noteJumpSpeed,notesCount,bombsCount,obstaclesCount,songName,maxScore,maxRank,environmentName,score,currentMaxScore,passedNotes,hitNotes,missedNotes,passedBombs,hitBombs,combo,maxCombo,multiplier,obstacles,instaFail,noFail,batteryEnergy,disappearingArrows,noBombs,songSpeed,songSpeedMultiplier,noArrows,ghostNotes,failOnSaberClash,strictAngles,fastNotes,staticLights,leftHanded,playerHeight,reduceDebris,noHUD,advancedHUD,autoRestart,levelId,pluginVersion,gameVersion,pauseCount,endFlag,startTime,endTime,menuTime,filename,create_time,access_time,write_time,file_type".split(",")
+      output.each do |out_target|
+        line = []
+        line << out_target[0][0] #File
+        line << out_target[0][1] #DateTime
+        line << out_target[0][2] #Time
+        line << out_target[0][3] #Diff
+        line << out_target[0][4] #Speed
+        line << out_target[0][5] #Cleared
+        line << out_target[0][6] #Rank
+        line << out_target[0][7] #Score
+        line << out_target[0][8] #Miss
+        line << out_target[0][9] #Difficulty
+        line << out_target[1][1][@fields.index("songName")]
+        line << out_target[1][1][@fields.index("levelAuthorName")]
+        line << out_target[1][1][@fields.index("songSubName")]
+        line << out_target[1][1][@fields.index("songAuthorName")]
+        line << out_target[1][1][@fields.index("mode")]
+        line << out_target[1][1][@fields.index("songBPM")]
+        line << out_target[1][1][@fields.index("noteJumpSpeed")]
+        line << out_target[1][1][@fields.index("notesCount")]
+        line << out_target[1][1][@fields.index("bombsCount")]
+        line << out_target[1][1][@fields.index("obstaclesCount")]
+        line << out_target[1][1][@fields.index("songName")]
+        line << out_target[1][1][@fields.index("maxScore")]
+        line << out_target[1][1][@fields.index("maxRank")]
+        line << out_target[1][1][@fields.index("environmentName")]
+        line << out_target[1][1][@fields.index("score")]
+        line << out_target[1][1][@fields.index("currentMaxScore")]
+        line << out_target[1][1][@fields.index("passedNotes")]
+        line << out_target[1][1][@fields.index("hitNotes")]
+        line << out_target[1][1][@fields.index("missedNotes")]
+        line << out_target[1][1][@fields.index("passedBombs")]
+        line << out_target[1][1][@fields.index("hitBombs")]
+        line << out_target[1][1][@fields.index("combo")]
+        line << out_target[1][1][@fields.index("maxCombo")]
+        line << out_target[1][1][@fields.index("multiplier")]
+        line << out_target[1][1][@fields.index("obstacles")]
+        line << out_target[1][1][@fields.index("instaFail")]
+        line << out_target[1][1][@fields.index("noFail")]
+        line << out_target[1][1][@fields.index("batteryEnergy")]
+        line << out_target[1][1][@fields.index("disappearingArrows")]
+        line << out_target[1][1][@fields.index("noBombs")]
+        line << out_target[1][1][@fields.index("songSpeed")]
+        line << out_target[1][1][@fields.index("songSpeedMultiplier")]
+        line << out_target[1][1][@fields.index("noArrows")]
+        line << out_target[1][1][@fields.index("ghostNotes")]
+        line << out_target[1][1][@fields.index("failOnSaberClash")]
+        line << out_target[1][1][@fields.index("strictAngles")]
+        line << out_target[1][1][@fields.index("fastNotes")]
+        line << out_target[1][1][@fields.index("staticLights")]
+        line << out_target[1][1][@fields.index("leftHanded")]
+        line << out_target[1][1][@fields.index("playerHeight")]
+        line << out_target[1][1][@fields.index("reduceDebris")]
+        line << out_target[1][1][@fields.index("noHUD")]
+        line << out_target[1][1][@fields.index("advancedHUD")]
+        line << out_target[1][1][@fields.index("autoRestart")]
+        line << out_target[1][1][@fields.index("levelId")]
+        line << out_target[1][1][@fields.index("pluginVersion")]
+        line << out_target[1][1][@fields.index("gameVersion")]
+        line << out_target[1][1][@fields.index("pauseCount")]
+        line << out_target[1][1][@fields.index("endFlag")]
+        line << out_target[1][1][@fields.index("startTime")]
+        line << out_target[1][1][@fields.index("endTime")]
+        line << out_target[1][1][@fields.index("menuTime")]
+        line << out_target[1][0] #filename
+        line << out_target[1][3] #create_time
+        line << out_target[1][4] #access_time
+        line << out_target[1][5] #write_time
+        line << out_target[1][6] #file_type
+        record << line
+      end
+    end
+  end
+  
 end
 
 VRLocalScreen.start Form_main

@@ -118,10 +118,10 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 
 ### 実行ファイル
 
-#### FFmpeg 2020-01-02-81172b5 win64 静的
+#### FFmpeg 4.2.3 win64 Static
 - https://ffmpeg.zeranoe.com/builds/
 - 製作者:Zeranoe
-- ライセンス：GPL
+- ライセンス：GPL3.0
 
 #### curl 7.70.0 for Windows 32bit
 - https://curl.haxx.se/windows/
