@@ -48,15 +48,16 @@ require '_frm_bs_movie_cut.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/06/14'
+SOFT_VER        = '2020/06/15'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル
 SETTING_FILE = EXE_DIR + 'setting.json'
 
 #サイト設定
-BEATSAVER_URL  = "https://beatsaver.com/beatmap/#bsr#"
-BEASTSABER_URL = "https://bsaber.com/songs/#bsr#/"
+BEATSAVER_URL   = "https://beatsaver.com/beatmap/#bsr#"
+BEASTSABER_URL  = "https://bsaber.com/songs/#bsr#/"
+SCORESABAER_URL = "http://scoresaber.com/api.php?function=get-leaderboards&cat=1&page=1&limit=500&ranked=1"
 
 #デフォルト設定
 #beatsaberのデータベースファイル名 1,2は検索順序
@@ -95,6 +96,7 @@ SUBTITLE_ALIGNMENT_SETTING = [['1: Bottom left','2: Bottom center','3: Bottom ri
 CURL_TIMEOUT            = 5
 
 $winshell  = WIN32OLE.new("WScript.Shell")
+$scoresaber_ranked = nil  #ScoreSaber のランク譜面JSONデータ
 
 #切り出しファイルの保存先  .\\OUT\\はこの実行ファイルのあるフォルダ下の"OUT"フォルダ  フルパスでも可  \は\\にすること  末尾は\\必要
 DEFAULT_OUT_FOLDER     = ["#DEFAULT#  " + EXE_DIR + "OUT\\","#sample#  D:\\"]
@@ -305,6 +307,36 @@ def bsr_search(songHash)
   return [bsr,beatsaver_data]
 end
 
+def ranked_check(song_hash,difficulty,mode)
+  unless $scoresaber_ranked
+    SCORESABAER_URL =~ /limit=(\d+)/
+    limit = $1.to_i
+    $scoresaber_ranked = {"songs" => []}
+    page = 0
+    begin
+      begin
+        page += 1
+        url = SCORESABAER_URL.sub(/page=1/,"page=#{page}")
+        temp = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT * 4} #{url}`)
+        $scoresaber_ranked["songs"] += temp["songs"]
+        rank_map_count = $scoresaber_ranked["songs"].size
+      end while rank_map_count >= limit * page
+      puts "Rank map count = #{rank_map_count}"
+    rescue
+      $scoresaber_ranked = {}
+      puts "ScoreSaber ERROR!"
+    end
+  end
+  if $scoresaber_ranked == {}
+    return false
+  else
+    $scoresaber_ranked["songs"].each do |song|
+      return 1 if song["id"] == song_hash && song["diff"] == "_#{difficulty.sub(/\+/,"Plus")}_#{mode}" && song["ranked"] == 1
+    end
+  end
+  return 2
+end
+
 def open_url(url)
   begin
     #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
@@ -470,7 +502,7 @@ class Modaldlg_search
   end
 
   def self_created
-    
+    @radioBtn_all.check(true)
   end
   
   def button_songname_copy_clicked
@@ -488,7 +520,14 @@ class Modaldlg_search
   end
 
   def button_ok_clicked
-    close([@edit_songname.text.strip,@edit_author.text.strip])
+    if @radioBtn_ranked.checked?
+      ranked = 1
+    elsif @radioBtn_unranked.checked?
+      ranked = 2
+    else
+      ranked = 0
+    end
+    close([@edit_songname.text.strip,@edit_author.text.strip,ranked])
   end
 
 end
@@ -2079,12 +2118,14 @@ class Form_main
   def button_search_clicked
     Modaldlg_search.set(@convert_list[@listBox_map.selectedString],@fields)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_search,nil,nil)  #検索画面のモーダルダイアログを開く
-    songname,level_author = result
-    return if songname == "" && level_author == ""
+    songname,level_author,ranked = result
+    return if songname == "" && level_author == "" && ranked == 0
     temp = []
+    scoresaber_check = true
     @convert_list.each do |target|
       flag1 = false
       flag2 = false
+      flag3 = false
       if songname == ""
         flag1 = true
       else
@@ -2103,7 +2144,32 @@ class Form_main
           flag2 = false
         end
       end
-      temp.push target if flag1 && flag2
+      if ranked == 0
+        flag3 = true
+      else
+        result = ranked_check(target[1][@fields.index('songHash')],target[1][@fields.index('difficulty')],target[1][@fields.index('mode')])
+        case result
+        when 1
+          if ranked == 1
+            flag3 =true
+          else
+            flag3 = false
+          end
+        when 2
+          if ranked == 2
+            flag3 = true
+          else
+            flag3 = false
+          end
+        else
+          flag3 = true
+          scoresaber_check = false
+        end
+      end
+      temp.push target if flag1 && flag2 && flag3
+    end
+    unless scoresaber_check
+      messageBox("I can't get rank information from ScoreSaber.","Not gets ScoreSaber",48)
     end
     @convert_list = temp
     listbox_refresh
