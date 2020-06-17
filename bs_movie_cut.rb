@@ -48,7 +48,7 @@ require '_frm_bs_movie_cut.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/06/15'
+SOFT_VER        = '2020/06/17'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル
@@ -76,6 +76,7 @@ DEFAULT_OUT_FILE_NAME  = ['#DEFALUT#  #{time_name}_#{cleared}_#{songName}_#{leve
                           '#SongNameTop#  #{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4',
                           '#bsrTop#  #{bsr}_#{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4']
 DEFALUT_SIMULTANEOUS_NOTES_TIME = 66 #同時ノーツと判定する時間[ms] 66・・・4フレーム分 1000ms/60fps*4frame
+DEFALUT_MAX_NOTES_DISPLAY = 10       #最大表示ノーツスコア数
 DEFALUT_LAST_NOTES_TIME = 2.0       #最後の字幕表示時間[sec]
 DEFALUT_SUB_FONT        = "ＭＳ ゴシック"
 DEFALUT_SUB_FONT2       = "Consolas"
@@ -548,6 +549,7 @@ class Modaldlg_subtitle_setting
     @edit_miss_format.text = $subtitle_miss_format
     @edit_sim_notes_time.text = $simultaneous_notes_time.to_s
     @edit_last_notes.text = $last_notes_time.to_s
+    @edit_max_score.text = $max_notes_display.to_s
     if $ascii_mode
       @button_msGothic.style = 0x8000000
       if @edit_font.text == DEFALUT_SUB_FONT
@@ -585,6 +587,7 @@ class Modaldlg_subtitle_setting
     $subtitle_cut_format = @edit_cut_format.text
     $subtitle_miss_format = @edit_miss_format.text
     $simultaneous_notes_time = @edit_sim_notes_time.text.to_i
+    $max_notes_display  = @edit_max_score.text.to_i
     $last_notes_time    = @edit_last_notes.text.to_f
     close(true)
   end
@@ -1395,6 +1398,7 @@ class Form_main
     $subtitle_cut_format  = DEFALUT_SUB_CUT_FORMAT
     $subtitle_miss_format = DEFALUT_SUB_MISS_FORMAT
     $simultaneous_notes_time = DEFALUT_SIMULTANEOUS_NOTES_TIME
+    $max_notes_display    = DEFALUT_MAX_NOTES_DISPLAY
     $last_notes_time      = DEFALUT_LAST_NOTES_TIME
     $open_dir             = ""
     $movie_default_extension = "mkv"
@@ -1418,6 +1422,7 @@ class Form_main
       $subtitle_cut_format  = setting['subtitle_cut_format']  if setting['subtitle_cut_format']
       $subtitle_miss_format = setting['subtitle_miss_format'] if setting['subtitle_miss_format']
       $simultaneous_notes_time = setting['simultaneous_notes_time'] if setting['simultaneous_notes_time']
+      $max_notes_display    = setting['max_notes_display']    if setting['max_notes_display']
       $last_notes_time      = setting['last_notes_time']      if setting['last_notes_time']
       $open_dir             = setting['open_dir']             if setting['open_dir']
       $movie_default_extension = setting['movie_default_extension']  if setting['movie_default_extension']
@@ -1524,6 +1529,7 @@ class Form_main
     setting['subtitle_cut_format']   = $subtitle_cut_format
     setting['subtitle_miss_format']  = $subtitle_miss_format
     setting['simultaneous_notes_time'] = $simultaneous_notes_time
+    setting['max_notes_display']     = $max_notes_display
     setting['last_notes_time']       = $last_notes_time
     setting['open_dir']              = $open_dir
     setting['movie_default_extension'] = $movie_default_extension
@@ -1635,7 +1641,7 @@ class Form_main
       hikaku_b = b[fields.index('time')] unless b[fields.index('cutTime')]
       hikaku_a <=> hikaku_b
     end
-    #同時ノーツ判定
+    #同時ノーツ判定処理
     douji = []        #同時表示字幕
     out_list = []     #1字幕単位のリスト
     cut_before = 0
@@ -1646,7 +1652,7 @@ class Form_main
         else
           cuttime = record[fields.index('time')].to_i
         end
-        if (cuttime - cut_before) <= $simultaneous_notes_time.to_i
+        if douji.size < $max_notes_display && (cuttime - cut_before) <= $simultaneous_notes_time.to_i  #同時ノーツ判定
           douji.push idx
         else
           douji.push idx
@@ -2359,18 +2365,9 @@ class Form_main
   def menu_maplist_clicked
     output = []
     file_list = {}
-    @convert_list.each_with_index do |target,idx|
-      select = false
-      @listBox_map.eachSelected do |i|
-        if idx == i
-          select = true
-          break
-        end
-      end
-      if select
-        file_list[target[6]] = true
-        output.push [@listBox_map.getTextOf(idx).split("\t"),target]
-      end
+    @listBox_map.eachSelected do |i|
+      file_list[@convert_list[i][6]] = true
+      output.push [@listBox_map.getTextOf(i).split("\t"),@convert_list[i]]
     end
     return if output.size == 0
     savefile = Time.now.strftime($time_format) + ".csv"
@@ -2378,8 +2375,8 @@ class Form_main
     return unless fn
     CSV.open(fn,'w') do |record|
       list_file = []
-      @listBox_file.eachSelected do |i|
-        list_file << @listBox_file.getTextOf(i).split("\t") if file_list.index(i)
+      @listBox_file.countStrings.times do |i|
+        list_file << @listBox_file.getTextOf(i).split("\t") if file_list[i]
       end
       if list_file.size > 0
         record << "File,MovieFile".split(",")
