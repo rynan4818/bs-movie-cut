@@ -11,7 +11,8 @@
 
 1. [Beat Saber HTTP Status +Database](https://github.com/rynan4818/beatsaber-http-status-db)のインストールを行って、一度BeatSaberを起動しデータベースを作成しておいて下さい。
 
-2. [リリースページ](https://github.com/rynan4818/bs-movie-cut/releases)から最新のリリースをダウンロードします。
+2. [リリースページ](https://github.com/rynan4818/bs-movie-cut/releases)から最新のリリースをダウンロードします。または、Gitでクローンもしくは、`Clone or download`から`Downlaod ZIP`しても構いません。その場合、リリースしていない最新のコミット版が取得出来ます。
+![imange](https://rynan4818.github.io/clone_or_download.png)
 
 3. zipを適当なフォルダに解凍します。例：C:\TOOL\bs_movie_cut\
 **※注意　フルパスに半角空白' 'が含まれない場所を推奨します。(字幕データの保存で問題が発生します)**\

@@ -48,11 +48,15 @@ require '_frm_bs_movie_cut.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/06/17'
+SOFT_VER        = '2020/06/17rev2'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル
 SETTING_FILE = EXE_DIR + 'setting.json'
+
+#統計データ出力用テンプレート
+STAT_TEMPLATE_FILE = EXE_DIR + 'stat_template.txt'
+MAPPER_STAT_HTML   = EXE_DIR + 'mapper_stat.html'
 
 #サイト設定
 BEATSAVER_URL   = "https://beatsaver.com/beatmap/#bsr#"
@@ -89,6 +93,7 @@ DEFALUT_SUB_MISS_FORMAT = '"%4d:#{note_type}:Miss!" % noteID'
 DEFALUT_POST_COMMENT    = ["Song:#songname#\r\nMapper:#mapper#\r\n!bsr #bsr#\r\n\r\n\r\n#BeatSaber\r\n",
                            "#songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#",
                            "#songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#"]
+DEFALUT_STAT_Y_COUNT    = 40  #統計出力するときのY軸の数
 
 #定数
 BEATSABER_USERDATA_FOLDER = "[BeatSaber UserData folder]"
@@ -2457,6 +2462,173 @@ class Form_main
         record << line
       end
     end
+  end
+  
+  def menu_stat_mapper_clicked
+    #マッパー情報集計
+    mapper_name = {}
+    mapper_count_temp = {}
+    song_count_temp = {}
+    time_count_temp = {}
+    total_play_count = 0
+    total_play_song  = {}
+    total_play_time  = 0.0
+    category = {}
+    fast_time = nil
+    last_time = nil
+    @listBox_map.eachSelected do |i|
+      mapper   = @convert_list[i][1][@fields.index("levelAuthorName")]
+      cleared  = @convert_list[i][1][@fields.index("cleared")]
+      category[cleared] = true
+      mapper_name[mapper.upcase] = mapper
+      mapper_count_temp[mapper.upcase] ||= {}
+      mapper_count_temp[mapper.upcase][cleared] ||= 0
+      mapper_count_temp[mapper.upcase][cleared] += 1
+      total_play_count += 1
+      songname = @convert_list[i][1][@fields.index("songName")]
+      song_count_temp[mapper.upcase] ||= {}
+      song_count_temp[mapper.upcase][songname] ||= 0
+      song_count_temp[mapper.upcase][songname] += 1
+      time = (@convert_list[i][1][@fields.index('endTime')].to_i - @convert_list[i][1][@fields.index('startTime')].to_i).to_f / (1000 * 3600).to_f
+      time_count_temp[mapper.upcase] ||= {}
+      time_count_temp[mapper.upcase][cleared] ||= 0.0
+      time_count_temp[mapper.upcase][cleared] += time
+      total_play_time += time
+      total_play_song[songname] = true
+      start_time = @convert_list[i][1][@fields.index('startTime')].to_i
+      fast_time ||= start_time
+      last_time ||= start_time
+      fast_time = start_time if fast_time > start_time
+      last_time = start_time if last_time < start_time
+    end
+    category = category.keys.sort do |a,b|
+      if a =~ /pause/
+        -1
+      elsif b =~ /pause/
+        1
+      elsif a =~ /finished/
+        1
+      elsif b =~ /finished/
+        -1
+      else
+        a<=>b
+      end
+    end
+    #カウント数集計
+    mapper_count = []
+    mapper_count_temp.each do |k,v|
+      mapper_count.push [mapper_name[k],v]
+    end
+    mapper_count.sort! do |a,b|
+      a_chk = 0
+      a[1].each {|k,v| a_chk += v}
+      b_chk = 0
+      b[1].each {|k,v| b_chk += v}
+      b_chk <=> a_chk
+    end
+    mapper_count.slice!(DEFALUT_STAT_Y_COUNT..-1)
+    mapper_count_name = []
+    mapper_count.each {|a| mapper_count_name.push a[0]}
+    mapper_count_series = []
+    category.each do |c|
+      t = []
+      mapper_count.each {|a| t.push a[1][c].to_i}
+      mapper_count_series.push({"name" => c, "data" => t})
+    end
+    #曲数集計
+    song_count_series = []
+    song_count_temp.each do |k,v|
+      song_count_series.push [mapper_name[k],v.size]
+    end
+    song_count_series.sort! do |a,b|
+      b[1] <=> a[1]
+    end
+    song_count_series.slice!(DEFALUT_STAT_Y_COUNT..-1)
+    #プレイ時間数集計
+    time_count = []
+    time_count_temp.each do |k,v|
+      time_count.push [mapper_name[k],v]
+    end
+    time_count.sort! do |a,b|
+      a_chk = 0.0
+      a[1].each {|k,v| a_chk += v}
+      b_chk = 0.0
+      b[1].each {|k,v| b_chk += v}
+      b_chk <=> a_chk
+    end
+    time_count.slice!(DEFALUT_STAT_Y_COUNT..-1)
+    time_count_name = []
+    time_count.each {|a| time_count_name.push a[0]}
+    time_count_series = []
+    category.each do |c|
+      t = []
+      time_count.each {|a| t.push((a[1][c].to_f * 10.0).round / 10.0)}
+      time_count_series.push({"name" => c, "data" => t})
+    end
+    #グラフ用HTML作成
+    File.open(STAT_TEMPLATE_FILE,'r') do |temp_f|
+      File.open(MAPPER_STAT_HTML,'w') do |out_f|
+        out_flag = false
+        while line = temp_f.gets
+          if line =~ /#MAPPER_START#/
+            out_flag = true
+            next
+          end
+          if line =~ /#MAPPER_END#/
+            out_flag = false
+            next
+          end
+          if out_flag
+            case line
+            when /#mapper_count_subtitle#/
+              out_f.puts line.sub(/#mapper_count_subtitle#/,"Total play count = #{total_play_count}")
+            when /#song_count_subtitle#/
+              out_f.puts line.sub(/#song_count_subtitle#/,"Total play song count = #{total_play_song.size}")
+            when /#time_count_subtitle#/
+              out_f.puts line.sub(/#time_count_subtitle#/,"Total play time = #{(total_play_time * 10.0).round / 10.0}hour")
+            when /#mapper_count_name#/
+              out_f.print line.sub(/#mapper_count_name#/,"").chop
+              JSON.pretty_generate(mapper_count_name).each do |json|
+                out_f.puts json
+              end
+            when /#mapper_count_series#/
+              out_f.print line.sub(/#mapper_count_series#/,"").chop
+              JSON.pretty_generate(mapper_count_series).each do |json|
+                out_f.puts json
+              end
+            when /#song_count_series#/
+              out_f.print line.sub(/#song_count_series#/,"").chop
+              JSON.pretty_generate(song_count_series).each do |json|
+                out_f.puts json
+              end
+            when /#time_count_name#/
+              out_f.print line.sub(/#time_count_name#/,"").chop
+              JSON.pretty_generate(time_count_name).each do |json|
+                out_f.puts json
+              end
+            when /#time_count_series#/
+              out_f.print line.sub(/#time_count_series#/,"").chop
+              JSON.pretty_generate(time_count_series).each do |json|
+                out_f.puts json
+              end
+            when /#title#/
+              title = Time.at(fast_time / 1000).localtime.strftime("%y/%m/%d") + " - " + Time.at(last_time / 1000).localtime.strftime("%y/%m/%d")
+              title += "<br>  Total:#{total_play_count}plays #{(total_play_time * 10.0).round / 10.0}hour #{total_play_song.size}songs #{mapper_name.size}mapper"
+              out_f.puts line.sub(/#title#/,title)
+            else
+              out_f.puts line
+            end
+          end
+        end
+      end
+    end
+    begin
+      #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
+      $winshell.Run(%Q!"#{MAPPER_STAT_HTML}"!)
+    rescue Exception => e
+      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+    end
+    
   end
   
 end
