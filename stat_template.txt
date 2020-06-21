@@ -271,6 +271,12 @@ Highcharts.chart('container3', {
     series: #time_count_series#
 });
 </script>
+<hr>
+<footer>
+  <p class="copyright"><small>
+  グラフ表示にHighsoft社のHighchartsを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
+&copy; 2020 Highcharts. All rights reserved.  <a href="https://www.highcharts.com/">https://www.highcharts.com/</a></small></p>
+</footer>
 </body>
 </html>
 #MAPPER_END#

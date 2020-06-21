@@ -112,7 +112,7 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 - Copyright (C) 1998, 2019 Free Software Foundation, Inc.
 - ライセンス：LGPL
 
-#### SQLite3
+#### SQLite3  (sqlite3.dll)           #Exerbでbs_movie_cut.exeに内包
 - https://www.sqlite.org/index.html
 - 開発元:D. Richard Hipp
 - ライセンス：パブリックドメイン
@@ -128,3 +128,12 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 - https://curl.haxx.se/windows/
 - 製作者:Copyright (c) 1996 - 2020, Daniel Stenberg, daniel@haxx.se, and many contributors, see the THANKS file.
 - ライセンス:[The curl license](https://curl.haxx.se/docs/copyright.html)
+
+### その他
+
+#### Highcharts,Highstock
+- https://www.highcharts.com/
+- © 2020 Highcharts. All rights reserved.
+- ライセンス:非商用ライセンス
+- 統計情報出力時のグラフ表示に使用、Highcharts及びHighstockのjavascriptコードはCDNで利用
+- Highsoftソフトウェア製品は商用では無料ではありません
