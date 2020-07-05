@@ -771,4 +771,18 @@ class Form_main
     end
   end
   
+  def accuracy_series(score)
+    result = []
+    under70 = 0
+    score.keys.sort.each do |a|
+      if a < 70
+        under70 += score[a]
+      else
+        result.push [a,score[a]]
+      end
+    end
+    result.unshift [69,under70]
+    return result
+  end
+  
 end

@@ -1045,6 +1045,129 @@ class Form_main
     
   end
   
+  #精度
+  def menu_stat_accuracy_clicked
+    return if @convert_list.size == 0
+    left_score = {}
+    right_score = {}
+    score = {}
+    fast_time = nil
+    last_time = nil
+    total_play_count = 0
+    target_startTime = {}
+    songname = ""
+    levelAuthorName = ""
+    @listBox_map.eachSelected do |i|
+      target_startTime[startTime = @convert_list[i][1][@fields.index("startTime")]] = true
+      fast_time ||= startTime
+      last_time ||= startTime
+      fast_time = startTime if fast_time > startTime
+      last_time = startTime if last_time < startTime
+      songname = @convert_list[i][1][@fields.index("songName")]
+      levelAuthorName = @convert_list[i][1][@fields.index("levelAuthorName")]
+    end
+    sql =  "SELECT startTime,noteType,afterScore,cutDistanceScore,finalScore FROM NoteScore "
+    sql += "WHERE event = 'noteFullyCut' AND startTime >= #{fast_time} AND startTime <= #{last_time};"
+    fast_time = nil
+    last_time = nil
+    show(0)
+    puts "Please wait ..."
+    result = db_execute(sql)
+    if result
+      fields,rows = result
+    else
+      return
+    end
+    return if rows.size == 0
+    start_time_check = {}
+    rows.each do |cols|
+      if target_startTime[startTime = cols[fields.index("startTime")]]
+        unless start_time_check[startTime]
+          total_play_count += 1
+          start_time_check[startTime] = true
+        end
+        fast_time ||= startTime
+        last_time ||= startTime
+        fast_time = startTime if fast_time > startTime
+        last_time = startTime if last_time < startTime
+        noteType = cols[fields.index("noteType")]
+        afterScore = cols[fields.index("afterScore")].to_i
+        cutDistanceScore = cols[fields.index("cutDistanceScore")].to_i
+        finalScore = cols[fields.index("finalScore")].to_i
+        next if finalScore > 115
+        beforeScore = finalScore - cutDistanceScore - afterScore
+        if noteType == "NoteA"     #赤(左)
+          left_score[finalScore] ||= 0
+          left_score[finalScore] += 1
+        elsif noteType == "NoteB"  #青(右)
+          right_score[finalScore] ||= 0
+          right_score[finalScore] += 1
+        end
+        score[finalScore] ||= 0
+        score[finalScore] += 1
+      end
+    end
+    show
+    
+    #グラフ用HTML作成
+    File.open(STAT_TEMPLATE_FILE,'r') do |temp_f|
+      File.open(ACCURACY_STAT_HTML,'w') do |out_f|
+        out_flag = false
+        while line = temp_f.gets
+          if line =~ /#ACCURACY_START#/
+            out_flag = true
+            next
+          end
+          if line =~ /#ACCURACY_END#/
+            out_flag = false
+            next
+          end
+          if out_flag
+            case line
+            when /#two_handed_accuracy_series#/
+              out_f.print line.sub(/#two_handed_accuracy_series#/,"").chop
+              JSON.pretty_generate(accuracy_series(score)).each do |json|
+                out_f.puts json
+              end
+            when /#left_hand_accuracy_series#/
+              out_f.print line.sub(/#left_hand_accuracy_series#/,"").chop
+              JSON.pretty_generate(accuracy_series(left_score)).each do |json|
+                out_f.puts json
+              end
+            when /#right_hand_accuracy_series#/
+              out_f.print line.sub(/#right_hand_accuracy_series#/,"").chop
+              JSON.pretty_generate(accuracy_series(right_score)).each do |json|
+                out_f.puts json
+              end
+            when /#title#/
+              if total_play_count == 1
+                title = Time.at(fast_time / 1000).localtime.strftime("%y/%m/%d")
+                if $ascii_mode
+                  title += "    #{songname} / #{levelAuthorName}"
+                else
+                  title += "    #{utf8cv(songname)} / #{utf8cv(levelAuthorName)}"
+                end
+              else
+                title = Time.at(fast_time / 1000).localtime.strftime("%y/%m/%d") + " - " + Time.at(last_time / 1000).localtime.strftime("%y/%m/%d")
+                title += "    Total:#{total_play_count}plays"
+              end
+              out_f.puts line.sub(/#title#/,title)
+            else
+              out_f.puts line
+            end
+          end
+        end
+      end
+    end
+    begin
+      #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
+      $winshell.Run(%Q!"#{ACCURACY_STAT_HTML}"!)
+    rescue Exception => e
+      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+    end
+    
+  end
+  
   #プレイリスト作成
   def menu_playlist_clicked
     return if @convert_list.size == 0

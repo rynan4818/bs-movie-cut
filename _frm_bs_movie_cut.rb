@@ -357,7 +357,8 @@ class Form_main < VRForm
           ["&PlayList create", "menu_playlist"]]
         ],
         ["&Statistics",[
-          ["&Mapper", "menu_stat_mapper"]]
+          ["&Mapper", "menu_stat_mapper"],
+          ["&Accuracy", "menu_stat_accuracy"]]
         ],
         ["&Help",[
           ["&Manual", "menu_manual"],

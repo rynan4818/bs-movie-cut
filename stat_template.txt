@@ -280,3 +280,235 @@ Highcharts.chart('container3', {
 </body>
 </html>
 #MAPPER_END#
+#ACCURACY_START#
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>ノーツ精度情報 [Accuracy statistics]</title>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<style type="text/css">
+h1 {
+  color: #364e96;
+  border: solid 3px #364e96;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  text-align: center;
+}
+#container1, #container2, #container3 {
+    height: 700px; 
+}
+
+.highcharts-figure, .highcharts-data-table table {
+    min-width: 500px; 
+    max-width: 1000px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #EBEBEB;
+    margin: 10px auto;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+}
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+.highcharts-data-table th {
+	font-weight: 600;
+    padding: 0.5em;
+}
+.highcharts-data-table td, .highcharts-data-table th, .highcharts-data-table caption {
+    padding: 0.5em;
+}
+.highcharts-data-table thead tr, .highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+</style>
+</head>
+<body>
+<h1>ノーツ精度情報 [Accuracy statistics]<BR>
+#title#</h1>
+<figure class="highcharts-figure">
+  <div id="container1"></div>
+  <p class="highcharts-description">
+  </p>
+</figure>
+
+<figure class="highcharts-figure">
+  <div id="container2"></div>
+  <p class="highcharts-description">
+  </p>
+</figure>
+
+<figure class="highcharts-figure">
+  <div id="container3"></div>
+  <p class="highcharts-description">
+  </p>
+</figure>
+
+<script type="text/javascript">
+Highcharts.chart('container1', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: '両手合計：Two-handed total'
+    },
+    subtitle: {
+        text: '69点は0-69点の合計:[69 scores is a 0-69 total]'
+    },
+    xAxis: {
+        type: 'category',
+        labels: {
+            rotation: -45,
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Verdana, sans-serif'
+            }
+        }
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: '頻度 [Count]'
+        }
+    },
+    legend: {
+        enabled: false
+    },
+    tooltip: {
+        pointFormat: '<b>{point.y}</b>'
+    },
+    series: [{
+        name: 'Notes count',
+        color : '#32cd32',
+        data: #two_handed_accuracy_series#
+        ,
+        dataLabels: {
+            enabled: true,
+            color: '#FFFFFF',
+            format: '{point.y}',
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Verdana, sans-serif'
+            }
+        }
+    }]
+});
+Highcharts.chart('container2', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: '左手：Left hand'
+    },
+    subtitle: {
+        text: '69点は0-69点の合計:[69 scores is a 0-69 total]'
+    },
+    xAxis: {
+        type: 'category',
+        labels: {
+            rotation: -45,
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Verdana, sans-serif'
+            }
+        }
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: '頻度 [Count]'
+        }
+    },
+    legend: {
+        enabled: false
+    },
+    tooltip: {
+        pointFormat: '<b>{point.y}</b>'
+    },
+    series: [{
+        name: 'Left notes count',
+        color : '#ff4500',
+        data: #left_hand_accuracy_series#
+        ,
+        dataLabels: {
+            enabled: true,
+            color: '#FFFFFF',
+            format: '{point.y}',
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Verdana, sans-serif'
+            }
+        }
+    }]
+});
+Highcharts.chart('container3', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: '右手：Right hand'
+    },
+    subtitle: {
+        text: '69点は0-69点の合計:[69 scores is a 0-69 total]'
+    },
+    xAxis: {
+        type: 'category',
+        labels: {
+            rotation: -45,
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Verdana, sans-serif'
+            }
+        }
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: '頻度 [Count]'
+        }
+    },
+    legend: {
+        enabled: false
+    },
+    tooltip: {
+        pointFormat: '<b>{point.y}</b>'
+    },
+    series: [{
+        name: 'Right notes count',
+        color : '#4169e1',
+        data: #right_hand_accuracy_series#
+        ,
+        dataLabels: {
+            enabled: true,
+            color: '#FFFFFF',
+            format: '{point.y}',
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Verdana, sans-serif'
+            }
+        }
+    }]
+});
+</script>
+<hr>
+<footer>
+  <p class="copyright"><small>
+  グラフ表示にHighsoft社のHighchartsを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
+&copy; 2020 Highcharts. All rights reserved.  <a href="https://www.highcharts.com/">https://www.highcharts.com/</a></small></p>
+</footer>
+</body>
+</html>
+#ACCURACY_END#
