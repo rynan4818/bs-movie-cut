@@ -19,6 +19,87 @@ $KCODE='s'
 #                  sqlite3 (1.3.3 x86-mswin32-60)
 #==============================================================================
 
+class Modaldlg_playlist
+  include VRDropFileTarget
+
+  def self.set(select_list)
+    @@select_list = select_list
+  end
+  
+  def self_created
+    listbox_set = []
+    @@select_list.each do |a|
+      songHash, songName, levelAuthorName, songAuthorName = a
+      listbox_set.push "#{songName[0,39]}\t#{levelAuthorName[0,12]}\t#{songAuthorName[0,12]}\t#{songHash}"
+    end
+    #リストボックスにタブストップを設定
+    #[0x192,タブストップの数,[タブストップの位置,…]]  FormDesignerでstyleのLBS_USETABSTOPSのチェックが必要
+    #0x192:LB_SETTABSTOPS  l*:32bit符号つき整数
+    @listBox_main.sendMessage(0x192, 3,[152,210,280].pack('l*'))
+    @listBox_main.setListStrings(listbox_set)
+    @checkBox_songname.check true
+  end
+  
+  #ドラッグ＆ドロップ貼り付け
+  def self_dropfiles(files)
+    @edit_image.text = files[0]
+  end
+  
+  def button_delete_clicked
+    return if (select_idx = @listBox_main.selectedString) < 0
+    @listBox_main.deleteString(select_idx)
+    @@select_list.delete_at(select_idx)
+  end
+
+  def button_up_clicked
+    return if (select_idx = @listBox_main.selectedString) < 0
+    select_text = @listBox_main.getTextOf(select_idx)
+    @listBox_main.deleteString(select_idx)
+    delete_select = @@select_list.delete_at(select_idx)
+    if select_idx - 1 >= 0
+      idx = select_idx - 1
+    else
+      idx = 0
+    end
+    @listBox_main.addString(idx, select_text)
+    @@select_list.insert(idx,delete_select)
+    @listBox_main.select(idx)
+  end
+
+  def button_down_clicked
+    return if (select_idx = @listBox_main.selectedString) < 0
+    select_text = @listBox_main.getTextOf(select_idx)
+    @listBox_main.deleteString(select_idx)
+    delete_select = @@select_list.delete_at(select_idx)
+    if select_idx + 1 <= @@select_list.size
+      idx = select_idx + 1
+    else
+      idx = @@select_list.size
+    end
+    @listBox_main.addString(idx, select_text)
+    @@select_list.insert(idx,delete_select)
+    @listBox_main.select(idx)
+  end
+
+  #画像ファイル開くボタン
+  def button_open_clicked
+    ext_list = [["Image File (*.png;*.jpg;*.jpeg;*.gif)","*.png;*.jpg;*.jpeg;*.gif"],["all file (*.*)","*.*"]]
+    fn = SWin::CommonDialog::openFilename(self,ext_list,0x1004,'Image file select','*.png')
+    return unless fn
+    @edit_image.text = fn
+  end
+
+  def button_cancel_clicked
+    close(false)
+  end
+
+  def button_save_clicked
+    close([@@select_list,@checkBox_songname.checked?,@edit_image.text.strip,@edit_description.text.strip,@edit_title.text.strip,@edit_author.text.strip])
+  end
+  
+end
+
+
 class Modaldlg_list_option_setting
 
   def self.set(target, variable_list, file_type, defalut_idx, caption, main_empty_check = false, comment = true)

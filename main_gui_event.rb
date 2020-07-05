@@ -84,7 +84,8 @@ class Form_main
     mode      = target[1][@fields.index('mode')]
     bpm       = target[1][@fields.index('songBPM')]
     njs       = target[1][@fields.index('noteJumpSpeed')]
-    notes     = target[1][@fields.index('notesCount')]
+    length    = target[1][@fields.index('length')].to_i
+    notes     = target[1][@fields.index('notesCount')].to_i
     bombs     = target[1][@fields.index('bombsCount')]
     obstacles = target[1][@fields.index('obstaclesCount')]
     instaFail = target[1][@fields.index('instaFail')]          #IF
@@ -116,8 +117,13 @@ class Form_main
     player_setting += "LH," if lh == 1
     player_setting += "RD," if rd == 1
     player_setting += "NH," if nh == 1
-    text =  "Song Author : #{songAuthorName[0,12]}   Mode : #{mode}   NSJ : #{njs.to_f.round}   BPM : #{bpm.to_f.round}  "
-    text += "Notes : #{notes}   Bombs : #{bombs}   Obstacles : #{obstacles}#{'   Mod : ' unless mod == ''}#{mod.sub(/,$/,'')}"
+    if length > 0
+      notes_sec = (notes.to_f / (length.to_f / 10000.0)).round.to_f / 10.0
+    else
+      notes_sec = "err"
+    end
+    text =  "Artist : #{songAuthorName[0,12]}   Mode : #{mode}   NSJ : #{njs.to_f.round}   BPM : #{bpm.to_f.round}  "
+    text += "Notes : #{notes} [#{notes_sec}/s]   Bombs : #{bombs}   Obstacles : #{obstacles}#{'   Mod : ' unless mod == ''}#{mod.sub(/,$/,'')}"
     text += "#{'   Set : ' unless player_setting == ''}#{player_setting.sub(/,$/,'')}"
     @statusbar.setTextOf(3,text,0)
   end
@@ -302,7 +308,9 @@ class Form_main
   end
 
   def button_filter_clicked
+    true_song = {}
     @listBox_map.countStrings.times do |idx|
+      songHash = @convert_list[idx][1][@fields.index('songHash')]
       time = ((@convert_list[idx][1][@fields.index('endTime')].to_i - @convert_list[idx][1][@fields.index('startTime')].to_i) / 1000).to_i
       length = (@convert_list[idx][1][@fields.index('length')].to_i / 1000).to_i
       flag = false
@@ -313,10 +321,23 @@ class Form_main
       flag = false if @checkBox_score.checked?    && @convert_list[idx][1][@fields.index("scorePercentage")].to_f < @edit_score.text.to_f
       flag = false if @checkBox_diff.checked?     && (time - length).abs > @edit_difftime.text.to_i
       flag = false if @checkBox_speed.checked?    && @convert_list[idx][1][@fields.index("songSpeedMultiplier")].to_f != 1.0
-      if flag
-        @listBox_map.sendMessage(WMsg::LB_SETSEL,1,idx)   #選択状態にする。
-      else
-        @listBox_map.sendMessage(WMsg::LB_SETSEL,0,idx)   #未選択状態にする。
+      true_song[songHash] = true if flag
+      unless @checkBox_all_same_song.checked?
+        if flag
+          @listBox_map.sendMessage(WMsg::LB_SETSEL,1,idx)   #選択状態にする。
+        else
+          @listBox_map.sendMessage(WMsg::LB_SETSEL,0,idx)   #未選択状態にする。
+        end
+      end
+    end
+    if @checkBox_all_same_song.checked?
+      @listBox_map.countStrings.times do |idx|
+        songHash = @convert_list[idx][1][@fields.index('songHash')]
+        if true_song[songHash]
+          @listBox_map.sendMessage(WMsg::LB_SETSEL,1,idx)   #選択状態にする。
+        else
+          @listBox_map.sendMessage(WMsg::LB_SETSEL,0,idx)   #未選択状態にする。
+        end
       end
     end
     listBox_map_selchanged
@@ -782,7 +803,7 @@ class Form_main
         record << []
         record << []
       end
-      record << "File,DateTime,Time,Diff,Speed,Cleared,Rank,Score,Miss,Difficulty,SongName,levelAuthorName,songSubName,songAuthorName,mode,songBPM,noteJumpSpeed,notesCount,bombsCount,obstaclesCount,songName,maxScore,maxRank,environmentName,score,currentMaxScore,passedNotes,hitNotes,missedNotes,passedBombs,hitBombs,combo,maxCombo,multiplier,obstacles,instaFail,noFail,batteryEnergy,disappearingArrows,noBombs,songSpeed,songSpeedMultiplier,noArrows,ghostNotes,failOnSaberClash,strictAngles,fastNotes,staticLights,leftHanded,playerHeight,reduceDebris,noHUD,advancedHUD,autoRestart,levelId,pluginVersion,gameVersion,pauseCount,endFlag,startTime,endTime,menuTime,filename,create_time,access_time,write_time,file_type".split(",")
+      record << "File,DateTime,Time,Diff,Speed,Cleared,Rank,Score,Miss,Difficulty,SongName,levelAuthorName,songSubName,songAuthorName,mode,songBPM,noteJumpSpeed,notesCount,bombsCount,obstaclesCount,maxScore,maxRank,environmentName,score,currentMaxScore,passedNotes,hitNotes,missedNotes,passedBombs,hitBombs,combo,maxCombo,multiplier,obstacles,instaFail,noFail,batteryEnergy,disappearingArrows,noBombs,songSpeed,songSpeedMultiplier,noArrows,ghostNotes,failOnSaberClash,strictAngles,fastNotes,staticLights,leftHanded,playerHeight,reduceDebris,noHUD,advancedHUD,autoRestart,levelId,pluginVersion,gameVersion,pauseCount,endFlag,startTime,endTime,menuTime,filename,create_time,access_time,write_time,file_type".split(",")
       output.each do |out_target|
         line = []
         line << out_target[0][0] #File
@@ -805,7 +826,6 @@ class Form_main
         line << out_target[1][1][@fields.index("notesCount")]
         line << out_target[1][1][@fields.index("bombsCount")]
         line << out_target[1][1][@fields.index("obstaclesCount")]
-        line << out_target[1][1][@fields.index("songName")]
         line << out_target[1][1][@fields.index("maxScore")]
         line << out_target[1][1][@fields.index("maxRank")]
         line << out_target[1][1][@fields.index("environmentName")]
@@ -1023,6 +1043,52 @@ class Form_main
       messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
     end
     
+  end
+  
+  #プレイリスト作成
+  def menu_playlist_clicked
+    return if @convert_list.size == 0
+    select_list = []
+    hash_check = {}
+    @listBox_map.eachSelected do |i|
+      songHash         = @convert_list[i][1][@fields.index("songHash")]
+      songName         = @convert_list[i][1][@fields.index("songName")]
+      levelAuthorName  = @convert_list[i][1][@fields.index("levelAuthorName")]
+      songAuthorName   = @convert_list[i][1][@fields.index("songAuthorName")]
+      next unless songHash =~ /^([0-9A-F]{40})/i
+      songHash = $1.upcase
+      next if hash_check[songHash]
+      hash_check[songHash] = true
+      select_list.push [songHash, songName, levelAuthorName, songAuthorName]
+    end
+    return if select_list.size == 0
+    Modaldlg_playlist.set(select_list)
+    return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_playlist,nil,nil)
+    select_list, songname, image, description, title, author = result
+    refresh
+    #key(bsr)の追加[テスト用]
+    if false
+      show(0)
+      select_list.size.times do |a|
+        bsr,beatsaver_data = bsr_search(select_list[a][0])
+        next if bsr == 'err' || bsr == 'nil'
+        select_list[a].push bsr
+      end
+      show
+    end
+    playlist_data = playlist_convert(select_list, songname, image, description, title, author)
+    if playlist_data
+      fn = SWin::CommonDialog::saveFilename(self,[["BeatSaber PlayList(*.bplist)","*.bplist"],["all file (*.*)","*.*"]],0x1004,'Playlist save file','*.bplist',0,title.strip.gsub(/[\\\/:\*\?\"<>|]/,'_'))
+      return unless fn
+      if File.exist?(fn)
+        return unless messageBox("Do you want to overwrite?","Overwrite confirmation",0x0004) == 6
+      end
+      File.open(fn,'w') do |file|
+        JSON.pretty_generate(playlist_data).each do |line|
+          file.puts line
+        end
+      end
+    end
   end
   
 end

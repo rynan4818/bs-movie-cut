@@ -268,3 +268,45 @@ def open_url(url)
   end
 end
 
+#プレイリスト作成
+def playlist_convert(select_list,name_output,image_file,description,title,author)
+  bplist_data = {}
+  songs_array = []
+  select_list.each do |a|
+    songHash, songName, levelAuthorName, songAuthorName, bsr = a
+    song_data = {}
+    if name_output
+      if $ascii_mode
+        song_data['songName'] = songName.strip
+      else
+        song_data['songName'] = utf8cv(songName.strip)
+      end
+    end
+    song_data['key'] = bsr if bsr
+    song_data['hash'] = songHash
+    songs_array.push song_data
+  end
+  bplist_data['songs'] = songs_array
+  if $ascii_mode
+    bplist_data['playlistTitle'] = title
+    bplist_data['playlistDescription'] = description
+    bplist_data['playlistAuthor'] = author
+  else
+    bplist_data['playlistTitle'] = utf8cv(title)
+    bplist_data['playlistDescription'] = utf8cv(description)
+    bplist_data['playlistAuthor'] = utf8cv(author)
+  end
+  if File.exist?(image_file)
+    image_data = File.open(image_file, "rb") {|f| f.read }
+    image_base64 = Base64.encode64(image_data).split().join()
+    if File.extname(image_file) =~ /\.png$/i
+      type = 'png'
+    else
+      type = 'undefined'
+    end
+    bplist_data['image'] = "data:image/#{type};base64,#{image_base64}"
+  else
+    bplist_data['image'] = '1'
+  end
+  return bplist_data
+end

@@ -28,6 +28,7 @@ require 'csv'
 require 'rubygems'
 require 'sqlite3.rb'                     #SQLite3のデータベースを使うライブラリ読み込み (SQLite3::～ が使えるようになる)
 require 'nkf'                            #文字コード変換ライブラリ読み込み (NKF.～ が使えるようになる)
+require 'base64'
 require 'vr/vruby'
 require 'vr/vrcontrol'
 require 'vr/vrcomctl'
@@ -52,7 +53,7 @@ require 'main_gui_sub.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/07/04'
+SOFT_VER        = '2020/07/05'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル

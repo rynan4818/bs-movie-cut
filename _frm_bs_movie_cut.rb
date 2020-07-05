@@ -7,6 +7,33 @@ require 'vr/vruby'
 require 'vr/vrcontrol'
 require 'vr/vrcomctl'
 
+class Modaldlg_playlist < VRModalDialog
+  include VRContainersSet
+
+  def construct
+    self.caption = 'Playlist create'
+    self.move(165,75,1011,688)
+    addControl(VRButton,'button_cancel',"CANCEL",680,584,112,40)
+    addControl(VRButton,'button_delete',"Delete selection",576,344,144,32)
+    addControl(VRButton,'button_down',"DOWN",872,344,72,32)
+    addControl(VRButton,'button_open',"Open",896,416,72,24)
+    addControl(VRButton,'button_save',"PlayList SAVE",840,584,128,40)
+    addControl(VRButton,'button_up',"UP",776,344,64,32)
+    addControl(VRCheckbox,'checkBox_songname',"Song name output",816,472,152,24)
+    addControl(VREdit,'edit_author',"",528,472,264,24)
+    addControl(VREdit,'edit_description',"",32,528,936,24)
+    addControl(VREdit,'edit_image',"",32,416,864,24)
+    addControl(VREdit,'edit_title',"",32,472,464,24)
+    addControl(VRListbox,'listBox_main',"",24,48,944,276,0x80)
+    addControl(VRStatic,'static1',"Cover Image  (drag and drop OK)",32,392,256,24)
+    addControl(VRStatic,'static2',"Title",32,448,48,24)
+    addControl(VRStatic,'static3',"Description",32,504,88,24)
+    addControl(VRStatic,'static4',"Author",528,448,64,24)
+    addControl(VRStatic,'static5',"Select map list",24,24,128,24)
+  end 
+
+end
+
 class Modaldlg_list_option_setting < VRModalDialog
   include VRContainersSet
 
@@ -326,7 +353,8 @@ class Form_main < VRForm
           ["&BeatSaver page", "menu_beatsaver"],
           ["Beast&Saber page", "menu_beastsaber"],
           ["&Map list to CSV", "menu_maplist"],
-          ["&Note scoer to CSV", "menu_notescore"]]
+          ["&Note scoer to CSV", "menu_notescore"],
+          ["&PlayList create", "menu_playlist"]]
         ],
         ["&Statistics",[
           ["&Mapper", "menu_stat_mapper"]]
@@ -338,7 +366,7 @@ class Form_main < VRForm
       ]
     )
     setMenu(@mainmenu1,true)
-    addControl(GroupBox1,'groupBox1',"Filter",176,608,632,96)
+    addControl(GroupBox1,'groupBox1',"Filter",168,600,672,96)
     addControl(VRButton,'button_all_select',"ALL",24,568,56,32)
     addControl(VRButton,'button_all_unselect',"unselect",88,568,64,32)
     addControl(VRButton,'button_cleared_sort',"Cleared",336,128,64,24)
@@ -349,7 +377,7 @@ class Form_main < VRForm
     addControl(VRButton,'button_ffmpeg_edit',"E",144,696,24,24)
     addControl(VRButton,'button_file_sort',"File",40,128,48,24)
     addControl(VRButton,'button_filename_edit',"E",144,752,24,24)
-    addControl(VRButton,'button_filter',"Filter select",296,664,104,32)
+    addControl(VRButton,'button_filter',"Filter select",376,656,104,32)
     addControl(VRButton,'button_finished',"finished select",24,608,128,32)
     addControl(VRButton,'button_fullcombo',"full combo select",24,648,128,32)
     addControl(VRButton,'button_levelauthor_sort',"Level Author",912,128,120,24)
@@ -361,7 +389,7 @@ class Form_main < VRForm
     addControl(VRButton,'button_organizing_reversing',"Reversing selection",168,568,152,32)
     addControl(VRButton,'button_out_folder_edit',"E",144,808,24,24)
     addControl(VRButton,'button_out_open',"OPEN",736,832,56,24)
-    addControl(VRButton,'button_preview',"Preview cursor",904,568,128,32)
+    addControl(VRButton,'button_preview',"Preview cursor",904,576,128,32)
     addControl(VRButton,'button_rank_sort',"Rank",400,128,40,24)
     addControl(VRButton,'button_run',"RUN",944,816,88,40)
     addControl(VRButton,'button_score_sort',"Score",440,128,56,24)
@@ -369,32 +397,34 @@ class Form_main < VRForm
     addControl(VRButton,'button_songname_sort',"Song Name",608,128,304,24)
     addControl(VRButton,'button_speed_sort',"Speed",288,128,48,24)
     addControl(VRButton,'button_time_sort',"Time",192,128,48,24)
-    addControl(VRCheckbox,'checkBox_diff',"Song and play time difference +-",448,664,256,24)
+    addControl(VRCheckbox,'checkBox_all_same_song',"All of the same song",184,664,168,24)
+    addControl(VRCheckbox,'checkBox_diff',"Song and play time difference +-",496,664,256,24)
     addControl(VRCheckbox,'checkBox_failed',"failed",272,632,64,24)
     addControl(VRCheckbox,'checkBox_finished',"finished",184,632,88,24)
     addControl(VRCheckbox,'checkBox_length',"movie length",824,736,104,32)
-    addControl(VRCheckbox,'checkBox_miss',"Miss <=",680,632,80,24)
-    addControl(VRCheckbox,'checkBox_pause',"pause",184,664,72,24)
+    addControl(VRCheckbox,'checkBox_miss',"Miss <=",712,632,80,24)
+    addControl(VRCheckbox,'checkBox_pause',"pause",336,632,72,24)
     addControl(VRCheckbox,'checkBox_printing',"subtitle printing",568,744,152,32)
-    addControl(VRCheckbox,'checkBox_score',"Score >=",536,632,88,24)
-    addControl(VRCheckbox,'checkBox_speed',"Normal Speed",392,632,120,24)
+    addControl(VRCheckbox,'checkBox_score',"Score >=",568,632,88,24)
+    addControl(VRCheckbox,'checkBox_speed',"Normal Speed",432,632,120,24)
     addControl(VRCheckbox,'checkBox_subtitles',"With score subtitles",360,744,168,32)
     addControl(VRCombobox,'comboBox_ffmpeg',"",24,720,768,260)
     addControl(VRCombobox,'comboBox_filename',"",24,776,768,260)
     addControl(VRCombobox,'comboBox_folder',"",24,832,712,260)
-    addControl(VREdit,'edit_difftime',"5",704,664,40,24)
+    addControl(VREdit,'edit_difftime',"5",752,664,40,24)
     addControl(VREdit,'edit_end_offset',"4.0",936,696,64,32)
     addControl(VREdit,'edit_length',"139.0",936,736,64,32)
-    addControl(VREdit,'edit_miss',"10",760,632,32,24)
-    addControl(VREdit,'edit_score',"90",624,632,40,24)
+    addControl(VREdit,'edit_miss',"10",792,632,32,24)
+    addControl(VREdit,'edit_score',"90",656,632,40,24)
     addControl(VREdit,'edit_start_offset',"0.0",936,656,64,32)
     addControl(VRListbox,'listBox_file',"",24,24,1008,96,0x4080)
     addControl(VRListbox,'listBox_map',"",24,152,1008,402,0x888)
     addControl(VRRadiobutton,'radioBtn_footer_cut',"footer cut",928,776,104,24)
     addControl(VRRadiobutton,'radioBtn_header_cut',"header cut",808,776,112,24)
-    addControl(VRStatic,'static1',"sec",744,664,32,24)
+    addControl(VRStatic,'static1',"sec",792,664,32,24)
     addControl(VRStatic,'static10',"sec",1000,704,32,24)
     addControl(VRStatic,'static12',"sec",1000,744,32,24)
+    addControl(VRStatic,'static2',"|",408,630,16,24)
     addControl(VRStatic,'static3',"FFmpeg encode",24,696,112,24)
     addControl(VRStatic,'static4',"Output file name",24,752,120,24)
     addControl(VRStatic,'static5',"Output folder",24,808,96,24)
@@ -404,7 +434,7 @@ class Form_main < VRForm
     addControl(VRStatic,'static9',"sec",1000,664,24,24)
     addControl(VRStatic,'static_message',"Paste the file to be converted by drag and drop",304,0,352,24)
     addControl(VRStatic,'tz_static',"",832,0,200,24)
-    addControl(VRStatusbar,'statusbar',"",0,857,1044,23,0x3)
+    addControl(VRStatusbar,'statusbar',"",0,859,1044,22,0x3)
   end 
 
 end
