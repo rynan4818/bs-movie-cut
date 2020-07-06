@@ -543,7 +543,7 @@ class Form_main
       if ranked == 0
         flag3 = true
       else
-        result = ranked_check(target[1][@fields.index('songHash')],target[1][@fields.index('difficulty')],target[1][@fields.index('mode')])
+        result = ranked_check(self,target[1][@fields.index('songHash')],target[1][@fields.index('difficulty')],target[1][@fields.index('mode')])
         case result
         when 1
           if ranked == 1
@@ -1162,9 +1162,9 @@ class Form_main
               if total_play_count == 1
                 title = Time.at(fast_time / 1000).localtime.strftime("%y/%m/%d")
                 if $ascii_mode
-                  title += "    #{songname} / #{levelAuthorName}"
+                  title += " : #{songname} : #{levelAuthorName}"
                 else
-                  title += "    #{utf8cv(songname)} / #{utf8cv(levelAuthorName)}"
+                  title += " : #{utf8cv(songname)} : #{utf8cv(levelAuthorName)}"
                 end
               else
                 title = Time.at(fast_time / 1000).localtime.strftime("%y/%m/%d") + " - " + Time.at(last_time / 1000).localtime.strftime("%y/%m/%d")
@@ -1232,6 +1232,141 @@ class Form_main
         end
       end
     end
+  end
+  
+  def menu_stat_map_clicked
+    target = @convert_list[@listBox_map.selectedString]
+    unless target
+      messageBox("Please select a map.","Not selected",48)
+      return
+    end
+    songName            =  target[1][@fields.index('songName')]
+    levelAuthorName     =  target[1][@fields.index('levelAuthorName')]
+    startTime           =  target[1][@fields.index('startTime')]
+    sql = "SELECT * FROM NoteScore WHERE startTime = #{startTime};"
+    result = db_execute(sql)
+    if result
+      fields,rows = result
+    else
+      return
+    end
+    if rows.size == 0
+      messageBox("No notes score data available.","Not notes score",48)
+      return
+    end
+    score_data = []
+    ave_cut_data = []
+    ave_cut_data_r = []
+    ave_cut_data_l = []
+    miss_data  = []
+    notes_data = []
+    notes_count = 0
+    sum_cut_score = 0
+    sum_cut_score_r = 0
+    sum_cut_score_l = 0
+    cut_count = 0
+    cut_count_r = 0
+    cut_count_l = 0
+    notes_data_work = []
+    rows.each do |cols|
+      time = cols[fields.index("time")] - startTime
+      cols[fields.index("cutTime")]
+      cols[fields.index("passedNotes")]
+      cols[fields.index("afterScore")]
+      cols[fields.index("cutDistanceScore")]
+      if cols[fields.index("event")] == "noteFullyCut"
+        sum_cut_score += cols[fields.index("finalScore")]
+        cut_count += 1
+        if cols[fields.index("noteType")] == "NoteA"
+          sum_cut_score_l += cols[fields.index("finalScore")]
+          cut_count_l += 1
+        elsif cols[fields.index("noteType")] == "NoteB"
+          sum_cut_score_r += cols[fields.index("finalScore")]
+          cut_count_r += 1
+        end
+      end
+      ave_cut_data.push [time,((sum_cut_score.to_f / cut_count.to_f) * 10.0).round.to_f / 10.0] if cut_count > 0
+      ave_cut_data_r.push [time,((sum_cut_score_r.to_f / cut_count_r.to_f) * 10.0).round.to_f / 10.0] if cut_count_r > 0
+      ave_cut_data_l.push [time,((sum_cut_score_l.to_f / cut_count_l.to_f) * 10.0).round.to_f / 10.0] if cut_count_l > 0
+      scorePercentage = ((cols[fields.index("score")].to_f / cols[fields.index("currentMaxScore")].to_f) * 10000.0).round.to_f / 100.0
+      score_data.push [time,scorePercentage]
+      miss_data.push  [time,cols[fields.index("missedNotes")]]
+      notes_count += 1 unless cols[fields.index("noteType")] == "Bomb"
+      notes_data_work.push [time,notes_count]
+      before_notes = 0
+      notes_data_work.each do |a|
+        break if (time - a[0]) < 1000
+        before_notes = a[1]
+      end
+      notes_data.push [time,notes_count - before_notes]
+    end
+    #グラフ用HTML作成
+    File.open(STAT_TEMPLATE_FILE,'r') do |temp_f|
+      File.open(MAP_STAT_HTML,'w') do |out_f|
+        out_flag = false
+        while line = temp_f.gets
+          if line =~ /#MAP_START#/
+            out_flag = true
+            next
+          end
+          if line =~ /#MAP_END#/
+            out_flag = false
+            next
+          end
+          if out_flag
+            case line
+            when /#scorePercentage_series#/
+              out_f.print line.sub(/#scorePercentage_series#/,"").chop
+              JSON.generate(score_data).each do |json|
+                out_f.puts json
+              end
+            when /#ave_cut_series#/
+              out_f.print line.sub(/#ave_cut_series#/,"").chop
+              JSON.generate(ave_cut_data).each do |json|
+                out_f.puts json
+              end
+            when /#ave_cut_r_series#/
+              out_f.print line.sub(/#ave_cut_r_series#/,"").chop
+              JSON.generate(ave_cut_data_r).each do |json|
+                out_f.puts json
+              end
+            when /#ave_cut_l_series#/
+              out_f.print line.sub(/#ave_cut_l_series#/,"").chop
+              JSON.generate(ave_cut_data_l).each do |json|
+                out_f.puts json
+              end
+            when /#miss_series#/
+              out_f.print line.sub(/#miss_series#/,"").chop
+              JSON.generate(miss_data).each do |json|
+                out_f.puts json
+              end
+            when /#notes_series#/
+              out_f.print line.sub(/#notes_series#/,"").chop
+              JSON.generate(notes_data).each do |json|
+                out_f.puts json
+              end
+            when /#title#/
+              title = Time.at(startTime / 1000).localtime.strftime("%y/%m/%d")
+              if $ascii_mode
+                title += " : #{songName} : #{levelAuthorName}"
+              else
+                title += " : #{utf8cv(songName)} : #{utf8cv(levelAuthorName)}"
+              end
+              out_f.puts line.sub(/#title#/,title)
+            else
+              out_f.puts line
+            end
+          end
+        end
+      end
+    end
+    begin
+      #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
+      $winshell.Run(%Q!"#{MAP_STAT_HTML}"!)
+    rescue Exception => e
+      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+    end
+    
   end
   
 end

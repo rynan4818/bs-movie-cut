@@ -358,7 +358,8 @@ class Form_main < VRForm
         ],
         ["&Statistics",[
           ["&Mapper", "menu_stat_mapper"],
-          ["&Accuracy", "menu_stat_accuracy"]]
+          ["&Accuracy", "menu_stat_accuracy"],
+          ["&Map", "menu_stat_map"]]
         ],
         ["&Help",[
           ["&Manual", "menu_manual"],

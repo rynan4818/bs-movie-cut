@@ -229,12 +229,13 @@ def bsr_search(songHash)
   return [bsr,beatsaver_data]
 end
 
-def ranked_check(song_hash,difficulty,mode)
+def ranked_check(main_self,song_hash,difficulty,mode)
   unless $scoresaber_ranked
     SCORESABAER_URL =~ /limit=(\d+)/
     limit = $1.to_i
     $scoresaber_ranked = {"songs" => []}
     page = 0
+    main_self.show(0)
     begin
       begin
         page += 1
@@ -248,6 +249,7 @@ def ranked_check(song_hash,difficulty,mode)
       $scoresaber_ranked = {}
       puts "ScoreSaber ERROR!"
     end
+    main_self.show
   end
   if $scoresaber_ranked == {}
     return false

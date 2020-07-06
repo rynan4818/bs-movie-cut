@@ -512,3 +512,184 @@ Highcharts.chart('container3', {
 </body>
 </html>
 #ACCURACY_END#
+#MAP_START#
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>譜面スコア情報 [Map score statistics]</title>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+<style type="text/css">
+h1 {
+  color: #364e96;
+  border: solid 3px #364e96;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  text-align: center;
+}
+#container {
+    height: 700px; 
+}
+
+.highcharts-figure, .highcharts-data-table table {
+    min-width: 500px; 
+    max-width: 1000px;
+    margin: 1em auto;
+}
+</style>
+</head>
+<body>
+<h1>譜面スコア情報 [Map score statistics]<BR>
+#title#</h1>
+<div id="container"></div>
+<script type="text/javascript">
+Highcharts.stockChart('container', {
+    rangeSelector: {
+        selected: 1
+    },
+    title: {
+        text: 'Map score statistics'
+    },
+    //凡例
+    legend: {
+      enabled: true,
+      align: 'left',
+      backgroundColor: '#EFFFC5',
+      borderColor: 'black',
+      borderWidth: 2,
+      layout: 'vertical',
+      verticalAlign: 'top',
+      y: 100,
+      shadow: true
+    }, 
+    //横軸の設定
+    xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: {
+            millisecond: '%M:%S',
+            second: '%M:%S',
+            minute: '%M:%S'
+        }
+    },
+    //縦軸の設定
+    yAxis: [{
+        title: {
+          text: 'Score'
+        }
+      },{
+        title: {
+          text: 'Ave cut'
+        }
+      },{
+        title: {
+          text: 'Miss'
+        },
+        minTickInterval: 1
+      },{
+        title: {
+          text: 'Notes / sec'
+        },
+        minTickInterval: 1
+      }
+    ],
+    plotOptions: {
+        series: {
+            dataGrouping: {
+                dateTimeLabelFormats: {
+                    millisecond: ['%M:%S', '%M:%S', ''],
+                    second: ['%M:%S', '%M:%S', '']
+                }
+            }
+        }
+    },
+    navigator: {
+        baseSeries: 0,
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                millisecond: '%M:%S',
+                second: '%M:%S',
+                minute: '%M:%S'
+            }
+        }
+    },
+    rangeSelector: {
+        selected : 2,
+        inputDateFormat: '%M:%S',
+        inputEditDateFormat: '%M:%S',
+        buttons : [{
+          type : 'second',
+          count : 60,
+          text : '60s'
+        }, {
+          type : 'second',
+          count : 120,
+          text : '120s'
+        }, {
+          type : 'all',
+          count : 1,
+          text : 'All'
+        }]
+    },
+    series: [{
+        yAxis: 0,
+        name: 'Score',
+        data: #scorePercentage_series#
+        ,
+        tooltip: {
+            valueDecimals: 2,
+        }
+      },{
+        yAxis: 1,
+        name: 'Ave cut',
+        data: #ave_cut_series#
+        ,
+        tooltip: {
+            valueDecimals: 1,
+        }
+      },{
+        yAxis: 1,
+        name: 'Ave cut(R)',
+        data: #ave_cut_r_series#
+        ,
+        tooltip: {
+            valueDecimals: 1,
+        }
+      },{
+        yAxis: 1,
+        name: 'Ave cut(L)',
+        data: #ave_cut_l_series#
+        ,
+        tooltip: {
+            valueDecimals: 1,
+        }
+      },{
+        yAxis: 2,
+        name: 'Miss',
+        data: #miss_series#
+        ,
+        tooltip: {
+            valueDecimals: 0,
+        }
+      },{
+        yAxis: 3,
+        name: 'Notes / sec',
+        data: #notes_series#
+        ,
+        tooltip: {
+            valueDecimals: 0,
+        }
+    }]
+});
+</script>
+<hr>
+<footer>
+  <p class="copyright"><small>
+  グラフ表示にHighsoft社のHighchartsを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
+&copy; 2020 Highcharts. All rights reserved.  <a href="https://www.highcharts.com/">https://www.highcharts.com/</a></small></p>
+</footer>
+</body>
+</html>
+#MAP_END#

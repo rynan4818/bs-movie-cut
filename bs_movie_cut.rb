@@ -64,6 +64,7 @@ SETTING_FILE = EXE_DIR + 'setting.json'
 STAT_TEMPLATE_FILE = EXE_DIR + 'stat_template.txt'
 MAPPER_STAT_HTML   = EXE_DIR + 'mapper_stat.html'
 ACCURACY_STAT_HTML = EXE_DIR + 'accuracy_stat.html'
+MAP_STAT_HTML      = EXE_DIR + 'map_stat.html'
 
 #ÉTÉCÉgê›íË
 BEATSAVER_URL   = "https://beatsaver.com/beatmap/#bsr#"
