@@ -35,6 +35,7 @@ require 'vr/vrcomctl'
 require 'vr/vrddrop.rb'
 require 'vr/vrdialog'
 require 'vr/clipboard'
+require 'vr/vrhandler'
 require 'win32ole'
 require 'Win32API'
 require 'time'
@@ -53,7 +54,7 @@ require 'main_gui_sub.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/07/05'
+SOFT_VER        = '2020/07/06'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル

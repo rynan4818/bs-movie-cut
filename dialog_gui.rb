@@ -38,6 +38,7 @@ class Modaldlg_playlist
     @listBox_main.sendMessage(0x192, 3,[152,210,280].pack('l*'))
     @listBox_main.setListStrings(listbox_set)
     @checkBox_songname.check true
+    dlg_move(self)
   end
   
   #ドラッグ＆ドロップ貼り付け
@@ -152,6 +153,7 @@ class Modaldlg_list_option_setting
       @static_comment.style = 0x8000000
       @edit_comment.style = 0x8000000
     end
+    dlg_move(self)
   end
   
   def button_copy_clicked
@@ -277,6 +279,7 @@ class Modaldlg_post_comment
     @defalut_style = @checkBox_save.style
     template(0)
     self.caption += " : " + @@target[1][@@fields.index("songName")]
+    dlg_move(self)
   end
   
   def template(idx)
@@ -386,6 +389,7 @@ class Modaldlg_db_view
     @edit_end_day.readonly = true
     @input_movie_search_dir_change = false
     search_dir_set
+    dlg_move(self)
   end
   
   def button_cancel_clicked
@@ -417,6 +421,7 @@ class Modaldlg_db_view
   end
   
   def button_add_folder_clicked
+    $main_windowrect = self.windowrect
     Modaldlg_list_option_setting.set($input_movie_search_dir,false,2,false,'Movie search folder',true,false)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_list_option_setting,nil,nil)
     $input_movie_search_dir = result[0]
@@ -435,6 +440,7 @@ class Modaldlg_search
 
   def self_created
     @radioBtn_all.check(true)
+    dlg_move(self)
   end
   
   def button_songname_copy_clicked
@@ -487,6 +493,7 @@ class Modaldlg_subtitle_setting
         @edit_font.text = DEFALUT_SUB_FONT2
       end
     end
+    dlg_move(self)
   end
 
   def button_msGothic_clicked
@@ -591,6 +598,7 @@ class Modaldlg_modsetting
   
   def self_created
     setting_load
+    dlg_move(self)
   end
   
   def button_modsetting_select_clicked
@@ -683,6 +691,7 @@ class Modaldlg_timestamp
   def self_created
     @static_timezone.caption = Time.now.zone
     @access_time = false
+    dlg_move(self)
   end
   #ドラッグ＆ドロップ貼り付け
   def self_dropfiles(files)
@@ -816,6 +825,7 @@ class Modaldlg_setting
     @checkBox_stop_time_menu.check $use_endtime
     @groupBox_Preview.radioBtn_copy.check true unless $preview_encode
     @groupBox_Preview.radioBtn_select.check $preview_encode
+    dlg_move(self)
   end
   
   def button_db_select_clicked

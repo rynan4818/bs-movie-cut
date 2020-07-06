@@ -21,8 +21,11 @@ $KCODE='s'
 
 class Form_main
 
-  ##GUIイベント処理##
   include VRDropFileTarget
+  include VRDestroySensitive
+
+  ##GUIイベント処理##
+  
   #起動時処理
   def self_created
     if $Exerb
@@ -38,6 +41,7 @@ class Form_main
     @original_convert_list = [] #データベースから読みだした初期値
     @list_sort = nil         #リストのソート対象
     @list_desc_order = false #リストの降順
+    $main_windowrect = self.windowrect
     setting_load
     printing_check
     if $beatsaber_dbfile
@@ -64,6 +68,11 @@ class Form_main
     @statusbar.setTextOf(1,"0 map",0)
     @statusbar.setTextOf(2,"0 select",0)
     @statusbar.setTextOf(3,"",0)
+  end
+  
+  #終了時処理
+  def self_destroy
+    setting_save(false)
   end
 
   #ドラッグ＆ドロップ貼り付け
@@ -502,6 +511,7 @@ class Form_main
   end
 
   def button_search_clicked
+    $main_windowrect = self.windowrect
     Modaldlg_search.set(@convert_list[@listBox_map.selectedString],@fields)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_search,nil,nil)  #検索画面のモーダルダイアログを開く
     songname,level_author,ranked = result
@@ -567,6 +577,7 @@ class Form_main
   end
 
   def button_ffmpeg_edit_clicked
+    $main_windowrect = self.windowrect
     target = []
     @comboBox_ffmpeg.eachString {|a| target.push a}
     Modaldlg_list_option_setting.set(target,false,false,$ffmpeg_option_select,'FFmpeg option settings')
@@ -578,6 +589,7 @@ class Form_main
   end
 
   def button_filename_edit_clicked
+    $main_windowrect = self.windowrect
     variable_list = ["time_name","miss","bsr","startTime","endTime","menuTime","cleared","endFlag",
                      "pauseCount","pluginVersion","gameVersion","scene","mode","songName","songSubName",
                      "songAuthorName","levelAuthorName","songHash","songBPM","noteJumpSpeed","songTimeOffset",
@@ -599,6 +611,7 @@ class Form_main
   end
 
   def button_out_folder_edit_clicked
+    $main_windowrect = self.windowrect
     target = []
     @comboBox_folder.eachString {|a| target.push a}
     Modaldlg_list_option_setting.set(target,false,2,$out_folder_select,'Output folder settings',true)
@@ -642,6 +655,7 @@ class Form_main
   end
 
   def menu_setting_clicked
+    $main_windowrect = self.windowrect
     a = $ascii_mode
     return unless VRLocalScreen.openModalDialog(self,nil,Modaldlg_setting,nil,nil)  #設定画面のモーダルダイアログを開く
     setting_save(false)
@@ -649,6 +663,7 @@ class Form_main
   end
   
   def menu_timestamp_clicked
+    $main_windowrect = self.windowrect
     result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_timestamp,nil,nil)#設定画面のモーダルダイアログを開く
     if result
       listbox_load if @movie_files.include?(result)
@@ -669,6 +684,7 @@ class Form_main
   end
   
   def menu_modsetting_clicked
+    $main_windowrect = self.windowrect
     return unless VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting,nil,nil)  #設定画面のモーダルダイアログを開く
     setting_save(false)
   end
@@ -737,11 +753,13 @@ class Form_main
   end
   
   def menu_subtitle_setting_clicked
+    $main_windowrect = self.windowrect
     return unless VRLocalScreen.openModalDialog(self,nil,Modaldlg_subtitle_setting,nil,nil)  #設定画面のモーダルダイアログを開く
     setting_save(false)
   end
 
   def menu_dbopen_clicked
+    $main_windowrect = self.windowrect
     search_dir = []
     @comboBox_folder.eachString {|a| search_dir.push a.strip.sub(/^#[^#]+#/,'').strip}
     Modaldlg_db_view.set(search_dir)
@@ -774,6 +792,7 @@ class Form_main
   end
   
   def menu_post_commnet_clicked
+    $main_windowrect = self.windowrect
     return unless target = @convert_list[@listBox_map.selectedString]
     Modaldlg_post_comment.set(target,@fields)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_post_comment,nil,nil)  #検索画面のモーダルダイアログを開く
@@ -1170,6 +1189,7 @@ class Form_main
   
   #プレイリスト作成
   def menu_playlist_clicked
+    $main_windowrect = self.windowrect
     return if @convert_list.size == 0
     select_list = []
     hash_check = {}

@@ -464,6 +464,8 @@ class Form_main
         @comboBox_folder.setListStrings DEFAULT_OUT_FOLDER
         $out_folder_select = 0
       end
+      a = self.windowrect
+      self.move(setting['main_form_x'],setting['main_form_y'],a[2],a[3]) if setting['main_form_x'] && setting['main_form_y']
     else
       @comboBox_ffmpeg.setListStrings DEFAULT_FFMPEG_OPTION
       $ffmpeg_option_select = 0
@@ -486,6 +488,9 @@ class Form_main
     else
       setting = {}
     end
+    a = self.windowrect
+    setting['main_form_x'] = a[0]
+    setting['main_form_y'] = a[1]
     setting['Remove non-ASCII code'] = $ascii_mode
     setting['time_format']           = $time_format
     setting['beatsaber_dbfile']      = $beatsaber_dbfile

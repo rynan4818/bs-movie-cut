@@ -310,3 +310,14 @@ def playlist_convert(select_list,name_output,image_file,description,title,author
   end
   return bplist_data
 end
+
+#ダイアログの起動時位置調整
+def dlg_move(dlg_self)
+  m = $main_windowrect
+  d = dlg_self.windowrect
+  cx = m[0] + (m[2] / 2)
+  cy = m[1] + (m[3] / 2)
+  x = cx - (d[2] / 2)
+  y = cy - (d[3] / 2)
+  dlg_self.move(x, y, d[2], d[3])
+end
