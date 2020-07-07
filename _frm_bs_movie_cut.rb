@@ -359,7 +359,8 @@ class Form_main < VRForm
         ["&Statistics",[
           ["&Mapper", "menu_stat_mapper"],
           ["&Accuracy", "menu_stat_accuracy"],
-          ["&Map", "menu_stat_map"]]
+          ["&Map", "menu_stat_map"],
+          ["&Play", "menu_stat_play"]]
         ],
         ["&Help",[
           ["&Manual", "menu_manual"],

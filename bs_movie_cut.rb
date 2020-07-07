@@ -54,7 +54,7 @@ require 'main_gui_sub.rb'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/07/06'
+SOFT_VER        = '2020/07/07'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル
@@ -65,6 +65,7 @@ STAT_TEMPLATE_FILE = EXE_DIR + 'stat_template.txt'
 MAPPER_STAT_HTML   = EXE_DIR + 'mapper_stat.html'
 ACCURACY_STAT_HTML = EXE_DIR + 'accuracy_stat.html'
 MAP_STAT_HTML      = EXE_DIR + 'map_stat.html'
+PLAY_STAT_HTML     = EXE_DIR + 'play_stat.html'
 
 #サイト設定
 BEATSAVER_URL   = "https://beatsaver.com/beatmap/#bsr#"

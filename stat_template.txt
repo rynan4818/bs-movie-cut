@@ -546,9 +546,6 @@ h1 {
 <div id="container"></div>
 <script type="text/javascript">
 Highcharts.stockChart('container', {
-    rangeSelector: {
-        selected: 1
-    },
     title: {
         text: 'Map score statistics'
     },
@@ -693,3 +690,419 @@ Highcharts.stockChart('container', {
 </body>
 </html>
 #MAP_END#
+#PLAY_START#
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>プレイ情報 [Play statistics]</title>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+<style type="text/css">
+h1 {
+  color: #364e96;
+  border: solid 3px #364e96;
+  padding: 0.5em;
+  border-radius: 0.5em;
+  text-align: center;
+}
+#container1, #container2, #container3, #container4 {
+    height: 700px; 
+}
+
+.highcharts-figure, .highcharts-data-table table {
+    min-width: 500px; 
+    max-width: 1000px;
+    margin: 1em auto;
+}
+</style>
+</head>
+<body>
+<h1>プレイ情報 [Play statistics]<BR>
+#title#</h1>
+<div id="container1"></div>
+<div id="container2"></div>
+<div id="container4"></div>
+<div id="container3"></div>
+<script type="text/javascript">
+Highcharts.stockChart('container1', {
+    time: {
+        useUTC: false
+    },
+    title: {
+        text: 'プレイ時間 [Play time statistics]'
+    },
+    //凡例
+    legend: {
+      enabled: true,
+      align: 'left',
+      backgroundColor: '#EFFFC5',
+      borderColor: 'black',
+      borderWidth: 2,
+      layout: 'vertical',
+      verticalAlign: 'top',
+      y: 100,
+      shadow: true
+    }, 
+    //横軸の設定
+    xAxis: {
+        type: 'datetime'
+    },
+    //縦軸の設定
+    yAxis: [{
+        title: {
+          text: '合計 (Total) [h]'
+        },
+        opposite: true
+      },{
+        title: {
+          text: '時間 (Hour)'
+        },
+        opposite: false
+      }
+    ],
+    navigator: {
+        baseSeries: 0,
+        xAxis: {
+            type: 'datetime'
+        }
+    },
+    rangeSelector: {
+        selected : 4,
+        inputDateFormat: '%Y/%m/%d',
+        inputEditDateFormat: '%Y/%m/%d',
+        buttons : [{
+          type : 'day',
+          count : 90,
+          text : '3mon'
+        }, {
+          type : 'day',
+          count : 180,
+          text : '6mon'
+        }, {
+          type : 'year',
+          count : 1,
+          text : '1year'
+        }, {
+          type : 'year',
+          count : 2,
+          text : '2year'
+        }, {
+          type : 'all',
+          count : 1,
+          text : 'All'
+        }]
+    },
+    series: [{
+        yAxis: 0,
+        name: '合計 (Total)',
+        type: 'spline',
+        color: '#000000',
+        data: #sum_time_series#
+        ,
+        tooltip: {
+            valueDecimals: 1,
+            valueSuffix: 'hour'
+        },
+        dashStyle: 'shortdot'
+      },{
+        yAxis: 1,
+        name: '時間 (Hour)',
+        type: 'column',
+        color: '#00bbff',
+        data: #day_time_series#
+        ,
+        tooltip: {
+            valueDecimals: 1,
+            valueSuffix: 'hour'
+        }
+      }]
+});
+Highcharts.stockChart('container2', {
+    time: {
+        useUTC: false
+    },
+    title: {
+        text: 'ヒット数 [Hit count statistics]'
+    },
+    //凡例
+    legend: {
+      enabled: true,
+      align: 'left',
+      backgroundColor: '#EFFFC5',
+      borderColor: 'black',
+      borderWidth: 2,
+      layout: 'vertical',
+      verticalAlign: 'top',
+      y: 100,
+      shadow: true
+    }, 
+    //横軸の設定
+    xAxis: {
+        type: 'datetime'
+    },
+    //縦軸の設定
+    yAxis: [{
+        title: {
+          text: '合計 (Total)'
+        },
+        opposite: true
+      },{
+        title: {
+          text: 'ヒット数 (Hit count)'
+        },
+        opposite: false
+      }
+    ],
+    navigator: {
+        baseSeries: 0,
+        xAxis: {
+            type: 'datetime'
+        }
+    },
+    rangeSelector: {
+        selected : 4,
+        inputDateFormat: '%Y/%m/%d',
+        inputEditDateFormat: '%Y/%m/%d',
+        buttons : [{
+          type : 'day',
+          count : 90,
+          text : '3mon'
+        }, {
+          type : 'day',
+          count : 180,
+          text : '6mon'
+        }, {
+          type : 'year',
+          count : 1,
+          text : '1year'
+        }, {
+          type : 'year',
+          count : 2,
+          text : '2year'
+        }, {
+          type : 'all',
+          count : 1,
+          text : 'All'
+        }]
+    },
+    series: [{
+        yAxis: 0,
+        name: '合計 (Total)',
+        type: 'spline',
+        color: '#000000',
+        data: #sum_hit_series#
+        ,
+        tooltip: {
+            valueDecimals: 0,
+            valueSuffix: 'hit'
+        },
+        dashStyle: 'shortdot'
+      },{
+        yAxis: 1,
+        name: 'ヒット数 (Hit count)',
+        type: 'column',
+        color: '#00bbff',
+        data: #day_hit_series#
+        ,
+        tooltip: {
+            valueDecimals: 0,
+            valueSuffix: 'hit'
+        }
+      }]
+});
+Highcharts.stockChart('container3', {
+    time: {
+        useUTC: false
+    },
+    title: {
+        text: 'ミス数 [Miss count statistics]'
+    },
+    //凡例
+    legend: {
+      enabled: true,
+      align: 'left',
+      backgroundColor: '#EFFFC5',
+      borderColor: 'black',
+      borderWidth: 2,
+      layout: 'vertical',
+      verticalAlign: 'top',
+      y: 100,
+      shadow: true
+    }, 
+    //横軸の設定
+    xAxis: {
+        type: 'datetime'
+    },
+    //縦軸の設定
+    yAxis: [{
+        title: {
+          text: '合計 (Total)'
+        },
+        opposite: true
+      },{
+        title: {
+          text: 'ミス数 (Miss count)'
+        },
+        opposite: false
+      }
+    ],
+    navigator: {
+        baseSeries: 0,
+        xAxis: {
+            type: 'datetime'
+        }
+    },
+    rangeSelector: {
+        selected : 4,
+        inputDateFormat: '%Y/%m/%d',
+        inputEditDateFormat: '%Y/%m/%d',
+        buttons : [{
+          type : 'day',
+          count : 90,
+          text : '3mon'
+        }, {
+          type : 'day',
+          count : 180,
+          text : '6mon'
+        }, {
+          type : 'year',
+          count : 1,
+          text : '1year'
+        }, {
+          type : 'year',
+          count : 2,
+          text : '2year'
+        }, {
+          type : 'all',
+          count : 1,
+          text : 'All'
+        }]
+    },
+    series: [{
+        yAxis: 0,
+        name: '合計 (Total)',
+        type: 'spline',
+        color: '#000000',
+        data: #sum_miss_series#
+        ,
+        tooltip: {
+            valueDecimals: 0,
+            valueSuffix: 'miss'
+        },
+        dashStyle: 'shortdot'
+      },{
+        yAxis: 1,
+        name: 'ミス数 (Miss count)',
+        type: 'column',
+        color: '#00bbff',
+        data: #day_miss_series#
+        ,
+        tooltip: {
+            valueDecimals: 0,
+            valueSuffix: 'miss'
+        }
+      }]
+});
+Highcharts.stockChart('container4', {
+    time: {
+        useUTC: false
+    },
+    title: {
+        text: 'スコア [Score statistics]'
+    },
+    //凡例
+    legend: {
+      enabled: true,
+      align: 'left',
+      backgroundColor: '#EFFFC5',
+      borderColor: 'black',
+      borderWidth: 2,
+      layout: 'vertical',
+      verticalAlign: 'top',
+      y: 100,
+      shadow: true
+    }, 
+    //横軸の設定
+    xAxis: {
+        type: 'datetime'
+    },
+    //縦軸の設定
+    yAxis: [{
+        title: {
+          text: '合計 (Total)'
+        },
+        opposite: true
+      },{
+        title: {
+          text: 'スコア (Score)'
+        },
+        opposite: false
+      }
+    ],
+    navigator: {
+        baseSeries: 0,
+        xAxis: {
+            type: 'datetime'
+        }
+    },
+    rangeSelector: {
+        selected : 4,
+        inputDateFormat: '%Y/%m/%d',
+        inputEditDateFormat: '%Y/%m/%d',
+        buttons : [{
+          type : 'day',
+          count : 90,
+          text : '3mon'
+        }, {
+          type : 'day',
+          count : 180,
+          text : '6mon'
+        }, {
+          type : 'year',
+          count : 1,
+          text : '1year'
+        }, {
+          type : 'year',
+          count : 2,
+          text : '2year'
+        }, {
+          type : 'all',
+          count : 1,
+          text : 'All'
+        }]
+    },
+    series: [{
+        yAxis: 0,
+        name: '合計 (Total)',
+        type: 'spline',
+        color: '#000000',
+        data: #sum_score_series#
+        ,
+        tooltip: {
+            valueDecimals: 0
+        },
+        dashStyle: 'shortdot'
+      },{
+        yAxis: 1,
+        name: 'スコア (Score)',
+        type: 'column',
+        color: '#00bbff',
+        data: #day_score_series#
+        ,
+        tooltip: {
+            valueDecimals: 0
+        }
+      }]
+});
+</script>
+<hr>
+<footer>
+  <p class="copyright"><small>
+  グラフ表示にHighsoft社のHighchartsを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
+&copy; 2020 Highcharts. All rights reserved.  <a href="https://www.highcharts.com/">https://www.highcharts.com/</a></small></p>
+</footer>
+</body>
+</html>
+#PLAY_END#

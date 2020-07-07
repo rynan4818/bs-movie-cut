@@ -1021,27 +1021,27 @@ class Form_main
               out_f.puts line.sub(/#time_count_subtitle#/,"Total play time = #{(total_play_time * 10.0).round / 10.0}hour")
             when /#mapper_count_name#/
               out_f.print line.sub(/#mapper_count_name#/,"").chop
-              JSON.pretty_generate(mapper_count_name).each do |json|
+              JSON.generate(mapper_count_name).each do |json|
                 out_f.puts json
               end
             when /#mapper_count_series#/
               out_f.print line.sub(/#mapper_count_series#/,"").chop
-              JSON.pretty_generate(mapper_count_series).each do |json|
+              JSON.generate(mapper_count_series).each do |json|
                 out_f.puts json
               end
             when /#song_count_series#/
               out_f.print line.sub(/#song_count_series#/,"").chop
-              JSON.pretty_generate(song_count_series).each do |json|
+              JSON.generate(song_count_series).each do |json|
                 out_f.puts json
               end
             when /#time_count_name#/
               out_f.print line.sub(/#time_count_name#/,"").chop
-              JSON.pretty_generate(time_count_name).each do |json|
+              JSON.generate(time_count_name).each do |json|
                 out_f.puts json
               end
             when /#time_count_series#/
               out_f.print line.sub(/#time_count_series#/,"").chop
-              JSON.pretty_generate(time_count_series).each do |json|
+              JSON.generate(time_count_series).each do |json|
                 out_f.puts json
               end
             when /#title#/
@@ -1145,17 +1145,17 @@ class Form_main
             case line
             when /#two_handed_accuracy_series#/
               out_f.print line.sub(/#two_handed_accuracy_series#/,"").chop
-              JSON.pretty_generate(accuracy_series(score)).each do |json|
+              JSON.generate(accuracy_series(score)).each do |json|
                 out_f.puts json
               end
             when /#left_hand_accuracy_series#/
               out_f.print line.sub(/#left_hand_accuracy_series#/,"").chop
-              JSON.pretty_generate(accuracy_series(left_score)).each do |json|
+              JSON.generate(accuracy_series(left_score)).each do |json|
                 out_f.puts json
               end
             when /#right_hand_accuracy_series#/
               out_f.print line.sub(/#right_hand_accuracy_series#/,"").chop
-              JSON.pretty_generate(accuracy_series(right_score)).each do |json|
+              JSON.generate(accuracy_series(right_score)).each do |json|
                 out_f.puts json
               end
             when /#title#/
@@ -1366,7 +1366,136 @@ class Form_main
     rescue Exception => e
       messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
     end
-    
+  end
+  
+  def menu_stat_play_clicked
+    result = db_execute("SELECT * FROM MovieCutRecord;")
+    if result
+      fields,rows = result
+    else
+      return
+    end
+    data = {}
+    fast_time = nil
+    last_time = nil
+    total_play_count = 0
+    rows.each do |cols|
+      startTime   = cols[fields.index("startTime")].to_i
+      fast_time ||= startTime
+      last_time ||= startTime
+      fast_time = startTime if fast_time > startTime
+      last_time = startTime if last_time < startTime
+      total_play_count += 1
+      time = cols[fields.index('endTime')].to_i - cols[fields.index('startTime')].to_i
+      hitNotes    = cols[fields.index("hitNotes")].to_i
+      missedNotes = cols[fields.index("missedNotes")].to_i
+      score       = cols[fields.index("score")].to_i
+      t = Time.at(startTime / 1000).localtime
+      date = Time.local(t.year,t.mon,t.day).to_i * 1000
+      data[date] ||= [0,0,0,0]
+      data[date][0] += time
+      data[date][1] += hitNotes
+      data[date][2] += missedNotes
+      data[date][3] += score
+    end
+    day_time  = []
+    day_hit   = []
+    day_miss  = []
+    day_score = []
+    sum_time  = []
+    sum_hit   = []
+    sum_miss  = []
+    sum_score = []
+    total_time  = 0
+    total_hit   = 0
+    total_miss  = 0
+    total_socre = 0
+    data.keys.sort.each do |date|
+      day_time.push  [date,(data[date][0].to_f / (100 * 60 * 60).to_f).round.to_f / 10.0]
+      day_hit.push   [date,data[date][1]]
+      day_miss.push  [date,data[date][2]]
+      day_score.push [date,data[date][3]]
+      total_time  += data[date][0]
+      total_hit   += data[date][1]
+      total_miss  += data[date][2]
+      total_socre += data[date][3]
+      sum_time.push  [date,(total_time.to_f / (100 * 60 * 60).to_f).round.to_f / 10.0]
+      sum_hit.push   [date,total_hit]
+      sum_miss.push  [date,total_miss]
+      sum_score.push [date,total_socre]
+    end
+    #グラフ用HTML作成
+    File.open(STAT_TEMPLATE_FILE,'r') do |temp_f|
+      File.open(PLAY_STAT_HTML,'w') do |out_f|
+        out_flag = false
+        while line = temp_f.gets
+          if line =~ /#PLAY_START#/
+            out_flag = true
+            next
+          end
+          if line =~ /#PLAY_END#/
+            out_flag = false
+            next
+          end
+          if out_flag
+            case line
+            when /#day_time_series#/
+              out_f.print line.sub(/#day_time_series#/,"").chop
+              JSON.generate(day_time).each do |json|
+                out_f.puts json
+              end
+            when /#day_hit_series#/
+              out_f.print line.sub(/#day_hit_series#/,"").chop
+              JSON.generate(day_hit).each do |json|
+                out_f.puts json
+              end
+            when /#day_miss_series#/
+              out_f.print line.sub(/#day_miss_series#/,"").chop
+              JSON.generate(day_miss).each do |json|
+                out_f.puts json
+              end
+            when /#day_score_series#/
+              out_f.print line.sub(/#day_score_series#/,"").chop
+              JSON.generate(day_score).each do |json|
+                out_f.puts json
+              end
+            when /#sum_time_series#/
+              out_f.print line.sub(/#sum_time_series#/,"").chop
+              JSON.generate(sum_time).each do |json|
+                out_f.puts json
+              end
+            when /#sum_hit_series#/
+              out_f.print line.sub(/#sum_hit_series#/,"").chop
+              JSON.generate(sum_hit).each do |json|
+                out_f.puts json
+              end
+            when /#sum_miss_series#/
+              out_f.print line.sub(/#sum_miss_series#/,"").chop
+              JSON.generate(sum_miss).each do |json|
+                out_f.puts json
+              end
+            when /#sum_score_series#/
+              out_f.print line.sub(/#sum_score_series#/,"").chop
+              JSON.generate(sum_score).each do |json|
+                out_f.puts json
+              end
+            when /#title#/
+              title = Time.at(fast_time / 1000).localtime.strftime("%y/%m/%d") + " - " + Time.at(last_time / 1000).localtime.strftime("%y/%m/%d")
+              title += "    Total:#{total_play_count}plays"
+              out_f.puts line.sub(/#title#/,title)
+            else
+              out_f.puts line
+            end
+          end
+        end
+      end
+    end
+    begin
+      #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
+      $winshell.Run(%Q!"#{PLAY_STAT_HTML}"!)
+    rescue Exception => e
+      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+    end
   end
   
 end
