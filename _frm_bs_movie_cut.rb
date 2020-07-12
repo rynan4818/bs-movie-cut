@@ -11,25 +11,25 @@ class Modaldlg_playlist < VRModalDialog
   include VRContainersSet
 
   def construct
-    self.caption = 'Playlist create'
+    self.caption = 'PlayList create'
     self.move(165,75,1011,688)
     addControl(VRButton,'button_cancel',"CANCEL",680,584,112,40)
-    addControl(VRButton,'button_delete',"Delete selection",576,344,144,32)
-    addControl(VRButton,'button_down',"DOWN",872,344,72,32)
+    addControl(VRButton,'button_delete',"Delete selection",576,360,144,32)
+    addControl(VRButton,'button_down',"DOWN",896,360,72,32)
     addControl(VRButton,'button_open',"Open",896,416,72,24)
     addControl(VRButton,'button_save',"PlayList SAVE",840,584,128,40)
-    addControl(VRButton,'button_up',"UP",776,344,64,32)
+    addControl(VRButton,'button_up',"UP",800,360,64,32)
     addControl(VRCheckbox,'checkBox_songname',"Song name output",816,472,152,24)
     addControl(VREdit,'edit_author',"",528,472,264,24)
     addControl(VREdit,'edit_description',"",32,528,936,24)
     addControl(VREdit,'edit_image',"",32,416,864,24)
     addControl(VREdit,'edit_title',"",32,472,464,24)
-    addControl(VRListbox,'listBox_main',"",24,48,944,276,0x80)
+    addControl(VRListbox,'listBox_main',"",24,40,944,312,0x80)
     addControl(VRStatic,'static1',"Cover Image  (drag and drop OK)",32,392,256,24)
     addControl(VRStatic,'static2',"Title",32,448,48,24)
     addControl(VRStatic,'static3',"Description",32,504,88,24)
     addControl(VRStatic,'static4',"Author",528,448,64,24)
-    addControl(VRStatic,'static5',"Select map list",24,24,128,24)
+    addControl(VRStatic,'static5',"PlayList",24,16,64,24)
   end 
 
 end
@@ -40,9 +40,9 @@ class Modaldlg_list_option_setting < VRModalDialog
   def construct
     self.caption = 'Setting'
     self.move(160,210,1060,476)
-    addControl(VRButton,'button_add',"Add Above",192,128,96,24)
+    addControl(VRButton,'button_add',"Add Above",256,128,96,24)
     addControl(VRButton,'button_cancel',"CANCEL",816,368,88,40)
-    addControl(VRButton,'button_copy',"Copy Below",32,128,104,24)
+    addControl(VRButton,'button_copy',"Copy Below Selection",32,128,168,24)
     addControl(VRButton,'button_default',"Default Selection",888,192,128,24)
     addControl(VRButton,'button_del',"Delete Selection",704,128,128,24)
     addControl(VRButton,'button_down',"DOWN",968,80,48,40)
@@ -69,16 +69,17 @@ class Modaldlg_post_comment < VRModalDialog
 
   def construct
     self.caption = 'Post commnet generator'
-    self.move(360,212,557,400)
-    addControl(VRButton,'button_1',"1",32,24,104,24)
-    addControl(VRButton,'button_2',"2",168,24,112,24)
-    addControl(VRButton,'button_3',"3",312,24,104,24)
-    addControl(VRButton,'button_close',"CLOSE",424,296,88,40)
-    addControl(VRButton,'button_copy',"Copy clipboard",200,296,136,40)
-    addControl(VRButton,'button_generate',"GENERATE",32,296,120,40)
-    addControl(VRCheckbox,'checkBox_save',"SAVE",448,24,64,24)
-    addControl(VRStatic,'static1',"parameters = #songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#",32,248,480,40)
-    addControl(VRText,'text_main',"",32,64,480,184,0x1080)
+    self.move(360,212,557,421)
+    addControl(VRButton,'button_1',"1",32,40,104,24)
+    addControl(VRButton,'button_2',"2",168,40,112,24)
+    addControl(VRButton,'button_3',"3",312,40,104,24)
+    addControl(VRButton,'button_close',"CLOSE",424,312,88,40)
+    addControl(VRButton,'button_copy',"Copy clipboard",200,312,136,40)
+    addControl(VRButton,'button_generate',"GENERATE",32,312,120,40)
+    addControl(VRCheckbox,'checkBox_save',"Save Template",376,16,136,24)
+    addControl(VRStatic,'static1',"parameters = #songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#",32,264,480,40)
+    addControl(VRStatic,'static2',"Template",32,16,72,24)
+    addControl(VRText,'text_main',"",32,80,480,184,0x1080)
   end 
 
 end
@@ -104,6 +105,7 @@ class Modaldlg_db_view < VRModalDialog
     addControl(VRStatic,'static1',"Start date",48,48,88,24)
     addControl(VRStatic,'static10',"movie search folder",40,144,208,24)
     addControl(VRStatic,'static11',"Setting of 'Open movie folder' and 'Output folder' is the search target.",32,272,512,24)
+    addControl(VRStatic,'static12',"The original video must have a timestamp stored in the database.",32,304,248,40)
     addControl(VRStatic,'static2',"End date",336,48,112,24)
     addControl(VRStatic,'static3',"Year",64,72,32,24)
     addControl(VRStatic,'static4',"Month",128,72,48,24)
@@ -163,7 +165,7 @@ class Modaldlg_subtitle_setting < VRModalDialog
     addControl(VREdit,'edit_font',"",80,40,232,24)
     addControl(VREdit,'edit_fontsize',"",400,40,56,24)
     addControl(VREdit,'edit_last_notes',"",112,232,56,24)
-    addControl(VREdit,'edit_max_score',"",416,256,32,24)
+    addControl(VREdit,'edit_max_score',"",416,264,32,24)
     addControl(VREdit,'edit_miss_format',"",24,352,448,24)
     addControl(VREdit,'edit_red_notes',"",104,168,104,24)
     addControl(VREdit,'edit_sim_notes_time',"",352,224,88,24)
@@ -172,6 +174,7 @@ class Modaldlg_subtitle_setting < VRModalDialog
     addControl(VRStatic,'static11',"last notes display time",24,216,80,40)
     addControl(VRStatic,'static12',"sec",176,232,32,24)
     addControl(VRStatic,'static13',"Max notescore display",256,264,160,24)
+    addControl(VRStatic,'static14',"Notes",448,264,48,24)
     addControl(VRStatic,'static2',"Font Size",328,40,72,24)
     addControl(VRStatic,'static3',"Alignment",32,112,72,24)
     addControl(VRStatic,'static4',"Cut subtitle format",24,272,144,24)
@@ -198,7 +201,7 @@ class Modaldlg_modsetting < VRModalDialog
     addControl(VRCheckbox,'checkBox_beatmapevent',"beatmapEvent",240,400,144,24)
     addControl(VRCheckbox,'checkBox_bombcut',"bombCut",240,320,144,24)
     addControl(VRCheckbox,'checkBox_bombmissed',"bombMissed",240,360,144,24)
-    addControl(VRCheckbox,'checkBox_gccollect',"Scene change GC Collect",288,192,232,24)
+    addControl(VRCheckbox,'checkBox_gccollect',"Scene change GC Collect  (Memory Clearing)",288,192,384,16)
     addControl(VRCheckbox,'checkBox_notecut',"noteCut",56,360,160,24)
     addControl(VRCheckbox,'checkBox_notefullycut',"noteFullyCut",56,400,168,24)
     addControl(VRCheckbox,'checkBox_notemissed',"noteMissed",56,440,160,24)
@@ -212,7 +215,7 @@ class Modaldlg_modsetting < VRModalDialog
     addControl(VRStatic,'static2',"beatsaber.db File",56,72,128,24)
     addControl(VRStatic,'static3',"mod setting file",56,8,224,24)
     addControl(VRStatic,'static5',"Events sent by HTTP WebSocket.",32,240,328,24)
-    addControl(VRStatic,'static6',"Movie cut record setting",32,152,216,24)
+    addControl(VRStatic,'static6',"Mod behavior settings",32,152,216,24)
   end 
 
 end
@@ -237,7 +240,7 @@ class Modaldlg_timestamp < VRModalDialog
     addControl(VREdit,'edit_start_time',"",224,96,104,24)
     addControl(VRStatic,'static1',"Movie file",16,40,80,24)
     addControl(VRStatic,'static10',"Example",24,168,64,32)
-    addControl(VRStatic,'static11',"Hour/Min/Sec",224,184,104,24)
+    addControl(VRStatic,'static11',"Hour:Min:Sec",224,184,104,24)
     addControl(VRStatic,'static12',"427",344,160,32,16)
     addControl(VRStatic,'static13',"Sec/1000",344,184,72,16)
     addControl(VRStatic,'static14',"Fix database timestamp registration",16,8,256,24)
@@ -275,21 +278,23 @@ class Modaldlg_setting < VRModalDialog
 
   def construct
     self.caption = 'Setting'
-    self.move(226,71,655,634)
+    self.move(226,71,655,709)
     addControl(GroupBox_Preview,'groupBox_Preview',"Preview encode",24,336,296,64)
-    addControl(VRButton,'button_cancel',"CANCEL",408,544,96,32)
+    addControl(VRButton,'button_cancel',"CANCEL",400,608,96,32)
     addControl(VRButton,'button_db_select',"select",560,40,56,24)
     addControl(VRButton,'button_default',"DEFAULT",464,472,88,24)
-    addControl(VRButton,'button_ok',"OK",520,544,96,32)
+    addControl(VRButton,'button_ok',"OK",520,608,96,32)
     addControl(VRButton,'button_opendir_select',"select",488,184,56,24)
     addControl(VRButton,'button_parameter',"parameter manual",464,496,152,24)
     addControl(VRButton,'button_preview_select',"select",376,248,56,24)
     addControl(VRButton,'button_preview_temp',"select",552,304,64,24)
     addControl(VRButton,'button_subtitle_temp',"select",552,432,64,24)
-    addControl(VRCheckbox,'checkBox_ascii',"Remove non-ASCII code",24,528,296,24)
+    addControl(VRCheckbox,'checkBox_ascii',"Remove non-ASCII code",24,592,296,24)
+    addControl(VRCheckbox,'checkBox_japanese',"Japanese mode (After restart)",376,544,240,24)
+    addControl(VRCheckbox,'checkBox_newcheck',"Check latest version",24,544,288,24)
     addControl(VRCheckbox,'checkBox_no_message',"Do not show message for timestamp check",24,112,328,24)
     addControl(VRCheckbox,'checkBox_stop_time_menu',"Use endtime for stoptime",24,464,216,24)
-    addControl(VRCheckbox,'checkBox_timesave',"Saves and reads the original movie file's timestamp the database.",24,80,480,24)
+    addControl(VRCheckbox,'checkBox_timesave',"Saves and reads the original movie file's timestamp the database. (recommended)",24,80,592,24)
     addControl(VREdit,'edit_dbfile',"",24,40,536,24)
     addControl(VREdit,'edit_extension',"mkv",560,184,56,24)
     addControl(VREdit,'edit_offset',"0.0",512,360,56,32)
@@ -303,12 +308,12 @@ class Modaldlg_setting < VRModalDialog
     addControl(VRStatic,'static10',"open movie folder",24,160,136,24)
     addControl(VRStatic,'static11',"default extension",544,144,72,40)
     addControl(VRStatic,'static2',"time format",24,496,80,24)
-    addControl(VRStatic,'static3',"(WARNING:tool install path ASCII only)",24,552,288,24)
+    addControl(VRStatic,'static3',"(WARNING:tool install path ASCII only)",24,616,288,24)
     addControl(VRStatic,'static4',"preview tool",24,224,112,24)
-    addControl(VRStatic,'static5',"preview temporary file",24,280,232,24)
+    addControl(VRStatic,'static5',"preview temporary file (HDD recommended to prevent SSD degradation)",24,280,520,24)
     addControl(VRStatic,'static6',"offset time",432,368,80,24)
     addControl(VRStatic,'static7',"sec",568,368,32,24)
-    addControl(VRStatic,'static8',"score subtitle temporary file",24,408,248,24)
+    addControl(VRStatic,'static8',"score subtitle temporary file  (HDD is recommended.)",24,408,400,24)
     addControl(VRStatic,'static9',"preview tool option",448,224,168,24)
   end 
 
@@ -352,7 +357,7 @@ class Form_main < VRForm
           ["&Post comment", "menu_post_commnet"],
           ["&BeatSaver page", "menu_beatsaver"],
           ["Beast&Saber page", "menu_beastsaber"],
-          ["&Map list to CSV", "menu_maplist"],
+          ["&Select play to CSV", "menu_maplist"],
           ["&Note scoer to CSV", "menu_notescore"],
           ["&PlayList create", "menu_playlist"]]
         ],
@@ -364,7 +369,8 @@ class Form_main < VRForm
         ],
         ["&Help",[
           ["&Manual", "menu_manual"],
-          ["Versio&n", "menu_version"]]
+          ["Versio&n", "menu_version"],
+          ["&Latest Release Site", "menu_release"]]
         ]
       ]
     )
@@ -377,10 +383,10 @@ class Form_main < VRForm
     addControl(VRButton,'button_datetime_sort',"DateTime",88,128,104,24)
     addControl(VRButton,'button_diff_sort',"Diff",240,128,48,24)
     addControl(VRButton,'button_difficulty',"Difficulty",544,128,64,24)
-    addControl(VRButton,'button_ffmpeg_edit',"E",144,696,24,24)
+    addControl(VRButton,'button_ffmpeg_edit',"Edit",144,696,32,24)
     addControl(VRButton,'button_file_sort',"File",40,128,48,24)
-    addControl(VRButton,'button_filename_edit',"E",144,752,24,24)
-    addControl(VRButton,'button_filter',"Filter select",376,656,104,32)
+    addControl(VRButton,'button_filename_edit',"Edit",144,752,32,24)
+    addControl(VRButton,'button_filter',"Filter select",376,648,104,32)
     addControl(VRButton,'button_finished',"finished select",24,608,128,32)
     addControl(VRButton,'button_fullcombo',"full combo select",24,648,128,32)
     addControl(VRButton,'button_levelauthor_sort',"Level Author",912,128,120,24)
@@ -390,7 +396,7 @@ class Form_main < VRForm
     addControl(VRButton,'button_organizing_remove',"Remove selection from map list",336,568,232,32)
     addControl(VRButton,'button_organizing_reset',"Reset map list",680,568,120,32)
     addControl(VRButton,'button_organizing_reversing',"Reversing selection",168,568,152,32)
-    addControl(VRButton,'button_out_folder_edit',"E",144,808,24,24)
+    addControl(VRButton,'button_out_folder_edit',"Edit",144,808,32,24)
     addControl(VRButton,'button_out_open',"OPEN",736,832,56,24)
     addControl(VRButton,'button_preview',"Preview cursor",904,576,128,32)
     addControl(VRButton,'button_rank_sort',"Rank",400,128,40,24)
@@ -400,34 +406,34 @@ class Form_main < VRForm
     addControl(VRButton,'button_songname_sort',"Song Name",608,128,304,24)
     addControl(VRButton,'button_speed_sort',"Speed",288,128,48,24)
     addControl(VRButton,'button_time_sort',"Time",192,128,48,24)
-    addControl(VRCheckbox,'checkBox_all_same_song',"All of the same song",184,664,168,24)
-    addControl(VRCheckbox,'checkBox_diff',"Song and play time difference +-",496,664,256,24)
-    addControl(VRCheckbox,'checkBox_failed',"failed",272,632,64,24)
-    addControl(VRCheckbox,'checkBox_finished',"finished",184,632,88,24)
+    addControl(VRCheckbox,'checkBox_all_same_song',"All of the same song",184,656,168,24)
+    addControl(VRCheckbox,'checkBox_diff',"Song and play time difference +-",488,656,256,24)
+    addControl(VRCheckbox,'checkBox_failed',"failed",272,624,64,24)
+    addControl(VRCheckbox,'checkBox_finished',"finished",184,624,88,24)
     addControl(VRCheckbox,'checkBox_length',"movie length",824,736,104,32)
-    addControl(VRCheckbox,'checkBox_miss',"Miss <=",712,632,80,24)
-    addControl(VRCheckbox,'checkBox_pause',"pause",336,632,72,24)
+    addControl(VRCheckbox,'checkBox_miss',"Miss <=",712,624,80,24)
+    addControl(VRCheckbox,'checkBox_pause',"pause",336,624,72,24)
     addControl(VRCheckbox,'checkBox_printing',"subtitle printing",568,744,152,32)
-    addControl(VRCheckbox,'checkBox_score',"Score >=",568,632,88,24)
-    addControl(VRCheckbox,'checkBox_speed',"Normal Speed",432,632,120,24)
+    addControl(VRCheckbox,'checkBox_score',"Score >=",568,624,88,24)
+    addControl(VRCheckbox,'checkBox_speed',"Normal Speed",432,624,120,24)
     addControl(VRCheckbox,'checkBox_subtitles',"With score subtitles",360,744,168,32)
     addControl(VRCombobox,'comboBox_ffmpeg',"",24,720,768,260)
     addControl(VRCombobox,'comboBox_filename',"",24,776,768,260)
     addControl(VRCombobox,'comboBox_folder',"",24,832,712,260)
-    addControl(VREdit,'edit_difftime',"5",752,664,40,24)
+    addControl(VREdit,'edit_difftime',"5",752,656,40,24)
     addControl(VREdit,'edit_end_offset',"4.0",936,696,64,32)
     addControl(VREdit,'edit_length',"139.0",936,736,64,32)
-    addControl(VREdit,'edit_miss',"10",792,632,32,24)
-    addControl(VREdit,'edit_score',"90",656,632,40,24)
+    addControl(VREdit,'edit_miss',"10",792,624,32,24)
+    addControl(VREdit,'edit_score',"90",656,624,40,24)
     addControl(VREdit,'edit_start_offset',"0.0",936,656,64,32)
     addControl(VRListbox,'listBox_file',"",24,24,1008,96,0x4080)
     addControl(VRListbox,'listBox_map',"",24,152,1008,402,0x888)
     addControl(VRRadiobutton,'radioBtn_footer_cut',"footer cut",928,776,104,24)
     addControl(VRRadiobutton,'radioBtn_header_cut',"header cut",808,776,112,24)
-    addControl(VRStatic,'static1',"sec",792,664,32,24)
+    addControl(VRStatic,'static1',"sec",792,656,32,24)
     addControl(VRStatic,'static10',"sec",1000,704,32,24)
     addControl(VRStatic,'static12',"sec",1000,744,32,24)
-    addControl(VRStatic,'static2',"|",408,630,16,24)
+    addControl(VRStatic,'static2',"|",408,622,16,24)
     addControl(VRStatic,'static3',"FFmpeg encode",24,696,112,24)
     addControl(VRStatic,'static4',"Output file name",24,752,120,24)
     addControl(VRStatic,'static5',"Output folder",24,808,96,24)
@@ -436,6 +442,7 @@ class Form_main < VRForm
     addControl(VRStatic,'static8',"End offset",856,704,72,24)
     addControl(VRStatic,'static9',"sec",1000,664,24,24)
     addControl(VRStatic,'static_message',"Paste the file to be converted by drag and drop",304,0,352,24)
+    addControl(VRStatic,'static_new_release',"",24,0,272,24)
     addControl(VRStatic,'tz_static',"",832,0,200,24)
     addControl(VRStatusbar,'statusbar',"",0,859,1044,22,0x3)
   end 

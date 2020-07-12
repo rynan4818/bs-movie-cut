@@ -6,6 +6,7 @@ $KCODE='s'
 #Project Name    : BeatSaber Movie Cut TOOL
 #File Name       : bs_movie_cut.rb  _frm_bs_movie_cut.rb  sub_library.rb
 #                : dialog_gui.rb  main_gui_event.rb  main_gui_sub.rb
+#                : language_en.rb  language_jp.rb
 #Creation Date   : 2020/01/08
 # 
 #Copyright       : 2020 Rynan. (Twitter @rynan4818)
@@ -85,7 +86,7 @@ class Modaldlg_playlist
   #画像ファイル開くボタン
   def button_open_clicked
     ext_list = [["Image File (*.png;*.jpg;*.jpeg;*.gif)","*.png;*.jpg;*.jpeg;*.gif"],["all file (*.*)","*.*"]]
-    fn = SWin::CommonDialog::openFilename(self,ext_list,0x1004,'Image file select','*.png')
+    fn = SWin::CommonDialog::openFilename(self,ext_list,0x1004,IMAGE_FILE_SELECT_TITLE,'*.png')
     return unless fn
     @edit_image.text = fn
   end
@@ -237,7 +238,7 @@ class Modaldlg_list_option_setting
         defalut_dir = File.dirname(defalut)
         defalut_file = File.basename(defalut)
       end
-      filename = SWin::CommonDialog::openFilename(self,[["All File (*.*)","*.*"]],0x1004,"File select","*.*",defalut_dir,defalut_file)
+      filename = SWin::CommonDialog::openFilename(self, [["All File (*.*)","*.*"]], 0x1004, @@caption + FILE_SELECT_MES, "*.*", defalut_dir, defalut_file)
       return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
       return unless File.exist?(filename)                  #filenameのファイルが存在しなければ戻る
       @edit_main.text = filename
@@ -248,7 +249,7 @@ class Modaldlg_list_option_setting
         defalut = @edit_main.text.to_s.strip
         defalut = nil unless File.directory?(defalut)
       end
-      folder = SWin::CommonDialog::selectDirectory(self,title="Folder select",defalut,1)
+      folder = SWin::CommonDialog::selectDirectory(self, @@caption + FOLDER_SELECT_MES, defalut, 1)
       return unless folder                                 #フォルダが選択されなかった場合、キャンセルされた場合は戻る
       return unless File.exist?(folder)                    #folderのファイルが存在しなければ戻る
       @edit_main.text = folder.sub(/\\$/,"") + "\\"
@@ -334,7 +335,7 @@ class Modaldlg_post_comment
     Clipboard.open(self.hWnd) do |cb|
       cb.setText @text_main.text.gsub(/\r\n/,"\n").gsub(/\n/,"\r\n")
     end
-    messageBox("Copying Post comment","Copy comment",0x40)
+    messageBox(DLG_POST_COMMENT_BUTTON_COPY, DLG_POST_COMMENT_BUTTON_COPY_TITLE, 0x40)
   end
 
   def button_close_clicked
@@ -422,7 +423,7 @@ class Modaldlg_db_view
   
   def button_add_folder_clicked
     $main_windowrect = self.windowrect
-    Modaldlg_list_option_setting.set($input_movie_search_dir,false,2,false,'Movie search folder',true,false)
+    Modaldlg_list_option_setting.set($input_movie_search_dir,false,2,false, MOVIE_SEARCH_FOLDER_EDIT,true,false)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_list_option_setting,nil,nil)
     $input_movie_search_dir = result[0]
     search_dir_set
@@ -606,7 +607,7 @@ class Modaldlg_modsetting
     folder = "" unless File.directory?(folder)
     file = File.basename(@edit_mod_setting_file.text)
     file = DEFALUT_MOD_SETTING_FILE_NAME if file.strip == ""
-    filename = SWin::CommonDialog::openFilename(self,[["json File (*.json)","*.json"],["All File (*.*)","*.*"]],0x4,"movie_cut_record.json select","*.json",folder,file)
+    filename = SWin::CommonDialog::openFilename(self,[["json File (*.json)","*.json"],["All File (*.*)","*.*"]],0x4,MODSETTING_FILE_SELECT_TITLE,"*.json",folder,file)
     return unless filename
     @edit_mod_setting_file.text = filename
     form_setting if File.exist?(filename)
@@ -622,7 +623,7 @@ class Modaldlg_modsetting
       file = File.basename(@edit_dbfile.text)
       file = File.basename($beatsaber_dbfile) if file.strip == ""
       end
-    filename = SWin::CommonDialog::openFilename(self,[["db File (*.db)","*.db"],["All File (*.*)","*.*"]],0x4,"beatsaber.db select","*.db",folder,file)
+    filename = SWin::CommonDialog::openFilename(self,[["db File (*.db)","*.db"],["All File (*.*)","*.*"]],0x4,DATABASE_FILE_SELECT_TITLE,"*.db",folder,file)
     return unless filename
     if (File.dirname(@edit_mod_setting_file.text) + "\\" + DEFALUT_DB_FILE_NAME) =~ /#{Regexp.escape(filename)}/i
       @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
@@ -645,12 +646,12 @@ class Modaldlg_modsetting
   def button_ok_clicked
     folder = File.dirname(@edit_mod_setting_file.text)
     unless File.directory?(folder)
-      messageBox("'#{folder.to_s}' Folder not found\r\nSet up the mod setting file.","Mod setting folder not found",48)
+      messageBox("'#{folder.to_s}' #{DLG_MODSETTING_BUTTON_OK_NOT_DIR}", DLG_MODSETTING_BUTTON_OK_NOT_DIR_TITLE, 48)
       return
     end
     file = File.basename(@edit_mod_setting_file.text)
     if file.strip == ""
-      messageBox("'#{@edit_mod_setting_file.text}' filename error\r\nSet up the mod setting file.","Mod setting filename error",48)
+      messageBox("'#{@edit_mod_setting_file.text}' #{DLG_MODSETTING_BUTTON_OK_NOT_FILE}", DLG_MODSETTING_BUTTON_OK_NOT_FILE_TITLE, 48)
       return
     end
     if File.exist?(@edit_mod_setting_file.text)
@@ -718,7 +719,7 @@ class Modaldlg_timestamp
       @edit_end_time.text = end_time.strftime("%H:%M:%S")
       @edit_end_msec.text = msec.to_s
     else
-      messageBox("Movie file not found","Movie file not found",48)
+      messageBox(DLG_TIMESTAMP_MOVIE_NOT, DLG_TIMESTAMP_MOVIE_NOT_TITLE,48)
     end
   end
   
@@ -741,7 +742,14 @@ class Modaldlg_timestamp
   end
   
   def button_select_clicked
-    filename = SWin::CommonDialog::openFilename(self,[["Mkv File (*.mkv)","*.mkv"],["Avi File (*.avi)","*.avi"],["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]],0x1004,"Movie file select","*.mkv") #ファイルを開くダイアログを開く
+    ext_set = [["Mkv File (*.mkv)","*.mkv"],["Avi File (*.avi)","*.avi"],["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]]
+    def_ext = "*.#{$movie_default_extension.downcase}"
+    if i = ext_set.index {|v| v[1] == def_ext}
+      ext_set.unshift ext_set.delete_at(i)
+    else
+      ext_set.unshift ["#{$movie_default_extension.downcase} File (#{def_ext})",def_ext]
+    end
+    filename = SWin::CommonDialog::openFilename(self,ext_set,0x1004,MOVIE_FILE_SELECT_TITLE,def_ext,$open_dir) #ファイルを開くダイアログを開く
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     return unless File.exist?(filename)                  #filenameのファイルが存在しなければ戻る
     start_time_check(filename)
@@ -802,6 +810,8 @@ class Modaldlg_timestamp
       @edit_end_date.text = end_time.strftime("%Y/%m/%d")
       @edit_end_time.text = end_time.strftime("%H:%M:%S")
       @edit_end_msec.text = (write_time % 1000).to_s
+    else
+      messageBox(DLG_TIMESTAMP_MOVIE_NOT, DLG_TIMESTAMP_MOVIE_NOT_TITLE,48)
     end
   end
 end
@@ -818,11 +828,13 @@ class Modaldlg_setting
     @edit_subtitle_temp.text = $subtitle_file.to_s
     @edit_offset.text        = $offset.to_s
     @edit_opendir.text       = $open_dir.to_s
-    @edit_extension.text     = $movie_default_extension.to_s
+    @edit_extension.text     = $movie_default_extension.to_s.downcase
     @checkBox_timesave.check $time_save
     @checkBox_ascii.check    $ascii_mode
     @checkBox_no_message.check $timestamp_nomsg
     @checkBox_stop_time_menu.check $use_endtime
+    @checkBox_japanese.check $japanese_mode
+    @checkBox_newcheck.check $new_version_check
     @groupBox_Preview.radioBtn_copy.check true unless $preview_encode
     @groupBox_Preview.radioBtn_select.check $preview_encode
     dlg_move(self)
@@ -854,7 +866,7 @@ class Modaldlg_setting
       end
     end
     #ファイルを開くダイアログを開く(第7引数のデフォルトファイル名は標準のVisualuRubyだと対応していない、swin.soの改造が必要
-    filename = SWin::CommonDialog::openFilename(self,[["db File (*.db)","*.db"],["All File (*.*)","*.*"]],0x4,"beatsaber.db select","*.db",folder,file)
+    filename = SWin::CommonDialog::openFilename(self,[["db File (*.db)","*.db"],["All File (*.*)","*.*"]],0x4,DATABASE_FILE_SELECT_TITLE,"*.db",folder,file)
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     @edit_dbfile.text = filename
   end
@@ -865,7 +877,7 @@ class Modaldlg_setting
     else
       defalut = @edit_opendir.text.to_s.strip
     end
-    folder = SWin::CommonDialog::selectDirectory(self,title="select open movie folder",defalut,1)
+    folder = SWin::CommonDialog::selectDirectory(self,SELECT_OPEN_MOVIE_FOLDER_TITLE,defalut,1)
     return unless folder                                 #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     return unless File.exist?(folder)                    #folderのファイルが存在しなければ戻る
     @edit_opendir.text = folder
@@ -884,16 +896,16 @@ class Modaldlg_setting
       $beatsaber_dbfile = @edit_dbfile.text.to_s.strip
     else
       if @edit_dbfile.text.to_s.strip != '' && File.directory?(File.dirname(@edit_dbfile.text.to_s.strip))
-        if messageBox("#{$beatsaber_dbfile}\r\nCreate a new file?","Create a new file?",36) == 6 #はい
+        if messageBox("#{$beatsaber_dbfile}\r\n#{DLG_SETTING_BUTTON_OK_CREATE_NEW_FILE}", DLG_SETTING_BUTTON_OK_CREATE_NEW_FILE_TITLE, 36) == 6 #はい
           $beatsaber_dbfile = @edit_dbfile.text.to_s.strip
           db_check
         else
-          if messageBox("Database file no setting.\r\nReturn the setting?","Database file no setting",36) == 6 #はい
+          if messageBox(DLG_SETTING_BUTTON_OK_DB_FILE_NOT, DLG_SETTING_BUTTON_OK_DB_FILE_NOT_TITLE, 36) == 6 #はい
             return
           end
         end
       else
-        if messageBox("Database file no setting.\r\nReturn the setting?","Database file no setting",36) == 6 #はい
+        if messageBox(DLG_SETTING_BUTTON_OK_DB_FILE_NOT, DLG_SETTING_BUTTON_OK_DB_FILE_NOT_TITLE, 36) == 6 #はい
           return
         end
       end
@@ -901,21 +913,21 @@ class Modaldlg_setting
     if File.exist? @edit_previewtool.text.to_s.strip
       $preview_tool = @edit_previewtool.text.to_s.strip
     else
-      if messageBox("Preview tool no setting.\r\nReturn the setting?","Preview tool no setting",36) == 6 #はい
+      if messageBox(DLG_SETTING_BUTTON_OK_PREVIEW_TOOL_NOT, DLG_SETTING_BUTTON_OK_PREVIEW_TOOL_NOT_TITLE, 36) == 6 #はい
         return
       end
     end
     if File.directory?(File.dirname(@edit_preview_temp.text.to_s.strip))
       $preview_file = @edit_preview_temp.text.to_s.strip
     else
-      if messageBox("Preview temporary file no folder.\r\nReturn the setting?","Preview temporary file no folder",36) == 6 #はい
+      if messageBox(DLG_SETTING_BUTTON_OK_PREVIEW_TEMP_NOT, DLG_SETTING_BUTTON_OK_PREVIEW_TEMP_NOT_TITLE, 36) == 6 #はい
         return
       end
     end
     if File.directory?(File.dirname(@edit_subtitle_temp.text.to_s.strip))
       $subtitle_file = @edit_subtitle_temp.text.to_s.strip
     else
-      if messageBox("Score subtitle temporary file no folder.\r\nReturn the setting?","Score subtitle temporary file no folder",36) == 6 #はい
+      if messageBox(DLG_SETTING_BUTTON_OK_SUBTITLE_TEMP_NOT, DLG_SETTING_BUTTON_OK_SUBTITLE_TEMP_NOT_TITLE, 36) == 6 #はい
         return
       end
     end
@@ -923,12 +935,14 @@ class Modaldlg_setting
     $offset       = @edit_offset.text.strip.to_f
     $time_format  = @edit_time_format.text.to_s.strip
     $open_dir      = @edit_opendir.text.to_s.strip
-    $movie_default_extension = @edit_extension.text.to_s.strip
+    $movie_default_extension = @edit_extension.text.to_s.strip.downcase
     $time_save    = @checkBox_timesave.checked?
     $ascii_mode   = @checkBox_ascii.checked?
     $timestamp_nomsg = @checkBox_no_message.checked?
     $use_endtime = @checkBox_stop_time_menu.checked?
     $preview_encode = @groupBox_Preview.radioBtn_select.checked?
+    $japanese_mode = @checkBox_japanese.checked?
+    $new_version_check = @checkBox_newcheck.checked?
     close(true)
   end
 
@@ -937,7 +951,7 @@ class Modaldlg_setting
     folder   = EXE_DIR unless File.directory?(folder)
     filename = File.basename(@edit_previewtool.text.to_s.strip)
     filename = 'ffplay.exe' if filename.strip == ''
-    filename = SWin::CommonDialog::openFilename(self,[["exe File (*.exe)","*.exe"],["All File (*.*)","*.*"]],0x1004,"Preview tool select","*.exe",folder,filename)
+    filename = SWin::CommonDialog::openFilename(self,[["exe File (*.exe)","*.exe"],["All File (*.*)","*.*"]],0x1004,PREVIEW_TOOL_SELECT_TITLE,"*.exe",folder,filename)
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     return unless File.exist?(filename)                  #filenameのファイルが存在しなければ戻る
     @edit_previewtool.text = filename
@@ -953,7 +967,7 @@ class Modaldlg_setting
     filename = File.basename(@edit_preview_temp.text.to_s.strip)
     filename = 'temp.mp4' if filename.strip == ''
     #ファイルを開くダイアログを開く(第7引数のデフォルトファイル名は標準のVisualuRubyだと対応していない、swin.soの改造が必要
-    filename = SWin::CommonDialog::openFilename(self,[["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]],0x4,"Preview temporary file","*.mp4",folder,filename)
+    filename = SWin::CommonDialog::openFilename(self,[["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]],0x4,PREVIEW_TEMP_FILE_SELECT_TITLE,"*.mp4",folder,filename)
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     @edit_preview_temp.text = filename
   end
@@ -964,7 +978,7 @@ class Modaldlg_setting
     filename = File.basename(@edit_subtitle_temp.text.to_s.strip)
     filename = 'temp.mp4' if filename.strip == ''
     #ファイルを開くダイアログを開く(第7引数のデフォルトファイル名は標準のVisualuRubyだと対応していない、swin.soの改造が必要
-    filename = SWin::CommonDialog::openFilename(self,[["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]],0x4,"Subtitle temporary file","*.mp4",folder,filename)
+    filename = SWin::CommonDialog::openFilename(self,[["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]],0x4,SUBTITLE_TEMP_FILE_SELECT_TITLE,"*.mp4",folder,filename)
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     @edit_subtitle_temp.text = filename
   end

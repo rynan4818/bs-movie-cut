@@ -6,6 +6,7 @@ $KCODE='s'
 #Project Name    : BeatSaber Movie Cut TOOL
 #File Name       : bs_movie_cut.rb  _frm_bs_movie_cut.rb  sub_library.rb
 #                : dialog_gui.rb  main_gui_event.rb  main_gui_sub.rb
+#                : language_en.rb  language_jp.rb
 #Creation Date   : 2020/01/08
 # 
 #Copyright       : 2020 Rynan. (Twitter @rynan4818)
@@ -46,12 +47,12 @@ class Form_main
     printing_check
     if $beatsaber_dbfile
       unless File.exist?($beatsaber_dbfile)
-        messageBox("'#{$beatsaber_dbfile}' File not found\r\nOpen the setting screen, change the settings and select the file.","db File not found",48)
+        messageBox("'#{$beatsaber_dbfile}' #{MAIN_SELF_CREATED_DBFILE_CHECK1_MAIN}", MAIN_SELF_CREATED_DBFILE_CHECK1_TITLE,48)
         exit unless VRLocalScreen.openModalDialog(self,nil,Modaldlg_setting,nil,nil)  #設定画面のモーダルダイアログを開く
         setting_save(false)
       end
     else
-      messageBox("'beatsaber.db' File not found\r\nOpen the setting screen, change the settings and select the file.","beatsaber.db File not found",48)
+      messageBox(MAIN_SELF_CREATED_DBFILE_CHECK2_MAIN, MAIN_SELF_CREATED_DBFILE_CHECK2_TITLE,48)
       exit unless VRLocalScreen.openModalDialog(self,nil,Modaldlg_setting,nil,nil)  #設定画面のモーダルダイアログを開く
       setting_save(false)
     end
@@ -64,10 +65,11 @@ class Form_main
     @listBox_map.sendMessage(0x192, 12,[7,31,87,109,135,156,188,209,234,260,290,442].pack('l*'))
     @listBox_file.sendMessage(0x192, 1,[24].pack('l*'))
     @statusbar.setparts(4,[80,160,240,-1])
-    @statusbar.setTextOf(0,"0 file",0)
-    @statusbar.setTextOf(1,"0 map",0)
-    @statusbar.setTextOf(2,"0 select",0)
+    @statusbar.setTextOf(0,"0 #{STATUSBAR_FILE}",0)
+    @statusbar.setTextOf(1,"0 #{STATUSBAR_MAP}",0)
+    @statusbar.setTextOf(2,"0 #{STATUSBAR_SELECT}",0)
     @statusbar.setTextOf(3,"",0)
+    @static_new_release.caption = "#{NEW_RELEASE_MES}#{$new_version}" if $new_version_check && $new_version
   end
   
   #終了時処理
@@ -81,13 +83,15 @@ class Form_main
     listbox_load
   end
   
+  #FFmpegオプションの項目変更時処理
   def comboBox_ffmpeg_selchanged
     printing_check
   end
   
+  #譜面リスト選択変更時処理
   def listBox_map_selchanged
     select_count = @listBox_map.sendMessage(WMsg::LB_GETSELCOUNT,0,0)
-    @statusbar.setTextOf(2,"#{select_count} select",0)
+    @statusbar.setTextOf(2,"#{select_count} #{STATUSBAR_SELECT}",0)
     return unless target = @convert_list[@listBox_map.selectedString]
     songAuthorName = target[1][@fields.index('songAuthorName')]
     mode      = target[1][@fields.index('mode')]
@@ -131,9 +135,9 @@ class Form_main
     else
       notes_sec = "err"
     end
-    text =  "Artist : #{songAuthorName[0,12]}   Mode : #{mode}   NSJ : #{njs.to_f.round}   BPM : #{bpm.to_f.round}  "
-    text += "Notes : #{notes} [#{notes_sec}/s]   Bombs : #{bombs}   Obstacles : #{obstacles}#{'   Mod : ' unless mod == ''}#{mod.sub(/,$/,'')}"
-    text += "#{'   Set : ' unless player_setting == ''}#{player_setting.sub(/,$/,'')}"
+    text =  "Artist: #{songAuthorName[0,12]}  Mode: #{mode}  NSJ: #{njs.to_f.round}  BPM: #{bpm.to_f.round}  "
+    text += "Notes: #{notes} [#{notes_sec}/s]  Bombs: #{bombs}  Obstacles: #{obstacles}#{'  Mod: ' unless mod == ''}#{mod.sub(/,$/,'')}"
+    text += "#{'  Set: ' unless player_setting == ''}#{player_setting.sub(/,$/,'')}"
     @statusbar.setTextOf(3,text,0)
   end
 
@@ -231,13 +235,13 @@ class Form_main
       begin
         eval("file_name = " + file_name_code)
       rescue SyntaxError    #SyntaxErrorのrescueはクラス指定しないと取得できない
-        messageBox("Invalid file name setting\r\nSyntax Error","FILE NAME SyntaxError",48)
+        messageBox(MAIN_BUTTON_RUN_FILE_NAME_SYNTAXERROR, MAIN_BUTTON_RUN_FILE_NAME_SYNTAXERROR_TITLE, 48)
         @button_run.style     = 1342177280
         @static_message.caption = "Paste the file to be converted by drag and drop"
         refresh
         return
       rescue Exception => e
-        messageBox("Invalid file name setting\r\n#{e.inspect}","FILE NAME ERROR",48)
+        messageBox("#{MAIN_BUTTON_RUN_FILE_NAME_EXCEPTION}\r\n#{e.inspect}", MAIN_BUTTON_RUN_FILE_NAME_EXCEPTION_TITLE, 48)
         @button_run.style     = 1342177280
         @static_message.caption = "Paste the file to be converted by drag and drop"
         refresh
@@ -358,7 +362,7 @@ class Form_main
 
   def button_preview_clicked
     unless File.exist? $preview_tool.to_s
-      messageBox("'#{$preview_tool.to_s}' File not found\r\nPlease set from option of menu.","Preview tool not found",48)
+      messageBox("'#{$preview_tool.to_s}' #{MAIN_BUTTON_PREVIEW_TOOL_CHECK}", MAIN_BUTTON_PREVIEW_TOOL_CHECK_TITLE, 48)
       return
     end
     return unless target = @convert_list[@listBox_map.selectedString]
@@ -368,11 +372,11 @@ class Form_main
       out_dir  = File.dirname($preview_file.to_s.strip) + "\\"
       file_name = File.basename($preview_file.to_s.strip)
       unless File.directory?(out_dir)
-        messageBox("'#{folder}'\r\mPreview temporary folder not found\r\nPlease set from option of menu.","Preview temporary folder not found",48)
+        messageBox("'#{out_dir}'\r\n#{MAIN_BUTTON_PREVIEW_DIR_CHECK}", MAIN_BUTTON_PREVIEW_DIR_CHECK_TITLE, 48)
         return
       end
       if file_name.strip == ''
-        messageBox("Preview temporary file setting not found\r\nPlease set from option of menu.","Preview temporary file setting not found",48)
+        messageBox(MAIN_BUTTON_PREVIEW_FILE_CHECK, MAIN_BUTTON_PREVIEW_FILE_CHECK_TITLE, 48)
         return
       end
       if $preview_encode
@@ -412,7 +416,7 @@ class Form_main
       option = " " + $preview_tool_option.strip unless $preview_tool_option.strip == ""
       $winshell.Run(%Q!"#{$preview_tool.to_s}"#{option} "#{preview_movie}"!)
     rescue Exception => e
-      messageBox("Preview error\r\nWScript.Shell Error\r\n#{e.inspect}","Preview ERROR",48)
+      messageBox("#{MAIN_BUTTON_PREVIEW_ERROR}\r\n#{e.inspect}", MAIN_BUTTON_PREVIEW_ERROR_TITLE, 48)
     end
   end
   
@@ -565,7 +569,7 @@ class Form_main
       temp.push target if flag1 && flag2 && flag3
     end
     unless scoresaber_check
-      messageBox("I can't get rank information from ScoreSaber.","Not gets ScoreSaber",48)
+      messageBox(MAIN_BUTTON_SEARCH_SCORESABER_CHECK, MAIN_BUTTON_SEARCH_SCORESABER_CHECK_TITLE, 48)
     end
     @convert_list = temp
     listbox_refresh
@@ -580,7 +584,7 @@ class Form_main
     $main_windowrect = self.windowrect
     target = []
     @comboBox_ffmpeg.eachString {|a| target.push a}
-    Modaldlg_list_option_setting.set(target,false,false,$ffmpeg_option_select,'FFmpeg option settings')
+    Modaldlg_list_option_setting.set(target, false, false, $ffmpeg_option_select, FFMPEG_EDIT_TITLE)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_list_option_setting,nil,nil)
     @comboBox_ffmpeg.setListStrings result[0]
     $ffmpeg_option_select = result[1]
@@ -602,7 +606,7 @@ class Form_main
                      "reduceDebris","noHUD","advancedHUD","autoRestart"]
     target = []
     @comboBox_filename.eachString {|a| target.push a}
-    Modaldlg_list_option_setting.set(target,variable_list,false,$out_file_name_select,'Output filename settings',true)
+    Modaldlg_list_option_setting.set(target,variable_list, false, $out_file_name_select, FILENAME_EDIT_TITLE, true)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_list_option_setting,nil,nil)
     @comboBox_filename.setListStrings result[0]
     $out_file_name_select = result[1]
@@ -614,7 +618,7 @@ class Form_main
     $main_windowrect = self.windowrect
     target = []
     @comboBox_folder.eachString {|a| target.push a}
-    Modaldlg_list_option_setting.set(target,false,2,$out_folder_select,'Output folder settings',true)
+    Modaldlg_list_option_setting.set(target, false, 2, $out_folder_select, OUT_FOLDER_EDIT_TITLE, true)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_list_option_setting,nil,nil)
     @comboBox_folder.setListStrings result[0]
     $out_folder_select = result[1]
@@ -629,13 +633,13 @@ class Form_main
 
   def menu_open_clicked
     ext_set = [["Mkv File (*.mkv)","*.mkv"],["Avi File (*.avi)","*.avi"],["mp4 File (*.mp4)","*.mp4"],["All File (*.*)","*.*"]]
-    def_ext = "*.#{$movie_default_extension}"
+    def_ext = "*.#{$movie_default_extension.downcase}"
     if i = ext_set.index {|v| v[1] == def_ext}
       ext_set.unshift ext_set.delete_at(i)
     else
-      ext_set.unshift ["#{$movie_default_extension} File (#{def_ext})",def_ext]
+      ext_set.unshift ["#{$movie_default_extension.downcase} File (#{def_ext})",def_ext]
     end
-    filenames = SWin::CommonDialog::openFilename(self,ext_set,0x81204,"Movie file select",def_ext,$open_dir) #ファイルを開くダイアログを開く
+    filenames = SWin::CommonDialog::openFilename(self,ext_set,0x81204, MAIN_MENU_OPEN_TITLE,def_ext,$open_dir) #ファイルを開くダイアログを開く
     return unless filenames                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     if filenames =~ /\000/
       folder,*files = filenames.split("\000")
@@ -671,16 +675,20 @@ class Form_main
   end
   
   def menu_version_clicked
-    messageBox(APP_VER_COOMENT ,"bs movie cut Version",0)
+    messageBox(APP_VER_COOMENT, MAIN_MENU_VERSION_TITLE, 0)
   end
 
   def menu_manual_clicked
-    open_url("https://docs.google.com/document/d/1zyJ4o_rPToMF0anGCDlScW0-ZLSYKSyA6VPamWQS-h0")
+    open_url(MANUAL_URL)
+  end
+  
+  def menu_release_clicked
+    open_url(RELEASE_URL)
   end
 
   def menu_save_clicked
     setting_save
-    messageBox("Current settings saved." ,"Settings saved.",0)
+    messageBox(MAIN_MENU_SAVE, MAIN_MENU_SAVE_TITLE, 0)
   end
   
   def menu_modsetting_clicked
@@ -692,7 +700,7 @@ class Form_main
   def menu_notescore_clicked
     target = @convert_list[@listBox_map.selectedString]
     unless target
-      messageBox("Please select a map.","Not selected",48)
+      messageBox(MAIN_NOT_SELECT_MES, MAIN_NOT_SELECT_MES_TITLE, 48)
       return
     end
     songName            =  target[1][@fields.index('songName')]
@@ -706,11 +714,11 @@ class Form_main
       return
     end
     if rows.size == 0
-      messageBox("No notes score data available.","Not notes score",48)
+      messageBox(MAIN_NOT_NOTES_SCORE_DB_MES, MAIN_NOT_NOTES_SCORE_DB_MES_TITLE, 48)
       return
     end
     savefile = file_name_check("#{time_name}_#{songName}.csv")
-    fn = SWin::CommonDialog::saveFilename(self,[["CSV FIle(*.csv)","*.csv"],["All File(*.*)","*.*"]],0x1004,'Note Score File Save','*.csv',0,savefile)
+    fn = SWin::CommonDialog::saveFilename(self,[["CSV FIle(*.csv)","*.csv"],["All File(*.*)","*.*"]],0x1004,NOTES_SCORE_FILE_SAVE_TITLE,'*.csv',0,savefile)
     return unless fn
     CSV.open(fn,'w') do |record|
       record << "unixTime,movieTime,event,score,score%,rank,hitNotes,missedNotes,combo,batteryEnergy,noteID,noteType,noteCutDirection,noteLine,noteLayer,beforeScore,initialScore,afterScore,cutDistanceScore,finalScore,cutMultiplier,saberSpeed,saberType,timeDeviation,cutDirectionDeviation,cutDistanceToCenter,timeToNextBasicNote".split(",")
@@ -775,7 +783,7 @@ class Form_main
       Clipboard.open(self.hWnd) do |cb|
         cb.setText "!bsr #{bsr}"
       end
-      messageBox("Copying !bsr #{bsr}","Copy bsr",0x40)
+      messageBox("#{MAIN_MENU_COPY_BSR}#{bsr}", MAIN_MENU_COPY_BSR_TITLE, 0x40)
     end
   end
   
@@ -793,7 +801,10 @@ class Form_main
   
   def menu_post_commnet_clicked
     $main_windowrect = self.windowrect
-    return unless target = @convert_list[@listBox_map.selectedString]
+    unless target = @convert_list[@listBox_map.selectedString]
+      messageBox(MAIN_NOT_SELECT_MES, MAIN_NOT_SELECT_MES_TITLE, 48)
+      return
+    end
     Modaldlg_post_comment.set(target,@fields)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_post_comment,nil,nil)  #検索画面のモーダルダイアログを開く
     setting_save(false)
@@ -802,14 +813,20 @@ class Form_main
   def menu_maplist_clicked
     output = []
     file_list = {}
-    return if @convert_list.size == 0
+    if @convert_list.size == 0
+      messageBox(MAIN_NOT_SELECT_MES2, MAIN_NOT_SELECT_MES2_TITLE, 48)
+      return
+    end
     @listBox_map.eachSelected do |i|
       file_list[@convert_list[i][6]] = true
       output.push [@listBox_map.getTextOf(i).split("\t"),@convert_list[i]]
     end
-    return if output.size == 0
+    if output.size == 0
+      messageBox(MAIN_NOT_SELECT_MES2, MAIN_NOT_SELECT_MES2_TITLE, 48)
+      return
+    end
     savefile = Time.now.strftime($time_format) + ".csv"
-    fn = SWin::CommonDialog::saveFilename(self,[["CSV FIle(*.csv)","*.csv"],["All File(*.*)","*.*"]],0x1004,'Map List File Save','*.csv',0,savefile)
+    fn = SWin::CommonDialog::saveFilename(self,[["CSV FIle(*.csv)","*.csv"],["All File(*.*)","*.*"]],0x1004,PLAY_MAP_LIST_FILE_SAVE_TITLE,'*.csv',0,savefile)
     return unless fn
     CSV.open(fn,'w') do |record|
       list_file = []
@@ -897,7 +914,10 @@ class Form_main
   end
   
   def menu_stat_mapper_clicked
-    return if @convert_list.size == 0
+    if @convert_list.size == 0
+      messageBox(MAIN_NOT_SELECT_MES3, MAIN_NOT_SELECT_MES3_TITLE, 48)
+      return
+    end
     #マッパー情報集計
     mapper_name = {}
     mapper_count_temp = {}
@@ -1059,14 +1079,17 @@ class Form_main
       #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
       $winshell.Run(%Q!"#{MAPPER_STAT_HTML}"!)
     rescue Exception => e
-      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+      messageBox("#{MAIN_WSH_ERR}\r\n#{e.inspect}", MAIN_WSH_ERR_TITLE, 16)
     end
     
   end
   
   #精度
   def menu_stat_accuracy_clicked
-    return if @convert_list.size == 0
+    if @convert_list.size == 0
+      messageBox(MAIN_NOT_SELECT_MES2, MAIN_NOT_SELECT_MES2_TITLE, 48)
+      return
+    end
     left_score = {}
     right_score = {}
     score = {}
@@ -1182,7 +1205,7 @@ class Form_main
       #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
       $winshell.Run(%Q!"#{ACCURACY_STAT_HTML}"!)
     rescue Exception => e
-      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+      messageBox("#{MAIN_WSH_ERR}\r\n#{e.inspect}", MAIN_WSH_ERR_TITLE, 16)
     end
     
   end
@@ -1190,7 +1213,10 @@ class Form_main
   #プレイリスト作成
   def menu_playlist_clicked
     $main_windowrect = self.windowrect
-    return if @convert_list.size == 0
+    if @convert_list.size == 0
+      messageBox(MAIN_NOT_SELECT_MES2, MAIN_NOT_SELECT_MES2_TITLE, 48)
+      return
+    end
     select_list = []
     hash_check = {}
     @listBox_map.eachSelected do |i|
@@ -1221,10 +1247,10 @@ class Form_main
     end
     playlist_data = playlist_convert(select_list, songname, image, description, title, author)
     if playlist_data
-      fn = SWin::CommonDialog::saveFilename(self,[["BeatSaber PlayList(*.bplist)","*.bplist"],["all file (*.*)","*.*"]],0x1004,'Playlist save file','*.bplist',0,title.strip.gsub(/[\\\/:\*\?\"<>|]/,'_'))
+      fn = SWin::CommonDialog::saveFilename(self,[["BeatSaber PlayList(*.bplist)","*.bplist"],["all file (*.*)","*.*"]],0x1004,PLAY_LIST_FILE_SAVE_TITLE,'*.bplist',0,title.strip.gsub(/[\\\/:\*\?\"<>|]/,'_'))
       return unless fn
       if File.exist?(fn)
-        return unless messageBox("Do you want to overwrite?","Overwrite confirmation",0x0004) == 6
+        return unless messageBox(MAIN_MENU_PLAYLIST_OVERWRITE_CHECK, MAIN_MENU_PLAYLIST_OVERWRITE_CHECK_TITLE, 0x0004) == 6
       end
       File.open(fn,'w') do |file|
         JSON.pretty_generate(playlist_data).each do |line|
@@ -1237,7 +1263,7 @@ class Form_main
   def menu_stat_map_clicked
     target = @convert_list[@listBox_map.selectedString]
     unless target
-      messageBox("Please select a map.","Not selected",48)
+      messageBox(MAIN_NOT_SELECT_MES, MAIN_NOT_SELECT_MES_TITLE, 48)
       return
     end
     songName            =  target[1][@fields.index('songName')]
@@ -1251,7 +1277,7 @@ class Form_main
       return
     end
     if rows.size == 0
-      messageBox("No notes score data available.","Not notes score",48)
+      messageBox(MAIN_NOT_NOTES_SCORE_DB_MES, MAIN_NOT_NOTES_SCORE_DB_MES_TITLE, 48)
       return
     end
     score_data = []
@@ -1364,7 +1390,7 @@ class Form_main
       #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
       $winshell.Run(%Q!"#{MAP_STAT_HTML}"!)
     rescue Exception => e
-      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+      messageBox("#{MAIN_WSH_ERR}\r\n#{e.inspect}", MAIN_WSH_ERR_TITLE, 16)
     end
   end
   
@@ -1494,7 +1520,7 @@ class Form_main
       #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
       $winshell.Run(%Q!"#{PLAY_STAT_HTML}"!)
     rescue Exception => e
-      messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+      messageBox("#{MAIN_WSH_ERR}\r\n#{e.inspect}", MAIN_WSH_ERR_TITLE, 16)
     end
   end
   

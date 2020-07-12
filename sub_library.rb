@@ -6,6 +6,7 @@ $KCODE='s'
 #Project Name    : BeatSaber Movie Cut TOOL
 #File Name       : bs_movie_cut.rb  _frm_bs_movie_cut.rb  sub_library.rb
 #                : dialog_gui.rb  main_gui_event.rb  main_gui_sub.rb
+#                : language_en.rb  language_jp.rb
 #Creation Date   : 2020/01/08
 # 
 #Copyright       : 2020 Rynan. (Twitter @rynan4818)
@@ -122,9 +123,9 @@ def db_open
     end
   rescue Exception => e                               #エラー内容がeに入る
     if e.inspect =~ /unable to open database file/    #エラー内容がデータベースが開けない内容の場合
-      messageBox("beatsaber DB File open error\r\n#{$beatsaber_dbfile}","DB FILE OPEN ERROR",48)
+      messageBox("#{DB_OPEN_ERROR_MES}\r\n#{$beatsaber_dbfile}",DB_OPEN_ERROR_TITLE,48)
     else
-      messageBox("beatsaber DB error:" + e.inspect,"DB ERROR",16)
+      messageBox(DB_ERROR_MES + e.inspect,DB_ERROR_TITLE,16)
     end
   end
 end
@@ -183,10 +184,10 @@ def db_execute(sql,db_open_flag = true,db_close_flag = true,no_table_mes = true)
   rescue Exception => e
     @db.close if db_close_flag
     if e.inspect =~ /no such table/
-      messageBox("No play record in database","No play record",48) if no_table_mes
+      messageBox(DB_NOPLAY_RECORD, DB_NOPLAY_RECORD_TITLE, 48) if no_table_mes
       return "no_table" unless no_table_mes
     else
-      messageBox("beatsaber DB error:" + e.inspect,"DB ERROR",16)
+      messageBox(DB_ERROR_MES + e.inspect, DB_ERROR_TITLE, 16)
     end
     return false
   end
@@ -218,7 +219,7 @@ def bsr_search(songHash)
   beatsaver_data = {}
   if songHash =~ /^[0-9A-F]{40}/i
     begin
-      beatsaver_data = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT} https://beatsaver.com/api/maps/by-hash/#{songHash[0,40]}`)
+      beatsaver_data = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT} #{BEATSAVER_BYHASH_URL}#{songHash[0,40]}`)
       bsr = beatsaver_data['key']
     rescue
       bsr = 'err'
@@ -266,7 +267,7 @@ def open_url(url)
     #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
     $winshell.Run(%Q!"#{url}"!)
   rescue Exception => e
-    messageBox("WScript.Shell Error\r\n#{e.inspect}","Web page open ERROR",16)
+    messageBox("#{MAIN_WSH_ERR}\r\n#{e.inspect}", MAIN_WSH_ERR_TITLE, 16)
   end
 end
 

@@ -6,6 +6,7 @@ $KCODE='s'
 #Project Name    : BeatSaber Movie Cut TOOL
 #File Name       : bs_movie_cut.rb  _frm_bs_movie_cut.rb  sub_library.rb
 #                : dialog_gui.rb  main_gui_event.rb  main_gui_sub.rb
+#                : language_en.rb  language_jp.rb
 #Creation Date   : 2020/01/08
 # 
 #Copyright       : 2020 Rynan. (Twitter @rynan4818)
@@ -41,20 +42,13 @@ require 'Win32API'
 require 'time'
 require 'json'
 
-#サブスクリプト
-require '_frm_bs_movie_cut.rb'
-require 'sub_library.rb'
-require 'dialog_gui.rb'
-require 'main_gui_event.rb'
-require 'main_gui_sub.rb'
-
 #設定済み定数
 #EXE_DIR ・・・ EXEファイルのあるディレクトリ[末尾は\]
 #MAIN_RB ・・・ メインのrubyスクリプトファイル名
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/07/07'
+SOFT_VER        = '2020/07/12'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル
@@ -68,9 +62,13 @@ MAP_STAT_HTML      = EXE_DIR + 'map_stat.html'
 PLAY_STAT_HTML     = EXE_DIR + 'play_stat.html'
 
 #サイト設定
-BEATSAVER_URL   = "https://beatsaver.com/beatmap/#bsr#"
-BEASTSABER_URL  = "https://bsaber.com/songs/#bsr#/"
-SCORESABAER_URL = "http://scoresaber.com/api.php?function=get-leaderboards&cat=1&page=1&limit=500&ranked=1"
+BEATSAVER_URL        = "https://beatsaver.com/beatmap/#bsr#"
+BEATSAVER_BYHASH_URL = "https://beatsaver.com/api/maps/by-hash/"
+BEASTSABER_URL       = "https://bsaber.com/songs/#bsr#/"
+SCORESABAER_URL      = "https://scoresaber.com/api.php?function=get-leaderboards&cat=1&page=1&limit=500&ranked=1"
+NEW_CHECK_URL        = "https://rynan4818.github.io/release_info.json"
+MANUAL_URL           = "https://docs.google.com/document/d/1zyJ4o_rPToMF0anGCDlScW0-ZLSYKSyA6VPamWQS-h0"
+RELEASE_URL          = "https://github.com/rynan4818/bs-movie-cut/releases"
 
 #デフォルト設定
 #beatsaberのデータベースファイル名 1,2は検索順序
@@ -105,9 +103,6 @@ DEFALUT_POST_COMMENT    = ["Song:#songname#\r\nMapper:#mapper#\r\n!bsr #bsr#\r\n
 DEFALUT_STAT_Y_COUNT    = 40  #統計出力するときのY軸の数
 
 #定数
-BEATSABER_USERDATA_FOLDER = "[BeatSaber UserData folder]"
-SUBTITLE_ALIGNMENT_SETTING = [['1: Bottom left','2: Bottom center','3: Bottom right','5: Top left','6: Top center','7: Top right','9: Middle left',
-                              '10: Middle center','11: Middle right'],[1,2,3,5,6,7,9,10,11]]
 CURL_TIMEOUT            = 5
 
 $winshell  = WIN32OLE.new("WScript.Shell")
@@ -115,6 +110,53 @@ $scoresaber_ranked = nil  #ScoreSaber のランク譜面JSONデータ
 
 #切り出しファイルの保存先  .\\OUT\\はこの実行ファイルのあるフォルダ下の"OUT"フォルダ  フルパスでも可  \は\\にすること  末尾は\\必要
 DEFAULT_OUT_FOLDER     = ["#DEFAULT#  " + EXE_DIR + "OUT\\","#sample#  D:\\"]
+
+#設定ファイルの初期読込
+$japanese_mode = false
+$new_version_check = true
+$last_version_check = nil
+$new_version = nil
+if File.exist?(SETTING_FILE)
+  setting = JSON.parse(File.read(SETTING_FILE))
+  $japanese_mode = setting['japanese_mode'] unless setting['japanese_mode'] == nil
+  $new_version_check = setting['new_version_check'] unless setting['new_version_check'] == nil
+  $new_version = setting['new_version'] if setting['new_version'] && setting['new_version'] > SOFT_VER
+  $last_version_check = setting['last_version_check']
+end
+
+#日本語UIの選択
+if $japanese_mode
+  require '_frm_bs_movie_cut_jp.rb'
+  require 'language_jp.rb'
+else
+  require '_frm_bs_movie_cut.rb'
+  require 'language_en.rb'
+end
+
+#最新版のチェック
+if $new_version_check && $last_version_check != Time.now.strftime("%Y/%m/%d")
+  puts "#{NEW_VERSION_CHECK}"
+  begin
+    release_info = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT} #{NEW_CHECK_URL}`)
+  rescue
+    release_info = {}
+  end
+  if latestversion = release_info['LatestVersion']
+    $new_version = latestversion['bs_movie_cut'] if latestversion['bs_movie_cut'] > SOFT_VER
+    if $new_version
+      puts "#{NEW_RELEASE_MES} #{$new_version}"
+    else
+      puts "#{LATEST_MES}"
+    end
+    $last_version_check = Time.now.strftime("%Y/%m/%d")
+  end
+end
+
+#サブスクリプトの読込
+require 'sub_library.rb'
+require 'dialog_gui.rb'
+require 'main_gui_event.rb'
+require 'main_gui_sub.rb'
 
 #メインフォームの起動
 VRLocalScreen.start Form_main

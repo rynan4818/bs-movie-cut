@@ -6,6 +6,7 @@ $KCODE='s'
 #Project Name    : BeatSaber Movie Cut TOOL
 #File Name       : bs_movie_cut.rb  _frm_bs_movie_cut.rb  sub_library.rb
 #                : dialog_gui.rb  main_gui_event.rb  main_gui_sub.rb
+#                : language_en.rb  language_jp.rb
 #Creation Date   : 2020/01/08
 # 
 #Copyright       : 2020 Rynan. (Twitter @rynan4818)
@@ -21,7 +22,7 @@ $KCODE='s'
 
 class Form_main
   
-  #subtitle printingの有効判定
+  #subtitle printing(スコアを動画に焼き込み)の有効判定
   def printing_check
     encode_option = @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
     if encode_option =~ /-c +copy/i || encode_option =~ /-c:v +copy/i || encode_option =~ /-c:v:\d +copy/i
@@ -50,8 +51,7 @@ class Form_main
       if rows.size == 0
         save = true
         if db_save_check
-          unless messageBox("#{file}\r\nIs this video an original file of play recording?\r\nDo you want to save the file timestamps in the database?",
-             "Save time stamp in database",36) == 6 #はい
+          unless messageBox("#{file}\r\n#{MOVIE_FILE_TIMESTAMP1_MAIN}",MOVIE_FILE_TIMESTAMP1_TITLE,36) == 6 #はい
             save = false
           end
         end
@@ -67,8 +67,7 @@ class Form_main
         unless create_time == rows[0][fields.index("create_time")].to_i &&
                access_time == rows[0][fields.index("access_time")].to_i &&
                write_time  == rows[0][fields.index("write_time")].to_i
-          if $timestamp_nomsg || messageBox("#{file}\r\nIt is different from the time stamp recorded in the database.\r\nUse database timestamp?\r\n\r\n(This message can be hidden in the settings.)",
-             "Timestamp differs from database",36) == 6 #はい
+          if $timestamp_nomsg || messageBox("#{file}\r\n#{MOVIE_FILE_TIMESTAMP2_MAIN}",MOVIE_FILE_TIMESTAMP2_TITLE,36) == 6 #はい
             create_time = rows[0][fields.index("create_time")].to_i
             access_time = rows[0][fields.index("access_time")].to_i
             write_time  = rows[0][fields.index("write_time")].to_i
@@ -118,7 +117,8 @@ class Form_main
       rows.each do |record|
         filename = record[fields.index("filename")]
         filename = sjiscv(filename) unless $ascii_mode
-        movie_original_time.push [filename, record[fields.index("create_time")].to_i, record[fields.index("access_time")].to_i, record[fields.index("write_time")].to_i]
+        movie_original_time.push [filename, record[fields.index("create_time")].to_i,
+                                  record[fields.index("access_time")].to_i, record[fields.index("write_time")].to_i]
       end
     end
     #レコードの取得処理
@@ -312,9 +312,9 @@ class Form_main
     #ステータスバーの更新
     file_count = @listBox_file.countStrings
     map_count  = @listBox_map.countStrings
-    @statusbar.setTextOf(0,"#{file_count} file#{"s" if file_count > 1}",0)
-    @statusbar.setTextOf(1,"#{map_count} map#{"s" if map_count > 1}",0)
-    @statusbar.setTextOf(2,"0 select",0)
+    @statusbar.setTextOf(0,"#{file_count} #{STATUSBAR_FILE}#{"s" if file_count > 1 && !$japanese_mode}",0)
+    @statusbar.setTextOf(1,"#{map_count} #{STATUSBAR_MAP}#{"s" if map_count > 1 && !$japanese_mode}",0)
+    @statusbar.setTextOf(2,"0 #{STATUSBAR_SELECT}",0)
     @statusbar.setTextOf(3,"",0)
   end
 
@@ -334,7 +334,9 @@ class Form_main
     elsif sort_target == "Time"
       @convert_list = @convert_list.sort_by {|a| [(a[1][@fields.index("endTime")].to_i - a[1][@fields.index("startTime")].to_i),i += 1] }
     elsif sort_target == "Diff"
-      @convert_list = @convert_list.sort_by {|a| [((a[1][@fields.index("endTime")].to_i - a[1][@fields.index("startTime")].to_i) - a[1][@fields.index("length")].to_i),i += 1] }
+      @convert_list = @convert_list.sort_by do |a|
+        [((a[1][@fields.index("endTime")].to_i - a[1][@fields.index("startTime")].to_i) - a[1][@fields.index("length")].to_i),i += 1]
+      end
     elsif sort_target == "NotesScore"
       @convert_list = @convert_list.sort_by {|a| [@notes_score_check[a[1][@fields.index('startTime')]].to_i,i += 1] }
     else
@@ -518,6 +520,10 @@ class Form_main
     setting['movie_default_extension'] = $movie_default_extension
     setting['input_movie_search_dir']  = $input_movie_search_dir
     setting['post_commnet']            = $post_commnet
+    setting['japanese_mode']           = $japanese_mode
+    setting['new_version_check']       = $new_version_check
+    setting['last_version_check']      = $last_version_check
+    setting['new_version']             = $new_version
     if all
       setting['finished']              = @checkBox_finished.checked?
       setting['failed']                = @checkBox_failed.checked?
@@ -590,13 +596,14 @@ class Form_main
         if @checkBox_printing.checked? && @printing && vf
           vf_srt_file = str_file.gsub('\\','\\\\\\\\\\\\\\\\').gsub(':','\\\\\\\\:')
           alignment = SUBTITLE_ALIGNMENT_SETTING[1][$subtitle_alignment]
-          vf_option = " -vf \"subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}'\""
+          vf_option = %Q! -vf "subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}'"!
         end
         if @checkBox_subtitles.checked?
           command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{vf_option} "#{$subtitle_file}"!
           puts command
           `#{command}`
-          command = %Q!ffmpeg -i "#{$subtitle_file}" -i "#{str_file}" -y -map 0 -map 1 -c copy -c:s mov_text -metadata:s:s:0 language=eng -metadata:s:s:0 title="Notes score"#{metadata} "#{out_dir}#{file_name}"!
+          command  = %Q!ffmpeg -i "#{$subtitle_file}" -i "#{str_file}" -y -map 0 -map 1 -c:a copy -c:v copy -c:s mov_text -metadata:s:s:0 language=eng !
+          command += %Q!-metadata:s:s:0 title="Notes score"#{metadata} "#{out_dir}#{file_name}"!
         else
           command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{vf_option} "#{out_dir}#{file_name}"!
         end
@@ -705,10 +712,10 @@ class Form_main
                   eval("jimaku.push #{$subtitle_cut_format}")
                 end
               rescue SyntaxError    #SyntaxErrorのrescueはクラス指定しないと取得できない
-                messageBox("Invalid subtitle format setting\r\nSyntax Error","Subtitle format SyntaxError",48)
+                messageBox(MOVIE_SUB_CREATE_SYNTAXERROR,MOVIE_SUB_CREATE_SYNTAXERROR_TITLE,48)
                 return
               rescue Exception => e
-                messageBox("Invalid subtitle format setting\r\n#{e.inspect}","Subtitle format ERROR",48)
+                messageBox("#{MOVIE_SUB_CREATE_EXCEPTION}\r\n#{e.inspect}",MOVIE_SUB_CREATE_EXCEPTION_TITLE,48)
                 return
               end
             end
@@ -762,14 +769,17 @@ class Form_main
   end
   
   def select_to_bsr
-    return false unless select = @convert_list[@listBox_map.selectedString]
+    unless select = @convert_list[@listBox_map.selectedString]
+      messageBox(MAIN_NOT_SELECT_MES, MAIN_NOT_SELECT_MES_TITLE, 48)
+      return false
+    end
     songHash = select[1][@fields.index('songHash')]
     bsr,beatsaver_data = bsr_search(songHash)
     if bsr == "nil"
-      messageBox("There is no song id","No song ID",0x30)
+      messageBox(SELECT_TO_BSR_NIL_MAIN, SELECT_TO_BSR_NIL_TITLE, 0x30)
       return false
     elsif bsr == "err"
-      messageBox("Not registered on beatsaver.","No bsr",0x30)
+      messageBox(SELECT_TO_BSR_ERR_MAIN, SELECT_TO_BSR_ERR_TITLE, 0x30)
       return false
     else
       return bsr

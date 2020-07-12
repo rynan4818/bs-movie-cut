@@ -121,12 +121,12 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 
 ### 実行ファイル
 
-#### FFmpeg 4.2.3 win64 Static
+#### FFmpeg 4.3 win64 Static
 - https://ffmpeg.zeranoe.com/builds/
 - 製作者:Zeranoe
 - ライセンス：GPL3.0
 
-#### curl 7.70.0 for Windows 32bit
+#### curl 7.71.1 for Windows 32bit
 - https://curl.haxx.se/windows/
 - 製作者:Copyright (c) 1996 - 2020, Daniel Stenberg, daniel@haxx.se, and many contributors, see the THANKS file.
 - ライセンス:[The curl license](https://curl.haxx.se/docs/copyright.html)
