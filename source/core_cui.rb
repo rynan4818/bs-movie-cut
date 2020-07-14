@@ -8,10 +8,10 @@ lib = <<EOS
 # -*- mode:ruby; coding:shift_jis -*-
 $KCODE='s'
 
-#直接実行時にEXE_DIRを設定する
+#Set 'EXE_DIR' directly at runtime  直接実行時にEXE_DIRを設定する
 EXE_DIR = (File.dirname(File.expand_path($0)).sub(/\\/$/,'') + '/').gsub(/\\//,'\\\\') unless defined?(EXE_DIR)
 
-#使用可能ライブラリ
+#Available Libraries  使用可能ライブラリ
 #require 'jcode'
 #require 'nkf'
 #require 'csv'
@@ -30,18 +30,19 @@ EXE_DIR = (File.dirname(File.expand_path($0)).sub(/\\/$/,'') + '/').gsub(/\\//,'
 #require 'json'
 #require 'sqlite3'
 
-#設定済み定数
-#EXE_DIR ・・・ EXEファイルのあるディレクトリ[末尾は\\]
-#MAIN_RB ・・・ メインのrubyスクリプトファイル名
-#ERR_LOG ・・・ エラーログファイル名
+#Predefined Constants  設定済み定数
+#EXE_DIR ****** Folder with EXE files[It ends with '\\']  EXEファイルのあるディレクトリ[末尾は\\]
+#MAIN_RB ****** Main ruby script file name  メインのrubyスクリプトファイル名
+#ERR_LOG ****** Error log file name  エラーログファイル名
 
 
 
 
 
+#The condition is positive when this split is executed directly.
 #このスプリクトを直接実行時に条件が正になる。
 if (defined?(ExerbRuntime) ? EXE_DIR + MAIN_RB : $0) == __FILE__
-  print "プログラムの実行を終了しました。Enterを押して下さい。"
+  print "Program execution ended. Press the Enter key."
   STDIN.gets
 end
 
@@ -62,8 +63,8 @@ if File.exist?(core_ruby)
     require core_ruby if $Exerb
   rescue Exception => e
     unless e.message == 'exit'
-      errmsg = "★★★★★エラーで異常終了しました。★★★★★\n\n"
-      errmsg += "★★★★★エラーメッセージ★★★★★\n" + e.inspect + "\r\n★★★★★バックトレース★★★★★\r\n"
+      errmsg = "******** Terminated with error ********\n\n"
+      errmsg += "******** Error message ********\n" + e.inspect + "\r\n******** Backtrace ********\r\n"
       e.backtrace.each{|a| errmsg += a + "\n"}
       puts errmsg
       begin
@@ -72,21 +73,21 @@ if File.exist?(core_ruby)
             f.puts a
           end
         end
-        puts "\nエラーログファイル=#{err_log_file}"
+        puts "\nError log file = #{err_log_file}"
       rescue
-        puts "\nエラーログファイルは作成出来ませんでした(書き込み不可)"
+        puts "\nThe error log file could not be created (not writable)."
       end
-      print "Enterキーを押して下さい"
+      print "Press the Enter key."
       STDIN.gets
     end
   end
 else
-  puts "#{core_ruby} がありませんので作成します。"
+  puts "There is no '#{core_ruby}', I will create it."
   File.open(core_ruby,'w') do |f|
     lib.each do |a|
       f.puts a
     end
   end
-  print "Enterキーを押して下さい"
+  print "Press the Enter key."
   STDIN.gets
 end
