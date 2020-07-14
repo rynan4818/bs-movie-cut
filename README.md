@@ -35,16 +35,17 @@ Rubyはスクリプト言語のため、本来はRuby本体のインストール
 
 GUIライブラリはにゃす氏が製作した[VisualuRuby](http://www.osk.3web.ne.jp/~nyasu/software/vrproject.html)を使用して作成しています。Win32APIを直接利用しているため、Windowsと親和性が高く、使いやすいライブラリになっていますが、同時に本来OS依存の無いRubyがWindows OS限定の動作となっています。
 
-GUIフォーム画面の修正が不要であれば、`bs_movie_cut.rb` の変更のみで修正が可能です。
-GUIフォーム画面の修正が必要な場合は、[FormDesigner](https://ja.osdn.net/projects/fdvr/)のSubversion リポジトリ r71(r65以降)の/formdesigner/trunkのバージョンを使用して `_frm_bs_movie_cut.rb` を読み込むことで編集が可能です。実行にはRuby1.8.7が必要なため、[ActiveScriptRuby(1.8.7-p330)](https://www.artonx.org/data/asr/)をインストールして下さい。
+通常の開発はExerbによるexe化作業は不要なため、特にRuby環境の構築をしなくてもスクリプトの修正やデバッグが可能です。
 
-別途ライブラリ等を実行ファイルに追加が必要な場合には、下記開発環境の導入が必要ですが環境を一通り構築するのは大変なため、取り計らいますのでご連絡下さい。
+GUIフォーム画面の修正が必要な場合は、[FormDesigner](https://github.com/rynan4818/formdesigner/releases)を使用して `_frm_bs_movie_cut.rb` 及び `_frm_bs_movie_cut_jp.rb` を読み込むことで編集が可能です。こちらもexe化済みのため、Ruby無しで動作可能です。
+
+別途ライブラリ等を実行ファイルに追加が必要な場合には、下記Ruby開発環境の構築が必要ですが環境を一通り構築するのは大変なため、取り計らいますのでご連絡下さい。
 
 # ライセンスと著作権について
 
 bs_movie_cut はプログラム本体と各種ライブラリから構成されています。
 
-`bs_movie_cut.rb` 及び `_frm_bs_movie_cut.rb`、bs_movie_cut.exeに組み込まれている `core_cui.rb` 及び各種ドキュメントについての著作権は作者であるリュナン(Twitter [@rynan4818](https://twitter.com/rynan4818))が有します。
+bs_movie_cutのソースコード及び各種ドキュメントについての著作権は作者であるリュナン(Twitter [@rynan4818](https://twitter.com/rynan4818))が有します。
 これらのライセンスはLGPL v2.1（GNU劣等一般公衆利用許諾契約書 v2.1）が適用されます。
 
 それ以外のbs_movie_cut.exe に内包しているrubyスクリプトやバイナリライブラリ、同梱のSQLite3のDLLやffmpegの実行ファイルは、それぞれの作者に著作権があります。配布ライセンスは、それぞれ異なるため詳細は下記の入手元を確認して下さい。
