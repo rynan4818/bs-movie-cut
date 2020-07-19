@@ -135,8 +135,8 @@ class Form_main
     else
       notes_sec = "err"
     end
-    text =  "Artist: #{songAuthorName[0,12]}  Mode: #{mode}  NSJ: #{njs.to_f.round}  BPM: #{bpm.to_f.round}  "
-    text += "Notes: #{notes} [#{notes_sec}/s]  Bombs: #{bombs}  Obstacles: #{obstacles}#{'  Mod: ' unless mod == ''}#{mod.sub(/,$/,'')}"
+    text =  "#{STATUSBAR_INFO_ARTIST}: #{songAuthorName[0,12]}  #{STATUSBAR_INFO_MODE}: #{mode}  NSJ: #{njs.to_f.round}  BPM: #{bpm.to_f.round}  "
+    text += "#{STATUSBAR_INFO_NOTES}: #{notes} [#{notes_sec}/s]  #{STATUSBAR_INFO_BOMBS}: #{bombs}  #{STATUSBAR_INFO_OBSTACLES}: #{obstacles}#{'  Mod: ' unless mod == ''}#{mod.sub(/,$/,'')}"
     text += "#{'  Set: ' unless player_setting == ''}#{player_setting.sub(/,$/,'')}"
     @statusbar.setTextOf(3,text,0)
   end
@@ -259,21 +259,21 @@ class Form_main
       end
       str_dir = File.dirname($subtitle_file.to_s.strip) + "\\"
       str_file = File.basename($subtitle_file, ".*") + '.srt'
-    if @checkBox_printing.checked? && @printing || @checkBox_subtitles.checked?
+      if @checkBox_printing.checked? && @printing || @checkBox_subtitles.checked?
         movie_sub_create(target,str_dir,str_file,startTime,stoptime)
-        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file)
+        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file)
       else
         #字幕ファイル削除
         File.delete str_dir + str_file if File.exist? str_dir + str_file
-        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime)
+        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime)
       end
       #データベースに切り出し記録を残す
       db_open
-      sql = "INSERT INTO MovieCutFile(startTime, datetime, out_dir, filename, stoptime) VALUES (?, ?, ?, ?, ?);"
+      sql = "INSERT INTO MovieCutFile(startTime, datetime, out_dir, filename, stoptime, offsetTime, cutTime) VALUES (?, ?, ?, ?, ?, ?, ?);"
       if $ascii_mode
-        @db.execute(sql,startTime,Time.now.to_i,out_dir,file_name,stoptime)
+        @db.execute(sql,startTime,Time.now.to_i,out_dir,file_name,stoptime,offset_time, cut_time)
       else
-        @db.execute(utf8cv(sql),startTime,Time.now.to_i,utf8cv(out_dir),utf8cv(file_name),stoptime)
+        @db.execute(utf8cv(sql),startTime,Time.now.to_i,utf8cv(out_dir),utf8cv(file_name),stoptime,offset_time, cut_time)
       end
       @db.close
     end
@@ -772,8 +772,8 @@ class Form_main
     @comboBox_folder.eachString {|a| search_dir.push a.strip.sub(/^#[^#]+#/,'').strip}
     Modaldlg_db_view.set(search_dir)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_db_view,nil,nil)  #日付範囲画面のモーダルダイアログを開く
-    allread, start_time, end_time, search_dir_list, input_movie_search_dir_change, cut_only = result
-    db_map_load_time(allread, start_time, end_time, search_dir_list, cut_only)
+    allread, start_time, end_time, search_dir_list, input_movie_search_dir_change, cut_only, ambiguous = result
+    db_map_load_time(allread, start_time, end_time, search_dir_list, cut_only, ambiguous)
     setting_save(false) if input_movie_search_dir_change
     listbox_refresh
   end
@@ -1097,8 +1097,13 @@ class Form_main
     last_time = nil
     total_play_count = 0
     target_startTime = {}
+    note_details = {}
+    note_details["Both"] = {}
+    note_details["NoteA"] = {}
+    note_details["NoteB"] = {}
     songname = ""
     levelAuthorName = ""
+    direction_type = ["Up","Down","Left","Right","UpLeft","UpRight","DownRight","DownLeft","Any"]
     @listBox_map.eachSelected do |i|
       target_startTime[startTime = @convert_list[i][1][@fields.index("startTime")]] = true
       fast_time ||= startTime
@@ -1108,12 +1113,13 @@ class Form_main
       songname = @convert_list[i][1][@fields.index("songName")]
       levelAuthorName = @convert_list[i][1][@fields.index("levelAuthorName")]
     end
-    sql =  "SELECT startTime,noteType,afterScore,cutDistanceScore,finalScore FROM NoteScore "
+    sql =  "SELECT startTime,noteType,afterScore,cutDistanceScore,finalScore,noteCutDirection,noteLine,noteLayer FROM NoteScore "
     sql += "WHERE event = 'noteFullyCut' AND startTime >= #{fast_time} AND startTime <= #{last_time};"
     fast_time = nil
     last_time = nil
     show(0)
     puts "Please wait ..."
+    print "Database read ..."
     result = db_execute(sql)
     if result
       fields,rows = result
@@ -1121,9 +1127,14 @@ class Form_main
       return
     end
     return if rows.size == 0
+    puts " completion"
+    print "Counting ."
     start_time_check = {}
+    progress = 0
     rows.each do |cols|
       if target_startTime[startTime = cols[fields.index("startTime")]]
+        progress += 1
+        print "." if (progress % 10000) == 0
         unless start_time_check[startTime]
           total_play_count += 1
           start_time_check[startTime] = true
@@ -1133,6 +1144,9 @@ class Form_main
         fast_time = startTime if fast_time > startTime
         last_time = startTime if last_time < startTime
         noteType = cols[fields.index("noteType")]
+        noteCutDirection = cols[fields.index("noteCutDirection")]
+        noteLine =  cols[fields.index("noteLine")].to_i
+        noteLayer = cols[fields.index("noteLayer")].to_i
         afterScore = cols[fields.index("afterScore")].to_i
         cutDistanceScore = cols[fields.index("cutDistanceScore")].to_i
         finalScore = cols[fields.index("finalScore")].to_i
@@ -1147,10 +1161,22 @@ class Form_main
         end
         score[finalScore] ||= 0
         score[finalScore] += 1
+        #4レーン通常配置のみ詳細情報を取得
+        if direction_type.index(noteCutDirection) && noteLine >= 0 && noteLine <= 3 && noteLayer >= 0 &&
+        noteLayer <= 2 && ["NoteA","NoteB"].index(noteType)
+          note_details["Both"][noteLayer] ||= {}
+          note_details["Both"][noteLayer][noteLine] ||= {}
+          note_details["Both"][noteLayer][noteLine][noteCutDirection] ||= []
+          note_details["Both"][noteLayer][noteLine][noteCutDirection].push finalScore
+          note_details[noteType][noteLayer] ||= {}
+          note_details[noteType][noteLayer][noteLine] ||= {}
+          note_details[noteType][noteLayer][noteLine][noteCutDirection] ||= []
+          note_details[noteType][noteLayer][noteLine][noteCutDirection].push finalScore
+        end
       end
     end
-    show
-    
+    puts " completion"
+    print "Outputting "
     #グラフ用HTML作成
     File.open(STAT_TEMPLATE_FILE,'r') do |temp_f|
       File.open(ACCURACY_STAT_HTML,'w') do |out_f|
@@ -1194,6 +1220,91 @@ class Form_main
                 title += "    Total:#{total_play_count}plays"
               end
               out_f.puts line.sub(/#title#/,title)
+            when /#note_details#/
+              note_div = Proc.new do |direction,line_t,layer_t,line_c,layer_c|
+                if line_t == line_c && layer_t == layer_c
+                  "<div class=\"note#{direction_type.index(direction)}\"></div>"
+                else
+                  "<div class=\"space\"></div>"
+                end
+              end
+              3.times do |layer|
+                note_details["Both"][layer] ||= {}
+                note_details["NoteA"][layer] ||= {}
+                note_details["NoteB"][layer] ||= {}
+                4.times do |line|
+                  note_details["Both"][layer][line] ||= {}
+                  note_details["NoteA"][layer][line] ||= {}
+                  note_details["NoteB"][layer][line] ||= {}
+                  direction_type.each do |direction|
+                    both = note_details["Both"][layer][line][direction]
+                    note_a = note_details["NoteA"][layer][line][direction]
+                    note_b = note_details["NoteB"][layer][line][direction]
+                    if both || note_a || note_b
+                      print "."
+                      out_f.puts "<tr>"
+                      out_f.puts "<td class=\"border_f\">"
+                      out_f.puts "<div id=\"tbl-bdr\">"
+                      out_f.puts "<table>"
+                      out_f.puts "<tr>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,0,2)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,1,2)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,2,2)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,3,2)}</td>"
+                      out_f.puts "</tr>"
+                      out_f.puts "<tr>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,0,1)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,1,1)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,2,1)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,3,1)}</td>"
+                      out_f.puts "</tr>"
+                      out_f.puts "<tr>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,0,0)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,1,0)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,2,0)}</td>"
+                      out_f.puts "<td>#{note_div.call(direction,line,layer,3,0)}</td>"
+                      out_f.puts "</tr>"
+                      out_f.puts "</table>"
+                      out_f.puts "</div>"
+                      out_f.puts "</td>"
+                      [both,note_a,note_b].each_with_index do |notes,idx|
+                        if notes
+                          out_f.puts "<td>Notes<br>#{notes.size}</td>" #ノーツ数
+                          ave = notes.inject(:+).to_f / notes.size.to_f
+                          out_f.puts "<td>Ave<br>#{(ave * 100.0).round.to_f / 100.0}</td>" #平均値
+                          sd = Math.sqrt(notes.inject(0) { |a,b| a + (b - ave) ** 2 } / notes.size) #母標準偏差
+                          out_f.puts "<td>SD<br>#{(sd * 100.0).round.to_f / 100.0}</td>"#標準偏差
+                          mode = notes.uniq.sort{|x,y| notes.count(y) <=> notes.count(x) }
+                          out_f.puts "<td>mode<br>#{mode[0]}</td>"#最頻値
+                          out_f.puts "<td>2nd mode<br>#{mode[1]}</td>"#2番目の最頻値
+                          out_f.puts "<td>3nd mode<br>#{mode[2]}</td>"#3番目の最頻値
+                          out_f.puts "<td>4nd mode<br>#{mode[3]}</td>"#4番目の最頻値
+                          if idx == 2
+                            out_f.puts "<td>5nd mode<br>#{mode[4]}</td>"#5番目の最頻値
+                          else
+                            out_f.puts "<td class = \"border_f\">5nd mode<br>#{mode[4]}</td>"#5番目の最頻値
+                          end
+                        else
+                          out_f.puts "<td>0</td>"
+                          out_f.puts "<td>-</td>"
+                          out_f.puts "<td>-</td>"
+                          out_f.puts "<td>-</td>"
+                          out_f.puts "<td>-</td>"
+                          out_f.puts "<td>-</td>"
+                          out_f.puts "<td>-</td>"
+                          if idx == 2
+                            out_f.puts "<td>-</td>"
+                          else
+                            out_f.puts "<td class = \"border_f\">-</td>"
+                          end
+                        end
+                      end
+                    end
+                    out_f.puts "</tr>"
+                    
+                  end
+                end
+              end
             else
               out_f.puts line
             end
@@ -1201,6 +1312,8 @@ class Form_main
         end
       end
     end
+    puts " completion"
+    show
     begin
       #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
       $winshell.Run(%Q!"#{ACCURACY_STAT_HTML}"!)

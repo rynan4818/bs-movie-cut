@@ -48,7 +48,7 @@ require 'json'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/07/12'
+SOFT_VER        = '2020/07/19'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
 
 #設定ファイル

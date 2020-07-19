@@ -80,7 +80,7 @@ class Form_main
   
   
   #指定期間を元に、データベースからmap情報の読み込み
-  def db_map_load_time(allread, start_time, end_time, search_dir_list, cut_only)
+  def db_map_load_time(allread, start_time, end_time, search_dir_list, cut_only, ambiguous)
     @original_convert_list = []
     @convert_list = []
     movie_file_list = []
@@ -98,10 +98,6 @@ class Form_main
     rows.each do |record|
       out_dir = record[fields.index("out_dir")]
       filename = record[fields.index("filename")]
-      unless $ascii_mode
-        out_dir = sjiscv(out_dir)
-        filename = sjiscv(filename)
-      end
       movie_cut_file[record[fields.index("startTime")].to_i] = [out_dir,filename]
     end
     notes_score_check
@@ -137,6 +133,7 @@ class Form_main
       file = nil
       file_idx = nil
       file_type = nil
+      check_path = nil
       check_file = nil
       create_time = nil
       access_time = nil
@@ -146,12 +143,12 @@ class Form_main
       movie_original_time.each do |v|
         if (v[1] <= start_time) && (v[3] >= menu_time)
           search_dir_list.each do |dir|
-            check_file = dir + v[0]
-            if file_idx = movie_file_list_check.index(check_file)
+            check_path = dir + v[0]
+            if file_idx = movie_file_list_check.index(check_path)
               break
             else
-              if File.exist?(check_file)
-                movie_file_list_check.push check_file
+              if File.exist?(check_path)
+                movie_file_list_check.push check_path
                 file_idx = movie_file_list_check.size - 1
                 break
               end
@@ -162,7 +159,7 @@ class Form_main
           create_time = v[1]
           access_time = v[2]
           write_time  = v[3]
-          file = check_file
+          file = check_path
           file_type = 1
           break
         end
@@ -170,15 +167,23 @@ class Form_main
       unless file
         if movie_cut_file[start_time]
           ([movie_cut_file[start_time][0]] + search_dir_list).each do |dir|
-            check_file = dir + movie_cut_file[start_time][1]
-            if file_idx = movie_file_list_check.index(check_file)
-              file = check_file
+            check_file = movie_cut_file[start_time][1]
+            check_path = dir + check_file
+            if file_idx = movie_file_list_check.index(check_path)
+              file = check_path
               file_type = 2
               break
             else
-              if File.exist?(check_file)
-                file = check_file
-                movie_file_list_check.push check_file
+              if File.exist?(check_path)
+                file = check_path
+                movie_file_list_check.push check_path
+                file_idx = movie_file_list_check.size - 1
+                file_type = 2
+                break
+              end
+              if ambiguous && (match_file = Dir.glob("#{dir.gsub('\\','/')}*#{File.basename(check_file,'.*')}*.*")) != []
+                file = match_file[0].gsub('/','\\\\')
+                movie_file_list_check.push file
                 file_idx = movie_file_list_check.size - 1
                 file_type = 2
                 break
@@ -568,51 +573,53 @@ class Form_main
   
   #ffmpeg実行処理
   def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true)
-      create_time = target[3]
-      ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
-      cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
-      if @checkBox_length.checked?
-        length_time = @edit_length.text.strip.to_f
-        if cut_time > length_time
-          if @radioBtn_header_cut.checked?
-            ss_time += cut_time - length_time
-          end
-          cut_time = length_time
+    create_time = target[3]
+    offset_time = @edit_start_offset.text.strip.to_f + $offset
+    ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
+    cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
+    if @checkBox_length.checked?
+      length_time = @edit_length.text.strip.to_f
+      if cut_time > length_time
+        if @radioBtn_header_cut.checked?
+          ss_time += cut_time - length_time
         end
+        cut_time = length_time
       end
-      id = target[1][@fields.index('songHash')]
-      title = target[1][@fields.index('songName')].gsub(/"/,'')
-      artist = target[1][@fields.index('levelAuthorName')].gsub(/"/,'')
-      if $ascii_mode
-        $KCODE='NONE'
-        title.gsub!(/[^ -~\t]/,' ')                    #ASCII 文字以外を空白に変換
-        artist.gsub!(/[^ -~\t]/,' ')                   #ASCII 文字以外を空白に変換
-        $KCODE='s'
+    end
+    id = target[1][@fields.index('songHash')]
+    title = target[1][@fields.index('songName')].gsub(/"/,'')
+    artist = target[1][@fields.index('levelAuthorName')].gsub(/"/,'')
+    if $ascii_mode
+      $KCODE='NONE'
+      title.gsub!(/[^ -~\t]/,' ')                    #ASCII 文字以外を空白に変換
+      artist.gsub!(/[^ -~\t]/,' ')                   #ASCII 文字以外を空白に変換
+      $KCODE='s'
+    end
+    metadata  = %Q! -metadata "comment"="#{startTime}" -metadata "description"="#{id}" -metadata "title"="#{title}" !
+    metadata += %Q!-metadata "artist"="#{artist}" -metadata "date"="#{stoptime}" -metadata "keywords"="#{offset_time}" -metadata "composer"="#{cut_time}"!
+    if str_file && File.exist?(str_file)
+      vf_option = ""
+      if @checkBox_printing.checked? && @printing && vf
+        vf_srt_file = str_file.gsub('\\','\\\\\\\\\\\\\\\\').gsub(':','\\\\\\\\:')
+        alignment = SUBTITLE_ALIGNMENT_SETTING[1][$subtitle_alignment]
+        vf_option = %Q! -vf "subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}'"!
       end
-      metadata  = %Q! -metadata "comment"="#{startTime}" -metadata "description"="#{id}" -metadata "title"="#{title}" !
-      metadata += %Q!-metadata "artist"="#{artist}" -metadata "date"="#{stoptime}"!
-      if str_file && File.exist?(str_file)
-        vf_option = ""
-        if @checkBox_printing.checked? && @printing && vf
-          vf_srt_file = str_file.gsub('\\','\\\\\\\\\\\\\\\\').gsub(':','\\\\\\\\:')
-          alignment = SUBTITLE_ALIGNMENT_SETTING[1][$subtitle_alignment]
-          vf_option = %Q! -vf "subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}'"!
-        end
-        if @checkBox_subtitles.checked?
-          command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{vf_option} "#{$subtitle_file}"!
-          puts command
-          `#{command}`
-          command  = %Q!ffmpeg -i "#{$subtitle_file}" -i "#{str_file}" -y -map 0 -map 1 -c:a copy -c:v copy -c:s mov_text -metadata:s:s:0 language=eng !
-          command += %Q!-metadata:s:s:0 title="Notes score"#{metadata} "#{out_dir}#{file_name}"!
-        else
-          command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{vf_option} "#{out_dir}#{file_name}"!
-        end
+      if @checkBox_subtitles.checked?
+        command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{vf_option} "#{$subtitle_file}"!
+        puts command
+        `#{command}`
+        command  = %Q!ffmpeg -i "#{$subtitle_file}" -i "#{str_file}" -y -map 0 -map 1 -c:a copy -c:v copy -c:s mov_text -metadata:s:s:0 language=eng !
+        command += %Q!-metadata:s:s:0 title="Notes score"#{metadata} "#{out_dir}#{file_name}"!
       else
-        command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{metadata} "#{out_dir}#{file_name}"!
+        command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{vf_option} "#{out_dir}#{file_name}"!
       end
-      puts command
-      `#{command}`
+    else
+      command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{metadata} "#{out_dir}#{file_name}"!
+    end
+    puts command
+    `#{command}`
     SWin::Application.doevents
+    return [offset_time,cut_time]
   end
   
   ###字幕ファイル作成

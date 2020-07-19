@@ -382,6 +382,7 @@ class Modaldlg_db_view
     @edit_end_month.text = Time.at(enddate).localtime.strftime("%m").to_i.to_s
     @edit_end_day.text   = Time.at(enddate).localtime.strftime("%d").to_i.to_s
     @checkBox_allread.check true
+    @checkBox_ambiguous.check true
     @edit_start_year.readonly = true
     @edit_start_month.readonly = true
     @edit_start_day.readonly = true
@@ -400,7 +401,8 @@ class Modaldlg_db_view
   def button_ok_clicked
     start_time = Time.local(@edit_start_year.text,@edit_start_month.text,@edit_start_day.text,0,0,0).gmtime.to_i * 1000
     end_time = Time.local(@edit_end_year.text,@edit_end_month.text,@edit_end_day.text,23,59,59).gmtime.to_i * 1000
-    close([@checkBox_allread.checked?, start_time, end_time, @search_dir_list,@input_movie_search_dir_change, @checkBox_cut_only.checked?])
+    close([@checkBox_allread.checked?, start_time, end_time, @search_dir_list,@input_movie_search_dir_change,
+           @checkBox_cut_only.checked?, @checkBox_ambiguous.checked?])
   end
   
   def checkBox_allread_clicked

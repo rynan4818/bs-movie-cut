@@ -169,6 +169,8 @@ def db_check
   @db.execute(sql)
   db_column_check('MovieCutRecord','levelId','TEXT')
   db_column_check('NoteScore','beforeScore','INTEGER')
+  db_column_check('MovieCutFile','offsetTime','REAL')
+  db_column_check('MovieCutFile','cutTime','REAL')
   @db.close
 end
 

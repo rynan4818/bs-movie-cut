@@ -334,6 +334,228 @@ h1 {
 .highcharts-data-table tr:hover {
     background: #f1f7ff;
 }
+.space {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: white;
+   position: relative;
+}
+.note1 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(0deg);
+}
+.note1:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note6 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(45deg);
+}
+.note6:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note2 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(90deg);
+}
+.note2:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note4 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(135deg);
+}
+.note4:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note0 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(180deg);
+}
+.note0:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note5 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(225deg);
+}
+.note5:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note3 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(270deg);
+}
+.note3:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note7 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+   transform: rotate(315deg);
+}
+.note7:before {
+   content: "";
+   display: block;
+   width: 0px;
+   height: 0px;
+   top: 5px;
+   left: 3px;
+   background: transparent;
+   border-top: 10px solid white;
+   border-left: 12px solid transparent;
+   border-right: 12px solid transparent;
+   position: absolute;
+}
+.note8 {
+   margin-top: 10px;
+   margin-left: 5px;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+}
+.note8:before {
+   content: "";
+   display: block;
+   width: 15px;
+   height: 15px;
+   top: 7px;
+   left: 7px;
+   border-radius: 15px;
+   background: white;
+   position: absolute;
+}
+#tbl-bdr table,#tbl-bdr td,#tbl-bdr th {
+    border-collapse: collapse;
+    border:1px solid #333;
+}
+table.tbl-list {
+  border-collapse: collapse;
+  border: 2px solid #222;
+}
+table.tbl-list th {
+  border: 2px solid #222;
+  padding: 3px;
+}
+table.tbl-list td {
+  border: 2px solid #222;
+  padding: 3px;
+}
+table.tbl-list td.border_f,table.tbl-list th.border_f {
+  border-right: 5px solid #222;
+}
 </style>
 </head>
 <body>
@@ -356,6 +578,42 @@ h1 {
   <p class="highcharts-description">
   </p>
 </figure>
+
+<table border="1" class="tbl-list">
+<tr>
+	<th class = "border_f" rowspan = "2">配置パターン<br>Pattern</th>
+	<th class = "border_f" colspan = "8">両手 Two-handed</th>
+	<th class = "border_f" colspan = "8">左手 Left hand</th>
+	<th colspan = "8">右手 Right hand</th>
+</tr>
+<tr>
+	<th>ノーツ数<br>Notes count</th>
+	<th>平均値<br>Average</th>
+	<th>標準<br>偏差<br>SD</th>
+	<th>最頻値<br>Mode</th>
+	<th>2番目の最頻値<br>2nd mode</th>
+	<th>3番目の最頻値<br>3nd mode</th>
+	<th>4番目の最頻値<br>3nd mode</th>
+	<th class = "border_f">5番目の最頻値<br>3nd mode</th>
+	<th>ノーツ数<br>Notes count</th>
+	<th>平均値<br>Average</th>
+	<th>標準<br>偏差<br>SD</th>
+	<th>最頻値<br>Mode</th>
+	<th>2番目の最頻値<br>2nd mode</th>
+	<th>3番目の最頻値<br>3nd mode</th>
+	<th>4番目の最頻値<br>3nd mode</th>
+	<th class = "border_f">5番目の最頻値<br>3nd mode</th>
+	<th>ノーツ数<br>Notes count</th>
+	<th>平均値<br>Average</th>
+	<th>標準<br>偏差<br>SD</th>
+	<th>最頻値<br>Mode</th>
+	<th>2番目の最頻値<br>2nd mode</th>
+	<th>3番目の最頻値<br>3nd mode</th>
+	<th>4番目の最頻値<br>3nd mode</th>
+	<th>5番目の最頻値<br>3nd mode</th>
+</tr>
+#note_details#
+</table>
 
 <script type="text/javascript">
 Highcharts.chart('container1', {
@@ -684,7 +942,7 @@ Highcharts.stockChart('container', {
 <hr>
 <footer>
   <p class="copyright"><small>
-  グラフ表示にHighsoft社のHighchartsを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
+  グラフ表示にHighsoft社のHighcharts Stockを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
 &copy; 2020 Highcharts. All rights reserved.  <a href="https://www.highcharts.com/">https://www.highcharts.com/</a></small></p>
 </footer>
 </body>
@@ -1100,7 +1358,7 @@ Highcharts.stockChart('container4', {
 <hr>
 <footer>
   <p class="copyright"><small>
-  グラフ表示にHighsoft社のHighchartsを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
+  グラフ表示にHighsoft社のHighcharts Stockを非商用ライセンスで使用しています。Highsoftソフトウェア製品は商用では無料ではありません。<br>
 &copy; 2020 Highcharts. All rights reserved.  <a href="https://www.highcharts.com/">https://www.highcharts.com/</a></small></p>
 </footer>
 </body>
