@@ -1140,7 +1140,8 @@ class Form_main
       end
     end
     if total_play_count == 1
-      sql =  "SELECT max(scorePercentage) FROM MovieCutRecord WHERE startTime < #{startTime} AND mode = '#{mode}' AND songHash = '#{songHash}' AND difficulty = '#{difficulty}';"
+      sql =  "SELECT max(scorePercentage) FROM MovieCutRecord WHERE startTime < #{startTime} AND "
+      sql += "mode = '#{mode}' AND songHash = '#{songHash}' AND difficulty = '#{difficulty}' AND cleared = 'finished';"
       result = db_execute(sql)
       if result
         fields,rows = result
