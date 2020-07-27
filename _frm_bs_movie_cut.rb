@@ -59,6 +59,7 @@ class Modaldlg_list_option_setting < VRModalDialog
     addControl(VRStatic,'static_comment',"Comments",32,232,128,24)
     addControl(VRStatic,'static_default',"Default",32,168,80,24)
     addControl(VRStatic,'static_main',"",32,296,240,24)
+    addControl(VRStatic,'static_notes',"",32,360,752,64)
     addControl(VRStatic,'static_var',"Variable",488,232,112,24)
   end 
 
@@ -339,39 +340,39 @@ class Form_main < VRForm
     #$_addControl(VRMenu,'mainmenu1',"",664,0,24,24)
     @mainmenu1 = newMenu.set(
       [
-        ["&File",[
-          ["&Open movie", "menu_open"],
+        ["File(&F)",[
+          ["Open movie(&O)", "menu_open"],
           ["sep", "_vrmenusep", 2048],
-          ["&Database view mode", "menu_dbopen"],
+          ["Database view mode(&D)", "menu_dbopen"],
           ["sep", "_vrmenusep", 2048],
-          ["E&xit", "menu_exit"]]
+          ["Exit(&X)", "menu_exit"]]
         ],
-        ["&Option",[
-          ["&Setting", "menu_setting"],
-          ["&Timestamp Tool", "menu_timestamp"],
-          ["&Mod setting", "menu_modsetting"],
-          ["Sub&title setting", "menu_subtitle_setting"],
-          ["Setting Sa&ve", "menu_save"]]
+        ["Option(&O)",[
+          ["Setting(&S)", "menu_setting"],
+          ["Timestamp Tool(&P)", "menu_timestamp"],
+          ["Mod setting(&M)", "menu_modsetting"],
+          ["Subtitle setting(&T)", "menu_subtitle_setting"],
+          ["Setting Save(&V)", "menu_save"]]
         ],
-        ["&Tool",[
-          ["&Copy !bsr", "menu_copy_bsr"],
-          ["&Post comment", "menu_post_commnet"],
-          ["&BeatSaver page", "menu_beatsaver"],
-          ["Beast&Saber page", "menu_beastsaber"],
-          ["&Select play to CSV", "menu_maplist"],
-          ["&Note scoer to CSV", "menu_notescore"],
-          ["&PlayList create", "menu_playlist"]]
+        ["Tool(&T)",[
+          ["Copy !bsr(&C)", "menu_copy_bsr"],
+          ["Post comment(&T)", "menu_post_commnet"],
+          ["BeatSaver page(&B)", "menu_beatsaver"],
+          ["BeastSaber page(&S)", "menu_beastsaber"],
+          ["Select play to CSV(&M)", "menu_maplist"],
+          ["Note scoer to CSV(&N)", "menu_notescore"],
+          ["PlayList create(&P)", "menu_playlist"]]
         ],
-        ["&Statistics",[
-          ["&Mapper", "menu_stat_mapper"],
-          ["&Accuracy", "menu_stat_accuracy"],
-          ["&Map", "menu_stat_map"],
-          ["&Play", "menu_stat_play"]]
+        ["Statistics(&S)",[
+          ["Mapper(&M)", "menu_stat_mapper"],
+          ["Accuracy(&A)", "menu_stat_accuracy"],
+          ["Map(&P)", "menu_stat_map"],
+          ["Play(&L)", "menu_stat_play"]]
         ],
-        ["&Help",[
-          ["&Manual", "menu_manual"],
-          ["Versio&n", "menu_version"],
-          ["&Latest Release Site", "menu_release"]]
+        ["Help(&H)",[
+          ["Manual(&M)", "menu_manual"],
+          ["Version(&V)", "menu_version"],
+          ["Latest Release Site(&L)", "menu_release"]]
         ]
       ]
     )

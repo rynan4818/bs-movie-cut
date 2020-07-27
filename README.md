@@ -1,5 +1,5 @@
 # bs-movie-cut (BeatSaberプレイ動画カットツール)
-このツールは[OBS Studio](https://obsproject.com/ja)などで録画したでBeatSaberのゲームプレイ動画を、下記画面の様にプレイした譜面に合わせて自動的に切り出しを行い、プレイ動画の編集や整理を支援する目的で作成しました。
+このツールは[OBS Studio](https://obsproject.com/ja)などで録画したBeatSaberのゲームプレイ動画を、下記画面の様にプレイした譜面に合わせて自動的に切り出しを行い、プレイ動画の編集や整理を支援する目的で作成しました。
 
 拙作の[Beat Saber HTTP Status +Database](https://github.com/rynan4818/beatsaber-http-status-db)を使用してBeatSaberのプレイ情報をデータベースに記録し、その情報を元に録画した動画を譜面毎に切り分けることが可能です。
 

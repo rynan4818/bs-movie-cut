@@ -59,6 +59,7 @@ class Modaldlg_list_option_setting < VRModalDialog
     addControl(VRStatic,'static_comment',"タイトル",32,232,72,24)
     addControl(VRStatic,'static_default',"デフォルト選択",32,168,144,24)
     addControl(VRStatic,'static_main',"",32,296,240,24)
+    addControl(VRStatic,'static_notes',"",32,360,752,64)
     addControl(VRStatic,'static_var',"使用可能変数",488,232,104,24)
   end 
 
@@ -348,14 +349,14 @@ class Form_main < VRForm
         ],
         ["オプション(&O)",[
           ["設定(&S)", "menu_setting"],
-          ["タイムスタンプ修正(&T)", "menu_timestamp"],
+          ["タイムスタンプ修正(&P)", "menu_timestamp"],
           ["mod設定(&M)", "menu_modsetting"],
           ["スコア字幕設定(&T)", "menu_subtitle_setting"],
           ["設定値保存(&V)", "menu_save"]]
         ],
         ["ツール(&T)",[
           ["!bsrコピー(&C)", "menu_copy_bsr"],
-          ["投稿用コメント作成(&P)", "menu_post_commnet"],
+          ["投稿用コメント作成(&T)", "menu_post_commnet"],
           ["BeatSaver譜面ページ(&B)", "menu_beatsaver"],
           ["BeastSaber譜面ページ(&S)", "menu_beastsaber"],
           ["選択プレイCSV詳細出力(&M)", "menu_maplist"],
@@ -365,12 +366,12 @@ class Form_main < VRForm
         ["統計情報(&S)",[
           ["作譜者情報(&M)", "menu_stat_mapper"],
           ["精度情報(&A)", "menu_stat_accuracy"],
-          ["プレイ詳細情報(&M)", "menu_stat_map"],
-          ["総プレイ情報(&P)", "menu_stat_play"]]
+          ["プレイ詳細情報(&P)", "menu_stat_map"],
+          ["総プレイ情報(&L)", "menu_stat_play"]]
         ],
         ["ヘルプ(&H)",[
           ["マニュアル(&M)", "menu_manual"],
-          ["バージョン情報(&N)", "menu_version"],
+          ["バージョン情報(&V)", "menu_version"],
           ["最新版配布サイト(&L)", "menu_release"]]
         ]
       ]
@@ -445,7 +446,7 @@ class Form_main < VRForm
     addControl(VRStatic,'static_message',"動画ファイルはドラッグ＆ドロップ可",352,0,288,24)
     addControl(VRStatic,'static_new_release',"",24,0,320,24)
     addControl(VRStatic,'tz_static',"",832,0,200,24)
-    addControl(VRStatusbar,'statusbar',"",0,859,1044,22,0x3)
+    addControl(VRStatusbar,'statusbar',"",0,857,1044,23,0x3)
   end 
 
 end

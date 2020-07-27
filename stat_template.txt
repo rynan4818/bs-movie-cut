@@ -335,16 +335,21 @@ h1 {
     background: #f1f7ff;
 }
 .space {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: white;
    position: relative;
 }
+.placement {
+   margin: auto;
+   width: 30px;
+   height: 30px;
+   background: black;
+   position: relative;
+}
 .note1 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -365,8 +370,7 @@ h1 {
    position: absolute;
 }
 .note6 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -387,8 +391,7 @@ h1 {
    position: absolute;
 }
 .note2 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -409,8 +412,7 @@ h1 {
    position: absolute;
 }
 .note4 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -431,8 +433,7 @@ h1 {
    position: absolute;
 }
 .note0 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -453,8 +454,7 @@ h1 {
    position: absolute;
 }
 .note5 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -475,8 +475,7 @@ h1 {
    position: absolute;
 }
 .note3 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -497,8 +496,7 @@ h1 {
    position: absolute;
 }
 .note7 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -519,8 +517,7 @@ h1 {
    position: absolute;
 }
 .note8 {
-   margin-top: 10px;
-   margin-left: 5px;
+   margin: auto;
    width: 30px;
    height: 30px;
    background: black;
@@ -561,6 +558,7 @@ table.tbl-list td.border_f,table.tbl-list th.border_f {
 <body>
 <h1>ノーツ精度情報 [Accuracy statistics]<BR>
 #title#</h1>
+#accuracy_summary#
 <figure class="highcharts-figure">
   <div id="container1"></div>
   <p class="highcharts-description">
@@ -578,41 +576,91 @@ table.tbl-list td.border_f,table.tbl-list th.border_f {
   <p class="highcharts-description">
   </p>
 </figure>
-
+N:ノーツ数(Notes count)  A:平均値(Average)  S:標準偏差(SD)  M1:最頻値(Mode)  M2:2番目の最頻値(2sd mode)  M3:3番目の最頻値(3sd mode)<br>
 <table border="1" class="tbl-list">
 <tr>
-	<th class = "border_f" rowspan = "2">配置パターン<br>Pattern</th>
-	<th class = "border_f" colspan = "8">両手 Two-handed</th>
-	<th class = "border_f" colspan = "8">左手 Left hand</th>
-	<th colspan = "8">右手 Right hand</th>
+	<th class = "border_f" rowspan = "2">配置位置<br>Placement</th>
+	<th class = "border_f" colspan = "3"><div class="note0"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note1"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note2"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note3"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note4"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note5"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note6"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note7"></div></th>
+	<th colspan = "3"><div class="note8"></div></th>
 </tr>
 <tr>
-	<th>ノーツ数<br>Notes count</th>
-	<th>平均値<br>Average</th>
-	<th>標準<br>偏差<br>SD</th>
-	<th>最頻値<br>Mode</th>
-	<th>2番目の最頻値<br>2nd mode</th>
-	<th>3番目の最頻値<br>3nd mode</th>
-	<th>4番目の最頻値<br>3nd mode</th>
-	<th class = "border_f">5番目の最頻値<br>3nd mode</th>
-	<th>ノーツ数<br>Notes count</th>
-	<th>平均値<br>Average</th>
-	<th>標準<br>偏差<br>SD</th>
-	<th>最頻値<br>Mode</th>
-	<th>2番目の最頻値<br>2nd mode</th>
-	<th>3番目の最頻値<br>3nd mode</th>
-	<th>4番目の最頻値<br>3nd mode</th>
-	<th class = "border_f">5番目の最頻値<br>3nd mode</th>
-	<th>ノーツ数<br>Notes count</th>
-	<th>平均値<br>Average</th>
-	<th>標準<br>偏差<br>SD</th>
-	<th>最頻値<br>Mode</th>
-	<th>2番目の最頻値<br>2nd mode</th>
-	<th>3番目の最頻値<br>3nd mode</th>
-	<th>4番目の最頻値<br>3nd mode</th>
-	<th>5番目の最頻値<br>3nd mode</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th>右手<br>Right</th>
 </tr>
 #note_details#
+<tr>
+	<th class = "border_f" rowspan = "2">配置位置<br>Placement</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th class = "border_f">右手<br>Right</th>
+	<th>両手<br>Two</th>
+	<th>左手<br>Left</th>
+	<th>右手<br>Right</th>
+</tr>
+<tr>
+	<th class = "border_f" colspan = "3"><div class="note0"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note1"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note2"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note3"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note4"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note5"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note6"></div></th>
+	<th class = "border_f" colspan = "3"><div class="note7"></div></th>
+	<th colspan = "3"><div class="note8"></div></th>
+</tr>
 </table>
 
 <script type="text/javascript">

@@ -104,7 +104,7 @@ end
 
 class Modaldlg_list_option_setting
 
-  def self.set(target, variable_list, file_type, defalut_idx, caption, main_empty_check = false, comment = true)
+  def self.set(target, variable_list, file_type, defalut_idx, caption, main_empty_check = false, comment = true, notes = "")
     @@target = target
     @@variable_list = variable_list    #false --- no variaboe , strarray
     @@file_type = file_type            #false --- no file or folder , 1 --- file , 2 --- folder
@@ -112,6 +112,7 @@ class Modaldlg_list_option_setting
     @@main_empty_check = main_empty_check
     @@defalut_idx = defalut_idx
     @@comment = comment
+    @@notes = notes
   end
   
   def edit_main_text
@@ -133,6 +134,7 @@ class Modaldlg_list_option_setting
   def self_created
     self.caption = @@caption
     @static_main.caption = @@caption
+    @static_notes.caption = @@notes
     @listBox_main.setListStrings(@@target)
     if @@variable_list
       @comboBox_var.setListStrings(@@variable_list)

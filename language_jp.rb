@@ -22,7 +22,7 @@ $KCODE='s'
 
 #Setting
 BEATSABER_USERDATA_FOLDER = "[BeatSaber UserData フォルダ]"
-SUBTITLE_ALIGNMENT_SETTING = [['1: 左下','2: 下中央','3: 右下','5: 上左','6: 上中央','7: 上右','9: 中央左',
+SUBTITLE_ALIGNMENT_SETTING = [['1: 左下','2: 中央下','3: 右下','5: 左上','6: 中央上','7: 右上','9: 中央左',
                               '10: 中央','11: 中央右'],[1,2,3,5,6,7,9,10,11]]
 
 #Message
@@ -126,3 +126,6 @@ STATUSBAR_INFO_MODE             = "Mode"
 STATUSBAR_INFO_NOTES            = "Notes"
 STATUSBAR_INFO_BOMBS            = "爆弾"
 STATUSBAR_INFO_OBSTACLES        = "壁"
+OUT_FOLDER_EDIT_NOTES           = "変数'time_name'は、ファイル名の衝突を防止するため必ずどこかに入れて下さい。"
+STAT_ACCURACY_NOT_MES           = "プレイしたノーツ情報がありません"
+STAT_ACCURACY_NOT_MES_TITLE     = "ノーツ情報がありません"

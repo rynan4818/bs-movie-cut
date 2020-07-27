@@ -606,7 +606,7 @@ class Form_main
                      "reduceDebris","noHUD","advancedHUD","autoRestart"]
     target = []
     @comboBox_filename.eachString {|a| target.push a}
-    Modaldlg_list_option_setting.set(target,variable_list, false, $out_file_name_select, FILENAME_EDIT_TITLE, true)
+    Modaldlg_list_option_setting.set(target,variable_list, false, $out_file_name_select, FILENAME_EDIT_TITLE, true, true, OUT_FOLDER_EDIT_NOTES)
     return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_list_option_setting,nil,nil)
     @comboBox_filename.setListStrings result[0]
     $out_file_name_select = result[1]
@@ -1092,6 +1092,12 @@ class Form_main
     end
     left_score = {}
     right_score = {}
+    left_accuracy_sum = 0
+    left_accuracy_count = 0
+    right_accuracy_sum = 0
+    right_accuracy_count = 0
+    accuracy_grid_sum = [[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+    accuracy_grid_count = [[0,0,0,0],[0,0,0,0],[0,0,0,0]]
     score = {}
     fast_time = nil
     last_time = nil
@@ -1101,8 +1107,18 @@ class Form_main
     note_details["Both"] = {}
     note_details["NoteA"] = {}
     note_details["NoteB"] = {}
+    startTime = 0
     songname = ""
     levelAuthorName = ""
+    songHash = ""
+    difficulty = ""
+    mode = ""
+    scorePercentage = 0.0
+    maxCombo = 0
+    missedNotes = 0
+    passedNotes = 0
+    hitNotes = 0
+    delta_accuracy = nil
     direction_type = ["Up","Down","Left","Right","UpLeft","UpRight","DownRight","DownLeft","Any"]
     @listBox_map.eachSelected do |i|
       target_startTime[startTime = @convert_list[i][1][@fields.index("startTime")]] = true
@@ -1110,8 +1126,28 @@ class Form_main
       last_time ||= startTime
       fast_time = startTime if fast_time > startTime
       last_time = startTime if last_time < startTime
-      songname = @convert_list[i][1][@fields.index("songName")]
-      levelAuthorName = @convert_list[i][1][@fields.index("levelAuthorName")]
+      if (total_play_count += 1) == 1
+        songname = @convert_list[i][1][@fields.index("songName")]
+        levelAuthorName = @convert_list[i][1][@fields.index("levelAuthorName")]
+        songHash = @convert_list[i][1][@fields.index("songHash")]
+        difficulty = @convert_list[i][1][@fields.index("difficulty")]
+        mode = @convert_list[i][1][@fields.index("mode")]
+        maxCombo = @convert_list[i][1][@fields.index("maxCombo")]
+        missedNotes = @convert_list[i][1][@fields.index("missedNotes")]
+        scorePercentage = @convert_list[i][1][@fields.index("scorePercentage")]
+        passedNotes = @convert_list[i][1][@fields.index("passedNotes")]
+        hitNotes = @convert_list[i][1][@fields.index("hitNotes")]
+      end
+    end
+    if total_play_count == 1
+      sql =  "SELECT max(scorePercentage) FROM MovieCutRecord WHERE startTime < #{startTime} AND mode = '#{mode}' AND songHash = '#{songHash}' AND difficulty = '#{difficulty}';"
+      result = db_execute(sql)
+      if result
+        fields,rows = result
+        if rows[0][0]
+          delta_accuracy = ((scorePercentage - rows[0][0]) * 100.0).round / 100.0
+        end
+      end
     end
     sql =  "SELECT startTime,noteType,afterScore,cutDistanceScore,finalScore,noteCutDirection,noteLine,noteLayer FROM NoteScore "
     sql += "WHERE event = 'noteFullyCut' AND startTime >= #{fast_time} AND startTime <= #{last_time};"
@@ -1124,9 +1160,14 @@ class Form_main
     if result
       fields,rows = result
     else
+      show
       return
     end
-    return if rows.size == 0
+    if rows.size == 0
+      messageBox(STAT_ACCURACY_NOT_MES, STAT_ACCURACY_NOT_MES_TITLE, 48)
+      show
+      return
+    end
     puts " completion"
     print "Counting ."
     start_time_check = {}
@@ -1136,7 +1177,6 @@ class Form_main
         progress += 1
         print "." if (progress % 10000) == 0
         unless start_time_check[startTime]
-          total_play_count += 1
           start_time_check[startTime] = true
         end
         fast_time ||= startTime
@@ -1155,9 +1195,13 @@ class Form_main
         if noteType == "NoteA"     #ê‘(ç∂)
           left_score[finalScore] ||= 0
           left_score[finalScore] += 1
+          left_accuracy_sum += finalScore
+          left_accuracy_count += 1
         elsif noteType == "NoteB"  #ê¬(âE)
           right_score[finalScore] ||= 0
           right_score[finalScore] += 1
+          right_accuracy_sum += finalScore
+          right_accuracy_count += 1
         end
         score[finalScore] ||= 0
         score[finalScore] += 1
@@ -1172,6 +1216,8 @@ class Form_main
           note_details[noteType][noteLayer][noteLine] ||= {}
           note_details[noteType][noteLayer][noteLine][noteCutDirection] ||= []
           note_details[noteType][noteLayer][noteLine][noteCutDirection].push finalScore
+          accuracy_grid_sum[noteLayer][noteLine] += finalScore
+          accuracy_grid_count[noteLayer][noteLine] += 1
         end
       end
     end
@@ -1220,10 +1266,77 @@ class Form_main
                 title += "    Total:#{total_play_count}plays"
               end
               out_f.puts line.sub(/#title#/,title)
+            when /#accuracy_summary#/
+              ave_cal = Proc.new do |sum,count,rounding|
+                if count > 0
+                  (sum.to_f / count.to_f * rounding.to_f).round / rounding.to_f
+                else
+                  "-"
+                end
+              end
+              out_f.puts "<table border=\"1\" align=\"center\">"
+              if total_play_count == 1
+                out_f.puts "<tr>"
+                out_f.puts "<th>ACCURACY RATIO</th>"
+                out_f.puts "<th>DELTA</th>"
+                out_f.puts "<th>MAX COMBO</th>"
+                out_f.puts "<th>MISSES</th>"
+                out_f.puts "<th>BLOQS</th>"
+                out_f.puts "</tr>"
+                out_f.puts "<tr>"
+                out_f.puts "<td>#{scorePercentage}%</td>"
+                if delta_accuracy
+                  if delta_accuracy > 0.0
+                    out_f.puts "<td>+#{delta_accuracy}%</td>"
+                  else
+                    out_f.puts "<td>#{delta_accuracy}%</td>"
+                  end
+                else
+                  out_f.puts "<td>-</td>"
+                end
+                out_f.puts "<td>#{maxCombo}</td>"
+                out_f.puts "<td>#{missedNotes}</td>"
+                out_f.puts "<td>#{hitNotes}/#{passedNotes}</td>"
+                out_f.puts "</tr>"
+              end
+              out_f.puts "<tr>"
+              out_f.puts "<th>LEFT HAND ACCURACY</th>"
+              out_f.puts "<th>RIGHT HAND ACCURACY</th>"
+              out_f.puts "<th>AVERAGE ACCURACY</th>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<td>#{ave_cal.call(left_accuracy_sum, left_accuracy_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_accuracy_sum, right_accuracy_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call((left_accuracy_sum + right_accuracy_sum), (left_accuracy_count + right_accuracy_count), 100)}</td>"
+              out_f.puts "</tr>"
+              out_f.puts "</table>"
+              out_f.puts "<table border=\"1\" align=\"center\">"
+              out_f.puts "<tr>"
+              out_f.puts "<th colspan = \"4\">ACCURACY GRID</th>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[2][0], accuracy_grid_count[2][0], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[2][1], accuracy_grid_count[2][1], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[2][2], accuracy_grid_count[2][2], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[2][3], accuracy_grid_count[2][3], 10)}</td>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[1][0], accuracy_grid_count[1][0], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[1][1], accuracy_grid_count[1][1], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[1][2], accuracy_grid_count[1][2], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[1][3], accuracy_grid_count[1][3], 10)}</td>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[0][0], accuracy_grid_count[0][0], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[0][1], accuracy_grid_count[0][1], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[0][2], accuracy_grid_count[0][2], 10)}</td>"
+              out_f.puts "<td>#{ave_cal.call(accuracy_grid_sum[0][3], accuracy_grid_count[0][3], 10)}</td>"
+              out_f.puts "</tr>"                                                   
+              out_f.puts "</table>"
             when /#note_details#/
-              note_div = Proc.new do |direction,line_t,layer_t,line_c,layer_c|
+              note_div = Proc.new do |line_t,layer_t,line_c,layer_c|
                 if line_t == line_c && layer_t == layer_c
-                  "<div class=\"note#{direction_type.index(direction)}\"></div>"
+                  "<div class=\"placement\"></div>"
                 else
                   "<div class=\"space\"></div>"
                 end
@@ -1236,73 +1349,73 @@ class Form_main
                   note_details["Both"][layer][line] ||= {}
                   note_details["NoteA"][layer][line] ||= {}
                   note_details["NoteB"][layer][line] ||= {}
+                  print "."
+                  if layer == 1 && line == 2
+                    out_f.puts "<tr>"
+                    out_f.puts "	<th class = \"border_f\"></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note0\"></div></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note1\"></div></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note2\"></div></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note3\"></div></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note4\"></div></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note5\"></div></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note6\"></div></th>"
+                    out_f.puts "	<th class = \"border_f\" colspan = \"3\"><div class=\"note7\"></div></th>"
+                    out_f.puts "	<th colspan = \"3\"><div class=\"note8\"></div></th>"
+                    out_f.puts "</tr>"
+                  end
+                  out_f.puts "<tr>"
+                  out_f.puts "<td class=\"border_f\">"
+                  out_f.puts "<div id=\"tbl-bdr\">"
+                  out_f.puts "<table>"
+                  out_f.puts "<tr>"
+                  out_f.puts "<td>#{note_div.call(line,layer,0,2)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,1,2)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,2,2)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,3,2)}</td>"
+                  out_f.puts "</tr>"
+                  out_f.puts "<tr>"
+                  out_f.puts "<td>#{note_div.call(line,layer,0,1)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,1,1)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,2,1)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,3,1)}</td>"
+                  out_f.puts "</tr>"
+                  out_f.puts "<tr>"
+                  out_f.puts "<td>#{note_div.call(line,layer,0,0)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,1,0)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,2,0)}</td>"
+                  out_f.puts "<td>#{note_div.call(line,layer,3,0)}</td>"
+                  out_f.puts "</tr>"
+                  out_f.puts "</table>"
+                  out_f.puts "</div>"
+                  out_f.puts "</td>"
                   direction_type.each do |direction|
                     both = note_details["Both"][layer][line][direction]
                     note_a = note_details["NoteA"][layer][line][direction]
                     note_b = note_details["NoteB"][layer][line][direction]
-                    if both || note_a || note_b
-                      print "."
-                      out_f.puts "<tr>"
-                      out_f.puts "<td class=\"border_f\">"
-                      out_f.puts "<div id=\"tbl-bdr\">"
-                      out_f.puts "<table>"
-                      out_f.puts "<tr>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,0,2)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,1,2)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,2,2)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,3,2)}</td>"
-                      out_f.puts "</tr>"
-                      out_f.puts "<tr>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,0,1)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,1,1)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,2,1)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,3,1)}</td>"
-                      out_f.puts "</tr>"
-                      out_f.puts "<tr>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,0,0)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,1,0)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,2,0)}</td>"
-                      out_f.puts "<td>#{note_div.call(direction,line,layer,3,0)}</td>"
-                      out_f.puts "</tr>"
-                      out_f.puts "</table>"
-                      out_f.puts "</div>"
-                      out_f.puts "</td>"
-                      [both,note_a,note_b].each_with_index do |notes,idx|
-                        if notes
-                          out_f.puts "<td>Notes<br>#{notes.size}</td>" #ÉmÅ[Écêî
-                          ave = notes.inject(:+).to_f / notes.size.to_f
-                          out_f.puts "<td>Ave<br>#{(ave * 100.0).round.to_f / 100.0}</td>" #ïΩãœíl
-                          sd = Math.sqrt(notes.inject(0) { |a,b| a + (b - ave) ** 2 } / notes.size) #ïÍïWèÄïŒç∑
-                          out_f.puts "<td>SD<br>#{(sd * 100.0).round.to_f / 100.0}</td>"#ïWèÄïŒç∑
-                          mode = notes.uniq.sort{|x,y| notes.count(y) <=> notes.count(x) }
-                          out_f.puts "<td>mode<br>#{mode[0]}</td>"#ç≈ïpíl
-                          out_f.puts "<td>2nd mode<br>#{mode[1]}</td>"#2î‘ñ⁄ÇÃç≈ïpíl
-                          out_f.puts "<td>3nd mode<br>#{mode[2]}</td>"#3î‘ñ⁄ÇÃç≈ïpíl
-                          out_f.puts "<td>4nd mode<br>#{mode[3]}</td>"#4î‘ñ⁄ÇÃç≈ïpíl
-                          if idx == 2
-                            out_f.puts "<td>5nd mode<br>#{mode[4]}</td>"#5î‘ñ⁄ÇÃç≈ïpíl
-                          else
-                            out_f.puts "<td class = \"border_f\">5nd mode<br>#{mode[4]}</td>"#5î‘ñ⁄ÇÃç≈ïpíl
-                          end
-                        else
-                          out_f.puts "<td>0</td>"
-                          out_f.puts "<td>-</td>"
-                          out_f.puts "<td>-</td>"
-                          out_f.puts "<td>-</td>"
-                          out_f.puts "<td>-</td>"
-                          out_f.puts "<td>-</td>"
-                          out_f.puts "<td>-</td>"
-                          if idx == 2
-                            out_f.puts "<td>-</td>"
-                          else
-                            out_f.puts "<td class = \"border_f\">-</td>"
-                          end
-                        end
+                    [both,note_a,note_b].each_with_index do |notes,idx|
+                      if idx == 2 && direction != "Any"
+                        out_f.puts "<td class = \"border_f\">"
+                      else
+                        out_f.puts "<td>"
                       end
+                      if notes
+                        out_f.puts "N:#{notes.size}<BR>" #ÉmÅ[Écêî
+                        ave = notes.inject(:+).to_f / notes.size.to_f
+                        out_f.puts "A:#{(ave * 10.0).round.to_f / 10.0}<BR>" #ïΩãœíl
+                        sd = Math.sqrt(notes.inject(0) { |a,b| a + (b - ave) ** 2 } / notes.size) #ïÍïWèÄïŒç∑
+                        out_f.puts "S:#{(sd * 10.0).round.to_f / 10.0}<BR>"#ïWèÄïŒç∑
+                        mode = notes.uniq.sort{|x,y| notes.count(y) <=> notes.count(x) }
+                        out_f.puts "M1:#{mode[0]}<BR>"#ç≈ïpíl
+                        out_f.puts "M2:#{mode[1]}<BR>"#2î‘ñ⁄ÇÃç≈ïpíl
+                        out_f.puts "M3:#{mode[2]}<BR>"#3î‘ñ⁄ÇÃç≈ïpíl
+                      else
+                        out_f.puts "N:0"
+                      end
+                      out_f.puts "</td>"
                     end
-                    out_f.puts "</tr>"
-                    
                   end
+                  out_f.puts "</tr>"
                 end
               end
             else
