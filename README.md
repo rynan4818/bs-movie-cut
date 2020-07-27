@@ -91,7 +91,7 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 ### Exerb                            #開発はActiveScriptRuby(1.8.7-p330)同封版を使用
 - http://exerb.osdn.jp/man/README.ja.html
 - 開発者:加藤勇也
-- ライセンス：LGPL
+- ライセンス：LGPL2.1
 
 ### gem                              #開発はActiveScriptRuby(1.8.7-p330)同封版を使用
 - https://rubygems.org/
@@ -121,7 +121,7 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 #### libiconv 1.11  (iconv.dll)       #Exerbでbs_movie_cut.exeに内包
 - https://www.gnu.org/software/libiconv/
 - Copyright (C) 1998, 2019 Free Software Foundation, Inc.
-- ライセンス：LGPL
+- ライセンス：LGPL2.1
 
 #### SQLite3  (sqlite3.dll)           #Exerbでbs_movie_cut.exeに内包
 - https://www.sqlite.org/index.html
