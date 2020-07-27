@@ -54,7 +54,7 @@ GUIフォーム画面の修正が必要な場合は、[FormDesigner](https://git
 bs_movie_cut はプログラム本体と各種ライブラリから構成されています。
 
 bs_movie_cutのソースコード及び各種ドキュメントについての著作権は作者であるリュナン(Twitter [@rynan4818](https://twitter.com/rynan4818))が有します。
-これらのライセンスはLGPL v2.1（GNU劣等一般公衆利用許諾契約書 v2.1）が適用されます。
+また、これらのライセンスはMIT License が適用されます。
 
 それ以外のbs_movie_cut.exe に内包しているrubyスクリプトやバイナリライブラリ、同梱のSQLite3のDLLやffmpegの実行ファイルは、それぞれの作者に著作権があります。配布ライセンスは、それぞれ異なるため詳細は下記の入手元を確認して下さい。
 
