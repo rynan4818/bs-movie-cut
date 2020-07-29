@@ -9,8 +9,8 @@ $KCODE='s'
 #                : language_en.rb  language_jp.rb
 #Creation Date   : 2020/01/08
 # 
-#Copyright       : 2020 Rynan. (Twitter @rynan4818)
-#License         : LGPL
+#Copyright       : 2020 リュナン (Twitter @rynan4818)
+#License         : MIT License
 #Tool            : ActiveScriptRuby(1.8.7-p330)
 #                  https://www.artonx.org/data/asr/
 #                  FormDesigner for Project VisualuRuby Ver 060501
@@ -49,7 +49,7 @@ require 'json'
 
 #ソフトバージョン
 SOFT_VER        = '2020/07/27'
-APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 Rynan.  (Twitter @rynan4818)"
+APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
 SETTING_FILE = EXE_DIR + 'setting.json'

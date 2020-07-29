@@ -9,8 +9,8 @@ $KCODE='s'
 #                : language_en.rb  language_jp.rb
 #Creation Date   : 2020/01/08
 # 
-#Copyright       : 2020 Rynan. (Twitter @rynan4818)
-#License         : LGPL
+#Copyright       : 2020 ƒŠƒ…ƒiƒ“ (Twitter @rynan4818)
+#License         : MIT License
 #Tool            : ActiveScriptRuby(1.8.7-p330)
 #                  https://www.artonx.org/data/asr/
 #                  FormDesigner for Project VisualuRuby Ver 060501
