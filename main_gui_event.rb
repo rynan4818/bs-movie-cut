@@ -1090,6 +1090,11 @@ class Form_main
       messageBox(MAIN_NOT_SELECT_MES2, MAIN_NOT_SELECT_MES2_TITLE, 48)
       return
     end
+    if messageBox(STAT_ACCURACY_MODE_OUTPUT, STAT_ACCURACY_MODE_OUTPUT_TITLE, 36) == 6 #はい
+      mode_output = true
+    else
+      mode_output = false
+    end
     left_score = {}
     right_score = {}
     left_accuracy_sum = 0
@@ -1267,6 +1272,12 @@ class Form_main
                 title += "    Total:#{total_play_count}plays"
               end
               out_f.puts line.sub(/#title#/,title)
+            when /#accuracy_placement_note#/
+              if mode_output
+                out_f.puts utf8cv("N:ノーツ数(Notes count)  A:平均値(Average)  S:標準偏差(SD)  M1:最頻値(Mode)  M2:2番目の最頻値(2sd mode)  M3:3番目の最頻値(3sd mode)")
+              else
+                out_f.puts utf8cv("上段(Upper):ノーツ数(Notes count)  中段(Middle):平均値(Average)  下段(Lower):標準偏差(SD)")
+              end
             when /#accuracy_summary#/
               ave_cal = Proc.new do |sum,count,rounding|
                 if count > 0
@@ -1342,7 +1353,16 @@ class Form_main
                   "<div class=\"space\"></div>"
                 end
               end
-              3.times do |layer|
+              if mode_output
+                notes_title = "N:"
+                ave_title   = "A:"
+                sd_title    = "S:"
+              else
+                notes_title = ""
+                ave_title   = ""
+                sd_title    = ""
+              end
+              2.downto(0) do |layer|
                 note_details["Both"][layer] ||= {}
                 note_details["NoteA"][layer] ||= {}
                 note_details["NoteB"][layer] ||= {}
@@ -1401,17 +1421,19 @@ class Form_main
                         out_f.puts "<td>"
                       end
                       if notes
-                        out_f.puts "N:#{notes.size}<BR>" #ノーツ数
+                        out_f.puts "#{notes_title}#{notes.size}<BR>" #ノーツ数
                         ave = notes.inject(:+).to_f / notes.size.to_f
-                        out_f.puts "A:#{(ave * 10.0).round.to_f / 10.0}<BR>" #平均値
+                        out_f.puts "#{ave_title}#{(ave * 10.0).round.to_f / 10.0}<BR>" #平均値
                         sd = Math.sqrt(notes.inject(0) { |a,b| a + (b - ave) ** 2 } / notes.size) #母標準偏差
-                        out_f.puts "S:#{(sd * 10.0).round.to_f / 10.0}<BR>"#標準偏差
-                        mode = notes.uniq.sort{|x,y| notes.count(y) <=> notes.count(x) }
-                        out_f.puts "M1:#{mode[0]}<BR>"#最頻値
-                        out_f.puts "M2:#{mode[1]}<BR>"#2番目の最頻値
-                        out_f.puts "M3:#{mode[2]}<BR>"#3番目の最頻値
+                        out_f.puts "#{sd_title}#{(sd * 10.0).round.to_f / 10.0}<BR>"#標準偏差
+                        if mode_output
+                          mode = notes.uniq.sort{|x,y| notes.count(y) <=> notes.count(x) }
+                          out_f.puts "M1:#{mode[0]}<BR>"#最頻値
+                          out_f.puts "M2:#{mode[1]}<BR>"#2番目の最頻値
+                          out_f.puts "M3:#{mode[2]}<BR>"#3番目の最頻値
+                        end
                       else
-                        out_f.puts "N:0"
+                        out_f.puts "#{notes_title}0"
                       end
                       out_f.puts "</td>"
                     end

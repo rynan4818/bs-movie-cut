@@ -336,22 +336,22 @@ h1 {
 }
 .space {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 14px;
+   height: 14px;
    background: white;
    position: relative;
 }
 .placement {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 14px;
+   height: 14px;
    background: black;
    position: relative;
 }
 .note1 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(0deg);
@@ -361,18 +361,18 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note6 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(45deg);
@@ -382,18 +382,18 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note2 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(90deg);
@@ -403,18 +403,18 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note4 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(135deg);
@@ -424,18 +424,18 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note0 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(180deg);
@@ -445,18 +445,18 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note5 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(225deg);
@@ -466,18 +466,18 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note3 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(270deg);
@@ -487,18 +487,18 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note7 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
    transform: rotate(315deg);
@@ -508,29 +508,29 @@ h1 {
    display: block;
    width: 0px;
    height: 0px;
-   top: 5px;
-   left: 3px;
+   top: 3px;
+   left: 2.5px;
    background: transparent;
-   border-top: 10px solid white;
-   border-left: 12px solid transparent;
-   border-right: 12px solid transparent;
+   border-top: 8px solid white;
+   border-left: 10px solid transparent;
+   border-right: 10px solid transparent;
    position: absolute;
 }
 .note8 {
    margin: auto;
-   width: 30px;
-   height: 30px;
+   width: 25px;
+   height: 25px;
    background: black;
    position: relative;
 }
 .note8:before {
    content: "";
    display: block;
-   width: 15px;
-   height: 15px;
+   width: 11px;
+   height: 11px;
    top: 7px;
    left: 7px;
-   border-radius: 15px;
+   border-radius: 11px;
    background: white;
    position: absolute;
 }
@@ -576,7 +576,8 @@ table.tbl-list td.border_f,table.tbl-list th.border_f {
   <p class="highcharts-description">
   </p>
 </figure>
-N:ノーツ数(Notes count)  A:平均値(Average)  S:標準偏差(SD)  M1:最頻値(Mode)  M2:2番目の最頻値(2sd mode)  M3:3番目の最頻値(3sd mode)<br>
+#accuracy_placement_note#
+<br>
 <table border="1" class="tbl-list">
 <tr>
 	<th class = "border_f" rowspan = "2">配置位置<br>Placement</th>
