@@ -592,7 +592,7 @@ class Form_main
       end
     end
     stert_check_time = "#{ss_time - CHECK_BACK_TIME}%+#{CHECK_LENGTH_TIME}"
-    end_check_time   = "#{ss_time + cut_time - CHECK_BACK_TIME}%+#{CHECK_LENGTH_TIME}"
+    end_check_time   = "#{ss_time + cut_time}%+#{CHECK_LENGTH_TIME}"
     probe_option = %Q! -show_frames -select_streams 0 -show_entries frame=key_frame,pkt_pts_time:side_data= -of csv=p=0 "#{file}"!
     command = %Q!ffprobe -v quiet -read_intervals #{stert_check_time}#{probe_option} > "#{FFPROBE_RESULT}"!
     puts command
@@ -605,7 +605,7 @@ class Form_main
     File.delete FFPROBE_RESULT if File.exist? FFPROBE_RESULT
     ss_key_time = 0.0
     start_frame_data.each do |line|
-      a = line.split(',')
+      a = line.strip.split(',')
       if a[0] == '1'
         if a[1].to_f < ss_time
           ss_key_time = a[1].to_f
@@ -615,17 +615,21 @@ class Form_main
       end
     end
     end_key_time = 0.0
+    end_key_get  = false
     end_frame_data.each do |line|
-      a = line.split(',')
+      a = line.strip.split(',')
       if a[0] == '1'
         if a[1].to_f < ss_time + cut_time
           next
         else
           end_key_time = a[1].to_f
+          end_key_get = true
           break
         end
       end
+      end_key_time = a[1].to_f
     end
+    puts "#Can't get the end keyframe!#" unless end_key_get
     return [ss_key_time,end_key_time,ss_key_time - ss_time,end_key_time - (ss_time + cut_time)]
   end
   
