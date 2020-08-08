@@ -25,11 +25,13 @@ class Form_main
   #subtitle printing(スコアを動画に焼き込み)の有効判定
   def printing_check
     encode_option = @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
-    if encode_option =~ /-c +copy/i || encode_option =~ /-c:v +copy/i || encode_option =~ /-c:v:\d +copy/i
+    if encode_option =~ /-(c|codec) +copy/i || encode_option =~ /-(c|codec):(v|V) +copy/i || encode_option =~ /-(c|codec):(v|V):\d +copy/i
       @checkBox_printing.style = 0x58000003
+      @checkBox_key_frame.style = 0x50000003
       @printing = false
     else
       @checkBox_printing.style = 0x50000003
+      @checkBox_key_frame.style = 0x58000003
       @printing = true
     end
     refresh(true)
@@ -386,6 +388,7 @@ class Form_main
     $movie_default_extension = "mkv"
     $input_movie_search_dir  = []
     $post_commnet         = DEFALUT_POST_COMMENT
+    $ss_option_after      = false
     if File.exist?(SETTING_FILE)
       setting = JSON.parse(File.read(SETTING_FILE))
       $time_format      = setting['time_format'].to_s         if setting['time_format']
@@ -415,6 +418,7 @@ class Form_main
       $timestamp_nomsg  = setting['timestamp_nomsg']          unless setting['timestamp_nomsg'] == nil
       $use_endtime      = setting['use_endtime']              unless setting['use_endtime'] == nil
       $preview_encode   = setting['preview_encode']           unless setting['preview_encode'] == nil
+      $ss_option_after  = setting['ss option after']          unless setting['ss option after'] == nil
       @checkBox_finished.check setting['finished']            unless setting['finished'] == nil
       @checkBox_failed.check setting['failed']                unless setting['failed'] == nil
       @checkBox_pause.check setting['pause']                  unless setting['pause'] == nil
@@ -423,6 +427,7 @@ class Form_main
       @checkBox_diff.check setting['Difference']              unless setting['Difference'] == nil
       @checkBox_speed.check setting['Speed']                  unless setting['Speed'] == nil
       @checkBox_length.check setting['Movie length']          unless setting['Movie length'] == nil
+      @checkBox_key_frame.check setting['Key frame']          unless setting['Key frame'] == nil
       @radioBtn_footer_cut.check setting['footer cut']        unless setting['footer cut'] == nil
       @radioBtn_header_cut.check setting['header cut']        unless setting['header cut'] == nil
       @radioBtn_header_cut.check true                         unless setting['header cut'] || setting['footer cut']
@@ -539,6 +544,7 @@ class Form_main
       setting['Movie length']          = @checkBox_length.checked?
       setting['with subtitles']        = @checkBox_subtitles.checked?
       setting['subtitle printing']     = @checkBox_printing.checked?
+      setting['Key frame']             = @checkBox_key_frame.checked?
       setting['footer cut']            = @radioBtn_footer_cut.checked?
       setting['header cut']            = @radioBtn_header_cut.checked?
       setting['Speed']                 = @checkBox_speed.checked?
@@ -571,8 +577,60 @@ class Form_main
     end
   end
   
+  def key_frame_check(file,startTime,target,stoptime)
+    #キーフレーム調査
+    create_time = target[3]
+    ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
+    cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
+    if @checkBox_length.checked?
+      length_time = @edit_length.text.strip.to_f
+      if cut_time > length_time
+        if @radioBtn_header_cut.checked?
+          ss_time += cut_time - length_time
+        end
+        cut_time = length_time
+      end
+    end
+    stert_check_time = "#{ss_time - CHECK_BACK_TIME}%+#{CHECK_LENGTH_TIME}"
+    end_check_time   = "#{ss_time + cut_time - CHECK_BACK_TIME}%+#{CHECK_LENGTH_TIME}"
+    probe_option = %Q! -show_frames -select_streams 0 -show_entries frame=key_frame,pkt_pts_time:side_data= -of csv=p=0 "#{file}"!
+    command = %Q!ffprobe -v quiet -read_intervals #{stert_check_time}#{probe_option} > "#{FFPROBE_RESULT}"!
+    puts command
+    `#{command}`
+    start_frame_data = File.readlines(FFPROBE_RESULT)
+    command = %Q!ffprobe -v quiet -read_intervals #{end_check_time}#{probe_option} > "#{FFPROBE_RESULT}"!
+    puts command
+    `#{command}`
+    end_frame_data = File.readlines(FFPROBE_RESULT)
+    File.delete FFPROBE_RESULT if File.exist? FFPROBE_RESULT
+    ss_key_time = 0.0
+    start_frame_data.each do |line|
+      a = line.split(',')
+      if a[0] == '1'
+        if a[1].to_f < ss_time
+          ss_key_time = a[1].to_f
+        else
+          break
+        end
+      end
+    end
+    end_key_time = 0.0
+    end_frame_data.each do |line|
+      a = line.split(',')
+      if a[0] == '1'
+        if a[1].to_f < ss_time + cut_time
+          next
+        else
+          end_key_time = a[1].to_f
+          break
+        end
+      end
+    end
+    return [ss_key_time,end_key_time,ss_key_time - ss_time,end_key_time - (ss_time + cut_time)]
+  end
+  
   #ffmpeg実行処理
-  def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true)
+  def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true,key_frame_data = nil)
     create_time = target[3]
     offset_time = @edit_start_offset.text.strip.to_f + $offset
     ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
@@ -586,17 +644,31 @@ class Form_main
         cut_time = length_time
       end
     end
+    if key_frame_data
+      ss_time = key_frame_data[0]
+      cut_time = key_frame_data[1] - key_frame_data[0]
+    end
+    #動画切り出し処理
     id = target[1][@fields.index('songHash')]
     title = target[1][@fields.index('songName')].gsub(/"/,'')
     artist = target[1][@fields.index('levelAuthorName')].gsub(/"/,'')
+    timestamp_unixtime_msec = startTime.to_i + (@edit_start_offset.text.strip.to_f * 1000.0).round + ($offset * 1000.0).round
+    timestamp = Time.at((timestamp_unixtime_msec / 1000.0).to_i).utc.strftime("%Y-%m-%dT%H:%M:%S")
+    timestamp += ".#{timestamp_unixtime_msec % 1000}000Z"
     if $ascii_mode
       $KCODE='NONE'
       title.gsub!(/[^ -~\t]/,' ')                    #ASCII 文字以外を空白に変換
       artist.gsub!(/[^ -~\t]/,' ')                   #ASCII 文字以外を空白に変換
       $KCODE='s'
     end
-    metadata  = %Q! -metadata "comment"="#{startTime}" -metadata "description"="#{id}" -metadata "title"="#{title}" !
-    metadata += %Q!-metadata "artist"="#{artist}" -metadata "date"="#{stoptime}" -metadata "keywords"="#{offset_time}" -metadata "composer"="#{cut_time}"!
+    metadata  = %Q! -metadata "comment"="#{startTime}" -metadata "description"="#{id}" -metadata "title"="#{title}"!
+    metadata += %Q! -metadata "artist"="#{artist}" -metadata "date"="#{stoptime}" -metadata "keywords"="#{offset_time}" -metadata "composer"="#{cut_time}"!
+    metadata += %Q! -metadata "creation_time"="#{timestamp}"!
+    if $ss_option_after
+      ss_option = %Q! -i "#{file}" -ss #{ss_time}!
+    else
+      ss_option = %Q! -ss #{ss_time} -i "#{file}"!
+    end
     if str_file && File.exist?(str_file)
       vf_option = ""
       if @checkBox_printing.checked? && @printing && vf
@@ -605,16 +677,16 @@ class Form_main
         vf_option = %Q! -vf "subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}'"!
       end
       if @checkBox_subtitles.checked?
-        command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{vf_option} "#{$subtitle_file}"!
+        command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{vf_option} "#{$subtitle_file}"!
         puts command
         `#{command}`
         command  = %Q!ffmpeg -i "#{$subtitle_file}" -i "#{str_file}" -y -map 0 -map 1 -c:a copy -c:v copy -c:s mov_text -metadata:s:s:0 language=eng !
         command += %Q!-metadata:s:s:0 title="Notes score"#{metadata} "#{out_dir}#{file_name}"!
       else
-        command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{vf_option} "#{out_dir}#{file_name}"!
+        command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{vf_option} "#{out_dir}#{file_name}"!
       end
     else
-      command = %Q!ffmpeg -ss #{ss_time} -i "#{file}" -t #{cut_time} -y #{ffmpeg_option}#{metadata} "#{out_dir}#{file_name}"!
+      command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{metadata} "#{out_dir}#{file_name}"!
     end
     puts command
     `#{command}`
@@ -623,7 +695,7 @@ class Form_main
   end
   
   ###字幕ファイル作成
-  def movie_sub_create(target,out_dir,file_name,startTime,stoptime)
+  def movie_sub_create(target,out_dir,file_name,startTime,stoptime,key_frame_data = nil)
     #字幕ファイル削除
     File.delete out_dir + file_name if File.exist? out_dir + file_name
     #DBから字幕データ取得
@@ -743,6 +815,10 @@ class Form_main
             end
             movie_stop_time =  movie_start_time + length_time
           end
+        end
+        if key_frame_data
+          movie_start_time += (key_frame_data[2] * 1000.0).to_i
+          movie_stop_time  += (key_frame_data[3] * 1000.0).to_i
         end
         next if (jimaku_start - movie_start_time) < 0
         break if (jimaku_start - movie_stop_time) > 0

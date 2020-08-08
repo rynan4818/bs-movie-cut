@@ -705,6 +705,7 @@ class Modaldlg_timestamp
   
   def end_time_check
     if File.exist? @edit_moviefile.text.strip
+      Dir.chdir(EXE_DIR)
       check_json = `ffprobe -v quiet -of json -show_format "#{@edit_moviefile.text.strip}"`
       probe = JSON.parse(check_json)
       duration = probe['format']['duration'].to_f

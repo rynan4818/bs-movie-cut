@@ -412,6 +412,7 @@ class Form_main < VRForm
     addControl(VRCheckbox,'checkBox_diff',"Song and play time difference +-",488,656,256,24)
     addControl(VRCheckbox,'checkBox_failed',"failed",272,624,64,24)
     addControl(VRCheckbox,'checkBox_finished',"finished",184,624,88,24)
+    addControl(VRCheckbox,'checkBox_key_frame',"Cut in keyframe units",568,696,168,24)
     addControl(VRCheckbox,'checkBox_length',"movie length",824,736,104,32)
     addControl(VRCheckbox,'checkBox_miss',"Miss <=",712,624,80,24)
     addControl(VRCheckbox,'checkBox_pause',"pause",336,624,72,24)

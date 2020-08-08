@@ -142,6 +142,7 @@ class Form_main
   end
 
   def button_run_clicked
+    Dir.chdir(EXE_DIR)
     @button_run.style     = 1476395008
     refresh
     @static_message.caption = "### Now converting!! ###"
@@ -259,13 +260,18 @@ class Form_main
       end
       str_dir = File.dirname($subtitle_file.to_s.strip) + "\\"
       str_file = File.basename($subtitle_file, ".*") + '.srt'
+      if !@printing && @checkBox_key_frame.checked?
+        key_frame_data = key_frame_check(file,startTime,target,stoptime)
+      else
+        key_frame_data = nil
+      end
       if @checkBox_printing.checked? && @printing || @checkBox_subtitles.checked?
-        movie_sub_create(target,str_dir,str_file,startTime,stoptime)
-        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file)
+        movie_sub_create(target,str_dir,str_file,startTime,stoptime,key_frame_data)
+        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,true,key_frame_data)
       else
         #字幕ファイル削除
         File.delete str_dir + str_file if File.exist? str_dir + str_file
-        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime)
+        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,false,true,key_frame_data)
       end
       #データベースに切り出し記録を残す
       db_open
@@ -361,6 +367,7 @@ class Form_main
   end
 
   def button_preview_clicked
+    Dir.chdir(EXE_DIR)
     unless File.exist? $preview_tool.to_s
       messageBox("'#{$preview_tool.to_s}' #{MAIN_BUTTON_PREVIEW_TOOL_CHECK}", MAIN_BUTTON_PREVIEW_TOOL_CHECK_TITLE, 48)
       return
@@ -399,8 +406,19 @@ class Form_main
       refresh
       str_dir = File.dirname($subtitle_file.to_s.strip) + "\\"
       str_file = File.basename($subtitle_file, ".*") + '.srt'
-      movie_sub_create(target,str_dir,str_file,startTime,stoptime)
-      ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf)
+      if !@printing && @checkBox_key_frame.checked?
+        key_frame_data = key_frame_check(file,startTime,target,stoptime)
+      else
+        key_frame_data = nil
+      end
+      if @checkBox_printing.checked? && @printing && vf || @checkBox_subtitles.checked?
+        movie_sub_create(target,str_dir,str_file,startTime,stoptime,key_frame_data)
+        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf,key_frame_data)
+      else
+        #字幕ファイル削除
+        File.delete str_dir + str_file if File.exist? str_dir + str_file
+        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf,key_frame_data)
+      end
       @button_preview.style     = 1342177280
       refresh
       show

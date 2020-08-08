@@ -218,6 +218,7 @@ def file_name_check(file_name)
 end
 
 def bsr_search(songHash)
+  Dir.chdir(EXE_DIR)
   beatsaver_data = {}
   if songHash =~ /^[0-9A-F]{40}/i
     begin
@@ -233,6 +234,7 @@ def bsr_search(songHash)
 end
 
 def ranked_check(main_self,song_hash,difficulty,mode)
+  Dir.chdir(EXE_DIR)
   unless $scoresaber_ranked
     SCORESABAER_URL =~ /limit=(\d+)/
     limit = $1.to_i

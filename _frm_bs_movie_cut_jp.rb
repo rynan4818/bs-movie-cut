@@ -412,6 +412,7 @@ class Form_main < VRForm
     addControl(VRCheckbox,'checkBox_diff',"曲時間とプレイ時間の差 ±",536,664,216,24)
     addControl(VRCheckbox,'checkBox_failed',"failed",272,632,64,24)
     addControl(VRCheckbox,'checkBox_finished',"finished",184,632,88,24)
+    addControl(VRCheckbox,'checkBox_key_frame',"キーフレーム単位でカットする",520,696,248,24)
     addControl(VRCheckbox,'checkBox_length',"動画長さ制限",808,736,120,32)
     addControl(VRCheckbox,'checkBox_miss',"ミス <=",712,632,80,24)
     addControl(VRCheckbox,'checkBox_pause',"pause",336,632,72,24)

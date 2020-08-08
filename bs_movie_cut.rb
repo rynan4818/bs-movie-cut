@@ -48,11 +48,14 @@ require 'json'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/08/01'
+SOFT_VER        = '2020/08/08'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
 SETTING_FILE = EXE_DIR + 'setting.json'
+
+#作業ファイル
+FFPROBE_RESULT = EXE_DIR + 'ffprobe_result.csv'
 
 #統計データ出力用テンプレート
 STAT_TEMPLATE_FILE = EXE_DIR + 'stat_template.txt'
@@ -69,6 +72,10 @@ SCORESABAER_URL      = "https://scoresaber.com/api.php?function=get-leaderboards
 NEW_CHECK_URL        = "https://rynan4818.github.io/release_info.json"
 MANUAL_URL           = "https://docs.google.com/document/d/1zyJ4o_rPToMF0anGCDlScW0-ZLSYKSyA6VPamWQS-h0"
 RELEASE_URL          = "https://github.com/rynan4818/bs-movie-cut/releases"
+
+#キーフレーム調査用
+CHECK_BACK_TIME      = 5.0
+CHECK_LENGTH_TIME    = 10.0
 
 #デフォルト設定
 #beatsaberのデータベースファイル名 1,2は検索順序
@@ -110,6 +117,9 @@ $scoresaber_ranked = nil  #ScoreSaber のランク譜面JSONデータ
 
 #切り出しファイルの保存先  .\\OUT\\はこの実行ファイルのあるフォルダ下の"OUT"フォルダ  フルパスでも可  \は\\にすること  末尾は\\必要
 DEFAULT_OUT_FOLDER     = ["#DEFAULT#  " + EXE_DIR + "OUT\\","#sample#  D:\\"]
+
+#カレントディレクトリを実行ファイルのフォルダにする
+Dir.chdir(EXE_DIR)
 
 #設定ファイルの初期読込
 $japanese_mode = false
