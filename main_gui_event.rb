@@ -277,9 +277,9 @@ class Form_main
       db_open
       sql = "INSERT INTO MovieCutFile(startTime, datetime, out_dir, filename, stoptime, offsetTime, cutTime) VALUES (?, ?, ?, ?, ?, ?, ?);"
       if $ascii_mode
-        @db.execute(sql,startTime,Time.now.to_i,out_dir,file_name,stoptime,offset_time, cut_time)
+        @db.execute(sql,startTime,Time.now.to_i,out_dir,file_name,stoptime,offset_time + $offset, cut_time)
       else
-        @db.execute(utf8cv(sql),startTime,Time.now.to_i,utf8cv(out_dir),utf8cv(file_name),stoptime,offset_time, cut_time)
+        @db.execute(utf8cv(sql),startTime,Time.now.to_i,utf8cv(out_dir),utf8cv(file_name),stoptime,offset_time + $offset, cut_time)
       end
       @db.close
     end

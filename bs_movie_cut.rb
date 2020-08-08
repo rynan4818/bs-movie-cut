@@ -48,7 +48,7 @@ require 'json'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2020/08/08rev2'
+SOFT_VER        = '2020/08/09'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
@@ -89,7 +89,8 @@ DEFAULT_TIMEFORMAT     = "%Y%m%d-%H%M%S"
 DEFAULT_PREVIEW_TOOL   = EXE_DIR + "ffplay.exe"
 DEFAULT_PREVIEW_FILE   = EXE_DIR + "temp.mp4"
 DEFAULT_SUBTITLE_FILE  = EXE_DIR + "subtitle_temp.mp4"
-DEFAULT_FFMPEG_OPTION  = ["#DEFALUT#  -c copy","#Twitter#  -vcodec libx264 -pix_fmt yuv420p -strict -2 -acodec aac -ab 256k -vb 10240k","#NO COPY#  "]
+DEFAULT_FFMPEG_OPTION  = ["#DEFALUT#  -c copy -async 1","#Twitter#  -c:v libx264 -pix_fmt yuv420p -strict -2 -c:a aac -ab 512k -vb 15360k -async 1",
+                          "#NVENC_Acopy#  -r 60 -vsync cfr -async 1 -c:a copy -c:v h264_nvenc -vb 22M","#NO COPY#  -async 1"]
 DEFAULT_OUT_FILE_NAME  = ['#DEFALUT#  #{time_name}_#{cleared}_#{songName}_#{levelAuthorName}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}.mp4',
                           '#SongNameTop#  #{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4',
                           '#bsrTop#  #{bsr}_#{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4']

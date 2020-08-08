@@ -25,7 +25,7 @@ class Form_main
   #subtitle printing(スコアを動画に焼き込み)の有効判定
   def printing_check
     encode_option = @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
-    if encode_option =~ /-(c|codec) +copy/i || encode_option =~ /-(c|codec):(v|V) +copy/i || encode_option =~ /-(c|codec):(v|V):\d +copy/i
+    if encode_option =~ /-(c|codec|vcodec) +copy/i || encode_option =~ /-(c|codec):(v|V) +copy/i || encode_option =~ /-(c|codec):(v|V):\d +copy/i
       @checkBox_printing.style = 0x58000003
       @checkBox_key_frame.style = 0x50000003
       @printing = false
@@ -636,7 +636,6 @@ class Form_main
   #ffmpeg実行処理
   def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true,key_frame_data = nil)
     create_time = target[3]
-    offset_time = @edit_start_offset.text.strip.to_f + $offset
     ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
     cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
     if @checkBox_length.checked?
@@ -651,12 +650,16 @@ class Form_main
     if key_frame_data
       ss_time = key_frame_data[0]
       cut_time = key_frame_data[1] - key_frame_data[0]
+      offset_time = @edit_start_offset.text.strip.to_f + key_frame_data[2]
+      timestamp_unixtime_msec = startTime.to_i + (@edit_start_offset.text.strip.to_f * 1000.0).round + (key_frame_data[2] * 1000.0).round
+    else
+      offset_time = @edit_start_offset.text.strip.to_f
+      timestamp_unixtime_msec = startTime.to_i + (@edit_start_offset.text.strip.to_f * 1000.0).round
     end
     #動画切り出し処理
     id = target[1][@fields.index('songHash')]
     title = target[1][@fields.index('songName')].gsub(/"/,'')
     artist = target[1][@fields.index('levelAuthorName')].gsub(/"/,'')
-    timestamp_unixtime_msec = startTime.to_i + (@edit_start_offset.text.strip.to_f * 1000.0).round + ($offset * 1000.0).round
     timestamp = Time.at((timestamp_unixtime_msec / 1000.0).to_i).utc.strftime("%Y-%m-%dT%H:%M:%S")
     timestamp += ".#{timestamp_unixtime_msec % 1000}000Z"
     if $ascii_mode
@@ -667,7 +670,7 @@ class Form_main
     end
     metadata  = %Q! -metadata "comment"="#{startTime}" -metadata "description"="#{id}" -metadata "title"="#{title}"!
     metadata += %Q! -metadata "artist"="#{artist}" -metadata "date"="#{stoptime}" -metadata "keywords"="#{offset_time}" -metadata "composer"="#{cut_time}"!
-    metadata += %Q! -metadata "creation_time"="#{timestamp}"!
+    metadata += %Q! -metadata "creation_time"="#{timestamp}" -metadata "copyright"="#{$offset}"!
     if $ss_option_after
       ss_option = %Q! -i "#{file}" -ss #{ss_time}!
     else
@@ -822,7 +825,6 @@ class Form_main
         end
         if key_frame_data
           movie_start_time += (key_frame_data[2] * 1000.0).to_i
-          movie_stop_time  += (key_frame_data[3] * 1000.0).to_i
         end
         next if (jimaku_start - movie_start_time) < 0
         break if (jimaku_start - movie_stop_time) > 0
