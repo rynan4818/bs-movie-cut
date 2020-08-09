@@ -389,9 +389,11 @@ class Form_main
       if $preview_encode
         ffmpeg_option = ' ' + @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
         vf = true
+        key_frame_cut = !@printing && @checkBox_key_frame.checked?
       else
-        ffmpeg_option = " -c copy"
+        ffmpeg_option = $preview_ffmpeg
         vf = false
+        key_frame_cut = $preview_keycut
       end
       startTime           =  target[1][@fields.index('startTime')]
       endTime             =  target[1][@fields.index('endTime')]
@@ -406,7 +408,7 @@ class Form_main
       refresh
       str_dir = File.dirname($subtitle_file.to_s.strip) + "\\"
       str_file = File.basename($subtitle_file, ".*") + '.srt'
-      if !@printing && @checkBox_key_frame.checked?
+      if key_frame_cut
         key_frame_data = key_frame_check(file,startTime,target,stoptime)
       else
         key_frame_data = nil

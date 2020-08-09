@@ -54,9 +54,6 @@ APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptR
 #設定ファイル
 SETTING_FILE = EXE_DIR + 'setting.json'
 
-#作業ファイル
-FFPROBE_RESULT = EXE_DIR + 'ffprobe_result.csv'
-
 #統計データ出力用テンプレート
 STAT_TEMPLATE_FILE = EXE_DIR + 'stat_template.txt'
 MAPPER_STAT_HTML   = EXE_DIR + 'mapper_stat.html'
@@ -88,6 +85,8 @@ DEFAULT_MOD_SETTING_FILE = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\B
 DEFAULT_TIMEFORMAT     = "%Y%m%d-%H%M%S"
 DEFAULT_PREVIEW_TOOL   = EXE_DIR + "ffplay.exe"
 DEFAULT_PREVIEW_FILE   = EXE_DIR + "temp.mp4"
+DEFALUT_PREVIEW_FFMPEG = " -c copy -async 1"
+DEFALUT_PREVIEW_KEYCUT = false
 DEFAULT_SUBTITLE_FILE  = EXE_DIR + "subtitle_temp.mp4"
 DEFAULT_FFMPEG_OPTION  = ["#DEFALUT#  -c copy -async 1","#Twitter#  -c:v libx264 -pix_fmt yuv420p -strict -2 -c:a aac -ab 512k -vb 15360k -async 1",
                           "#NVENC_Acopy#  -r 60 -vsync cfr -async 1 -c:a copy -c:v h264_nvenc -vb 22M","#NO COPY#  -async 1"]
@@ -103,8 +102,8 @@ DEFALUT_SUB_FONT_SIZE   = 20
 DEFALUT_SUB_ALIGNMENT   = 0
 DEFALUT_SUB_RED_NOTES   = "Red "
 DEFALUT_SUB_BLUE_NOTES  = "Blue"
-DEFALUT_SUB_CUT_FORMAT  = '"%4d:#{note_type}:%2d+%2d+%2d=%3d" % [noteID,(beforeScore == nil ? initialScore : beforeScore),afterScore,cutDistanceScore,finalScore]'
-DEFALUT_SUB_MISS_FORMAT = '"%4d:#{note_type}:Miss!" % noteID'
+DEFALUT_SUB_CUT_FORMAT  = '"%4d:#{note_type}:%2d+%2d+%2d=%3d" % [noteCount,(beforeScore == nil ? initialScore : beforeScore),afterScore,cutDistanceScore,finalScore]'
+DEFALUT_SUB_MISS_FORMAT = '"%4d:#{note_type}:Miss!" % noteCount'
 DEFALUT_POST_COMMENT    = ["Song:#songname#\r\nMapper:#mapper#\r\n!bsr #bsr#\r\n\r\n\r\n#BeatSaber\r\n",
                            "#songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#",
                            "#songname# , #mapper# , #songauthor# , #bsr# , #difficulty# , #score# , #rank# , #miss#"]

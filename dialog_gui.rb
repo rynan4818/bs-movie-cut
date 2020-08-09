@@ -824,6 +824,20 @@ end
 
 class Modaldlg_setting
 
+  class GroupBox_Preview
+  
+    def radioBtn_select_clicked
+      @checkBox_preview_keycut.style = 0x58000003
+      refresh(true)
+    end
+
+    def radioBtn_copy_clicked
+      @checkBox_preview_keycut.style = 0x50000003
+      refresh(true)
+    end
+
+  end
+
   def self_created
     @edit_dbfile.text        = $beatsaber_dbfile.to_s
     @edit_previewtool.text   = $preview_tool.to_s
@@ -842,6 +856,8 @@ class Modaldlg_setting
     @checkBox_newcheck.check $new_version_check
     @groupBox_Preview.radioBtn_copy.check true unless $preview_encode
     @groupBox_Preview.radioBtn_select.check $preview_encode
+    @groupBox_Preview.checkBox_preview_keycut.check $preview_keycut
+    @groupBox_Preview.checkBox_preview_keycut.style = 0x58000003 if $preview_encode
     dlg_move(self)
   end
   
@@ -948,6 +964,7 @@ class Modaldlg_setting
     $preview_encode = @groupBox_Preview.radioBtn_select.checked?
     $japanese_mode = @checkBox_japanese.checked?
     $new_version_check = @checkBox_newcheck.checked?
+    $preview_keycut = @groupBox_Preview.checkBox_preview_keycut.checked?
     close(true)
   end
 

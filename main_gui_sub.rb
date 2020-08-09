@@ -366,6 +366,8 @@ class Form_main
     $preview_tool         = DEFAULT_PREVIEW_TOOL
     $preview_tool_option  = ""
     $preview_file         = DEFAULT_PREVIEW_FILE
+    $preview_ffmpeg       = DEFALUT_PREVIEW_FFMPEG
+    $preview_keycut       = DEFALUT_PREVIEW_KEYCUT
     $subtitle_file        = DEFAULT_SUBTITLE_FILE
     $mod_setting_file     = DEFAULT_MOD_SETTING_FILE
     $ascii_mode           = false
@@ -396,6 +398,8 @@ class Form_main
       $preview_tool     = setting['preview_tool'].to_s        if setting['preview_tool']
       $preview_tool_option = setting['preview_tool_option'].to_s if setting['preview_tool_option']
       $preview_file     = setting['preview_file'].to_s        if setting['preview_file']
+      $preview_ffmpeg   = setting['preview_ffmpeg'].to_s      if setting['preview_ffmpeg']
+      $preview_keycut   = setting['preview_keycut']           if setting['preview_keycut']
       $subtitle_file    = setting['subtitle_file'].to_s       if setting['subtitle_file']
       $offset           = setting['offset'].to_f              if setting['offset']
       $mod_setting_file = setting['mod_setting_file'].to_s    if setting['mod_setting_file']
@@ -508,6 +512,8 @@ class Form_main
     setting['beatsaber_dbfile']      = $beatsaber_dbfile
     setting['preview_tool']          = $preview_tool
     setting['preview_tool_option']   = $preview_tool_option
+    setting['preview_ffmpeg']        = $preview_ffmpeg
+    setting['preview_keycut']        = $preview_keycut
     setting['time_save']             = $time_save
     setting['timestamp_nomsg']       = $timestamp_nomsg
     setting['use_endtime']           = $use_endtime
@@ -594,17 +600,14 @@ class Form_main
     stert_check_time = "#{ss_time - CHECK_BACK_TIME}%+#{CHECK_LENGTH_TIME}"
     end_check_time   = "#{ss_time + cut_time}%+#{CHECK_LENGTH_TIME}"
     probe_option = %Q! -show_frames -select_streams 0 -show_entries frame=key_frame,pkt_pts_time:side_data= -of csv=p=0 "#{file}"!
-    command = %Q!ffprobe -v quiet -read_intervals #{stert_check_time}#{probe_option} > "#{FFPROBE_RESULT}"!
+    command = %Q!ffprobe -v quiet -read_intervals #{stert_check_time}#{probe_option}!
     puts command
-    `#{command}`
-    start_frame_data = File.readlines(FFPROBE_RESULT)
-    command = %Q!ffprobe -v quiet -read_intervals #{end_check_time}#{probe_option} > "#{FFPROBE_RESULT}"!
+    start_frame_data =`#{command}`
+    command = %Q!ffprobe -v quiet -read_intervals #{end_check_time}#{probe_option}!
     puts command
-    `#{command}`
-    end_frame_data = File.readlines(FFPROBE_RESULT)
-    File.delete FFPROBE_RESULT if File.exist? FFPROBE_RESULT
+    end_frame_data = `#{command}`
     ss_key_time = 0.0
-    start_frame_data.each do |line|
+    start_frame_data.each_line do |line|
       a = line.strip.split(',')
       if a[0] == '1'
         if a[1].to_f < ss_time
@@ -616,7 +619,7 @@ class Form_main
     end
     end_key_time = 0.0
     end_key_get  = false
-    end_frame_data.each do |line|
+    end_frame_data.each_line do |line|
       a = line.strip.split(',')
       if a[0] == '1'
         if a[1].to_f < ss_time + cut_time
@@ -656,21 +659,22 @@ class Form_main
       offset_time = @edit_start_offset.text.strip.to_f
       timestamp_unixtime_msec = startTime.to_i + (@edit_start_offset.text.strip.to_f * 1000.0).round
     end
+    offset_time = (offset_time * 1000.0).round.to_f / 1000.0
     #“®‰æØ‚èo‚µˆ—
     id = target[1][@fields.index('songHash')]
     title = target[1][@fields.index('songName')].gsub(/"/,'')
     artist = target[1][@fields.index('levelAuthorName')].gsub(/"/,'')
     timestamp = Time.at((timestamp_unixtime_msec / 1000.0).to_i).utc.strftime("%Y-%m-%dT%H:%M:%S")
-    timestamp += ".#{timestamp_unixtime_msec % 1000}000Z"
+    timestamp += ".#{"%03d" % (timestamp_unixtime_msec % 1000)}000Z"
     if $ascii_mode
       $KCODE='NONE'
       title.gsub!(/[^ -~\t]/,' ')                    #ASCII •¶ŽšˆÈŠO‚ð‹ó”’‚É•ÏŠ·
       artist.gsub!(/[^ -~\t]/,' ')                   #ASCII •¶ŽšˆÈŠO‚ð‹ó”’‚É•ÏŠ·
       $KCODE='s'
     end
-    metadata  = %Q! -metadata "comment"="#{startTime}" -metadata "description"="#{id}" -metadata "title"="#{title}"!
+    metadata  = %Q! -metadata "comment"="#{startTime}" -metadata "description"="#{id}" -metadata "title"="#{title}" -metadata "episode_id"="#{file_name.gsub(/"/,'')}"!
     metadata += %Q! -metadata "artist"="#{artist}" -metadata "date"="#{stoptime}" -metadata "keywords"="#{offset_time}" -metadata "composer"="#{cut_time}"!
-    metadata += %Q! -metadata "creation_time"="#{timestamp}" -metadata "copyright"="#{$offset}"!
+    metadata += %Q! -metadata "creation_time"="#{timestamp}" -metadata "copyright"="#{$offset}" -metadata "genre"="#{ss_time}" -metadata "synopsis"="#{ffmpeg_option.gsub(/"/,'')}"!
     if $ss_option_after
       ss_option = %Q! -i "#{file}" -ss #{ss_time}!
     else
@@ -775,7 +779,11 @@ class Form_main
               initialScore     = rows[rows_idx][fields.index('initialScore')]
               beforeScore      = rows[rows_idx][fields.index('beforeScore')]
               afterScore       = rows[rows_idx][fields.index('afterScore')]
+              cutMultiplier    = rows[rows_idx][fields.index('cutMultiplier')]
               cutDistanceScore = rows[rows_idx][fields.index('cutDistanceScore')]
+              noteCutDirection = rows[rows_idx][fields.index('noteCutDirection')]
+              noteLine         = rows[rows_idx][fields.index('noteLine')]
+              noteLayer        = rows[rows_idx][fields.index('noteLayer')]
               finalScore       = rows[rows_idx][fields.index('finalScore')]
               score            = rows[rows_idx][fields.index('score')]
               currentMaxScore  = rows[rows_idx][fields.index('currentMaxScore')]
@@ -784,8 +792,15 @@ class Form_main
               hitNotes         = rows[rows_idx][fields.index('hitNotes')]
               missedNotes      = rows[rows_idx][fields.index('missedNotes')]
               combo            = rows[rows_idx][fields.index('combo')]
+              maxCombo         = rows[rows_idx][fields.index('maxCombo')]
               saberSpeed       = rows[rows_idx][fields.index('saberSpeed')].round
+              passedBombs      = rows[rows_idx][fields.index('passedBombs')]
+              hitBombs         = rows[rows_idx][fields.index('hitBombs')]
+              batteryEnergy    = rows[rows_idx][fields.index('batteryEnergy')]
+              multiplier       = rows[rows_idx][fields.index('multiplier')]
+              multiplierProgress  = rows[rows_idx][fields.index('multiplierProgress')]
               cutDistanceToCenter = (rows[rows_idx][fields.index('cutDistanceToCenter')] * 1000.0).round
+              noteCount = noteID - passedBombs + 1
               if noteType == 'NoteA'
                 note_type = $subtitle_red_notes
               elsif noteType == 'NoteB'

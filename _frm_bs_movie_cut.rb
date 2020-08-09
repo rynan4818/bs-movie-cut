@@ -269,10 +269,12 @@ class Modaldlg_setting < VRModalDialog
 
   class GroupBox_Preview < VRGroupbox
     include VRStdControlContainer
+    attr_reader :checkBox_preview_keycut
     attr_reader :radioBtn_copy
     attr_reader :radioBtn_select
 
     def construct
+      addControl(VRCheckbox,'checkBox_preview_keycut',"Cut in keyframe units",8,52,200,24)
       addControl(VRRadiobutton,'radioBtn_copy',"Copy",8,24,80,32)
       addControl(VRRadiobutton,'radioBtn_select',"Select encode option",112,24,176,32)
     end
@@ -280,42 +282,42 @@ class Modaldlg_setting < VRModalDialog
 
   def construct
     self.caption = 'Setting'
-    self.move(226,71,655,709)
-    addControl(GroupBox_Preview,'groupBox_Preview',"Preview encode",24,336,296,64)
-    addControl(VRButton,'button_cancel',"CANCEL",400,608,96,32)
+    self.move(226,71,655,729)
+    addControl(GroupBox_Preview,'groupBox_Preview',"Preview encode",24,336,296,84)
+    addControl(VRButton,'button_cancel',"CANCEL",400,628,96,32)
     addControl(VRButton,'button_db_select',"select",560,40,56,24)
-    addControl(VRButton,'button_default',"DEFAULT",464,472,88,24)
-    addControl(VRButton,'button_ok',"OK",520,608,96,32)
+    addControl(VRButton,'button_default',"DEFAULT",464,492,88,24)
+    addControl(VRButton,'button_ok',"OK",520,628,96,32)
     addControl(VRButton,'button_opendir_select',"select",488,184,56,24)
-    addControl(VRButton,'button_parameter',"parameter manual",464,496,152,24)
+    addControl(VRButton,'button_parameter',"parameter manual",464,516,152,24)
     addControl(VRButton,'button_preview_select',"select",376,248,56,24)
     addControl(VRButton,'button_preview_temp',"select",552,304,64,24)
-    addControl(VRButton,'button_subtitle_temp',"select",552,432,64,24)
-    addControl(VRCheckbox,'checkBox_ascii',"Remove non-ASCII code",24,592,296,24)
-    addControl(VRCheckbox,'checkBox_japanese',"Japanese mode (After restart)",376,544,240,24)
-    addControl(VRCheckbox,'checkBox_newcheck',"Check latest version",24,544,288,24)
+    addControl(VRButton,'button_subtitle_temp',"select",552,452,64,24)
+    addControl(VRCheckbox,'checkBox_ascii',"Remove non-ASCII code",24,612,296,24)
+    addControl(VRCheckbox,'checkBox_japanese',"Japanese mode (After restart)",376,564,240,24)
+    addControl(VRCheckbox,'checkBox_newcheck',"Check latest version",24,564,288,24)
     addControl(VRCheckbox,'checkBox_no_message',"Do not show message for timestamp check",24,112,328,24)
-    addControl(VRCheckbox,'checkBox_stop_time_menu',"Use endtime for stoptime",24,464,216,24)
+    addControl(VRCheckbox,'checkBox_stop_time_menu',"Use endtime for stoptime",24,484,216,24)
     addControl(VRCheckbox,'checkBox_timesave',"Saves and reads the original movie file's timestamp the database. (recommended)",24,80,592,24)
     addControl(VREdit,'edit_dbfile',"",24,40,536,24)
     addControl(VREdit,'edit_extension',"mkv",560,184,56,24)
-    addControl(VREdit,'edit_offset',"0.0",512,360,56,32)
+    addControl(VREdit,'edit_offset',"0.0",512,380,56,32)
     addControl(VREdit,'edit_opendir',"",24,184,464,24)
     addControl(VREdit,'edit_preview_temp',"",24,304,528,24)
     addControl(VREdit,'edit_previewtool',"",24,248,352,24)
     addControl(VREdit,'edit_previewtool_option',"",448,248,168,24)
-    addControl(VREdit,'edit_subtitle_temp',"",24,432,528,24)
-    addControl(VREdit,'edit_time_format',"",104,496,360,24)
+    addControl(VREdit,'edit_subtitle_temp',"",24,452,528,24)
+    addControl(VREdit,'edit_time_format',"",104,516,360,24)
     addControl(VRStatic,'static1',"beatsaber.db file",24,16,136,24)
     addControl(VRStatic,'static10',"open movie folder",24,160,136,24)
     addControl(VRStatic,'static11',"default extension",544,144,72,40)
-    addControl(VRStatic,'static2',"time format",24,496,80,24)
-    addControl(VRStatic,'static3',"(WARNING:tool install path ASCII only)",24,616,288,24)
+    addControl(VRStatic,'static2',"time format",24,516,80,24)
+    addControl(VRStatic,'static3',"(WARNING:tool install path ASCII only)",24,636,288,24)
     addControl(VRStatic,'static4',"preview tool",24,224,112,24)
     addControl(VRStatic,'static5',"preview temporary file (HDD recommended to prevent SSD degradation)",24,280,520,24)
-    addControl(VRStatic,'static6',"offset time",432,368,80,24)
-    addControl(VRStatic,'static7',"sec",568,368,32,24)
-    addControl(VRStatic,'static8',"subtitle temporary file [Cannot use half-width spaces in the path] (HDD recommended)",24,408,608,24)
+    addControl(VRStatic,'static6',"offset time",432,388,80,24)
+    addControl(VRStatic,'static7',"sec",568,388,32,24)
+    addControl(VRStatic,'static8',"subtitle temporary file [Cannot use half-width spaces in the path] (HDD recommended)",24,428,608,24)
     addControl(VRStatic,'static9',"preview tool option",448,224,168,24)
   end 
 

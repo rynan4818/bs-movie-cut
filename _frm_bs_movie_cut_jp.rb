@@ -269,10 +269,12 @@ class Modaldlg_setting < VRModalDialog
 
   class GroupBox_Preview < VRGroupbox
     include VRStdControlContainer
+    attr_reader :checkBox_preview_keycut
     attr_reader :radioBtn_copy
     attr_reader :radioBtn_select
 
     def construct
+      addControl(VRCheckbox,'checkBox_preview_keycut',"キーフレーム単位カット",8,52,200,24)
       addControl(VRRadiobutton,'radioBtn_copy',"常にCopy",8,24,96,32)
       addControl(VRRadiobutton,'radioBtn_select',"選択中のオプション",112,24,176,32)
     end
@@ -280,42 +282,42 @@ class Modaldlg_setting < VRModalDialog
 
   def construct
     self.caption = '設定'
-    self.move(226,71,655,704)
-    addControl(GroupBox_Preview,'groupBox_Preview',"プレビュー時のFFmpegオプション",24,336,296,64)
-    addControl(VRButton,'button_cancel',"キャンセル",392,600,96,32)
+    self.move(226,71,655,724)
+    addControl(GroupBox_Preview,'groupBox_Preview',"プレビュー時のFFmpegオプション",24,336,296,84)
+    addControl(VRButton,'button_cancel',"キャンセル",392,620,96,32)
     addControl(VRButton,'button_db_select',"選択",560,40,56,24)
-    addControl(VRButton,'button_default',"デフォルト",464,472,88,24)
-    addControl(VRButton,'button_ok',"OK",520,600,96,32)
+    addControl(VRButton,'button_default',"デフォルト",464,492,88,24)
+    addControl(VRButton,'button_ok',"OK",520,620,96,32)
     addControl(VRButton,'button_opendir_select',"選択",488,184,56,24)
-    addControl(VRButton,'button_parameter',"パラメータ説明",464,496,152,24)
+    addControl(VRButton,'button_parameter',"パラメータ説明",464,516,152,24)
     addControl(VRButton,'button_preview_select',"選択",376,248,56,24)
     addControl(VRButton,'button_preview_temp',"選択",552,304,64,24)
-    addControl(VRButton,'button_subtitle_temp',"選択",552,432,64,24)
-    addControl(VRCheckbox,'checkBox_ascii',"ASCII印字可能文字以外を削除",24,592,296,24)
-    addControl(VRCheckbox,'checkBox_japanese',"日本語モード (再起動後有効)",376,544,240,24)
-    addControl(VRCheckbox,'checkBox_newcheck',"最新バージョンをチェックする",24,544,264,24)
+    addControl(VRButton,'button_subtitle_temp',"選択",552,452,64,24)
+    addControl(VRCheckbox,'checkBox_ascii',"ASCII印字可能文字以外を削除",24,612,296,24)
+    addControl(VRCheckbox,'checkBox_japanese',"日本語モード (再起動後有効)",376,564,240,24)
+    addControl(VRCheckbox,'checkBox_newcheck',"最新バージョンをチェックする",24,564,264,24)
     addControl(VRCheckbox,'checkBox_no_message',"タイムスタンプチェックの確認メッセージを表示せず保存した物を優先する。",24,112,600,24)
-    addControl(VRCheckbox,'checkBox_stop_time_menu',"終了時間にmenuTimeではなくendTimeを使用する。",24,464,400,24)
+    addControl(VRCheckbox,'checkBox_stop_time_menu',"終了時間にmenuTimeではなくendTimeを使用する。",24,484,400,24)
     addControl(VRCheckbox,'checkBox_timesave',"元動画ファイルのタイムスタンプをデータベースに保存し読込する。(推奨)",24,80,600,24)
     addControl(VREdit,'edit_dbfile',"",24,40,536,24)
     addControl(VREdit,'edit_extension',"mkv",560,184,56,24)
-    addControl(VREdit,'edit_offset',"0.0",520,360,56,32)
+    addControl(VREdit,'edit_offset',"0.0",520,380,56,32)
     addControl(VREdit,'edit_opendir',"",24,184,464,24)
     addControl(VREdit,'edit_preview_temp',"",24,304,528,24)
     addControl(VREdit,'edit_previewtool',"",24,248,352,24)
     addControl(VREdit,'edit_previewtool_option',"",448,248,168,24)
-    addControl(VREdit,'edit_subtitle_temp',"",24,432,528,24)
-    addControl(VREdit,'edit_time_format',"",104,496,360,24)
+    addControl(VREdit,'edit_subtitle_temp',"",24,452,528,24)
+    addControl(VREdit,'edit_time_format',"",104,516,360,24)
     addControl(VRStatic,'static1',"beatsaber.db ファイル",24,16,168,24)
     addControl(VRStatic,'static10',"メニューのファイル→動画を開くで最初に表示するフォルダ",24,160,448,24)
     addControl(VRStatic,'static11',"標準拡張子",544,160,80,24)
-    addControl(VRStatic,'static2',"時間表記",32,496,72,24)
-    addControl(VRStatic,'static3',"(注意:インストールパスはASCII文字以外不可)",24,616,336,24)
+    addControl(VRStatic,'static2',"時間表記",32,516,72,24)
+    addControl(VRStatic,'static3',"(注意:インストールパスはASCII文字以外不可)",24,636,336,24)
     addControl(VRStatic,'static4',"プレビューに使用するツール",24,224,232,24)
     addControl(VRStatic,'static5',"プレビュー用一時動画ファイル (SSD劣化防止の為HDDを推奨)",24,280,464,24)
-    addControl(VRStatic,'static6',"カットの全体オフセット",344,368,176,24)
-    addControl(VRStatic,'static7',"秒",584,368,32,24)
-    addControl(VRStatic,'static8',"スコア字幕用一時動画ファイル [パスに半角空白不可] (SSD劣化防止でHDDを推奨)",24,408,600,24)
+    addControl(VRStatic,'static6',"カットの全体オフセット",344,388,176,24)
+    addControl(VRStatic,'static7',"秒",584,388,32,24)
+    addControl(VRStatic,'static8',"スコア字幕用一時動画ファイル [パスに半角空白不可] (SSD劣化防止でHDDを推奨)",24,428,600,24)
     addControl(VRStatic,'static9',"ツール用オプション",448,224,168,24)
   end 
 
