@@ -592,62 +592,62 @@ table.tbl-list td.border_f,table.tbl-list th.border_f {
 	<th colspan = "3"><div class="note8"></div></th>
 </tr>
 <tr>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th>右手<br>Right</th>
 </tr>
 #note_details#
 <tr>
 	<th class = "border_f" rowspan = "2">配置位置<br>Placement</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th class = "border_f">右手<br>Right</th>
-	<th>両手<br>Two</th>
+	<th>両手<br>Both</th>
 	<th>左手<br>Left</th>
 	<th>右手<br>Right</th>
 </tr>
@@ -670,7 +670,7 @@ Highcharts.chart('container1', {
         type: 'column'
     },
     title: {
-        text: '両手合計：Two-handed total'
+        text: '両手合計：Both-handed total'
     },
     subtitle: {
         text: '69点は0-69点の合計:[69 scores is a 0-69 total]'

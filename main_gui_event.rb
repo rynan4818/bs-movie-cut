@@ -1117,10 +1117,20 @@ class Form_main
     end
     left_score = {}
     right_score = {}
-    left_accuracy_sum = 0
-    left_accuracy_count = 0
-    right_accuracy_sum = 0
-    right_accuracy_count = 0
+    left_count = 0
+    left_before_accuracy_sum = 0
+    left_cut_accuracy_sum = 0
+    left_after_accuracy_sum = 0
+    left_speed_sum = 0.0
+    left_speed_min = 9999.0
+    left_speed_max = 0.0
+    right_count = 0
+    right_before_accuracy_sum = 0
+    right_cut_accuracy_sum = 0
+    right_after_accuracy_sum = 0
+    right_speed_sum = 0.0
+    right_speed_min = 9999.0
+    right_speed_max = 0.0
     accuracy_grid_sum = [[0,0,0,0],[0,0,0,0],[0,0,0,0]]
     accuracy_grid_count = [[0,0,0,0],[0,0,0,0],[0,0,0,0]]
     score = {}
@@ -1175,7 +1185,7 @@ class Form_main
         end
       end
     end
-    sql =  "SELECT startTime,noteType,afterScore,cutDistanceScore,finalScore,noteCutDirection,noteLine,noteLayer FROM NoteScore "
+    sql =  "SELECT startTime,noteType,afterScore,cutDistanceScore,finalScore,saberSpeed,noteCutDirection,noteLine,noteLayer FROM NoteScore "
     sql += "WHERE event = 'noteFullyCut' AND startTime >= #{fast_time} AND startTime <= #{last_time};"
     fast_time = nil
     last_time = nil
@@ -1216,18 +1226,29 @@ class Form_main
         afterScore = cols[fields.index("afterScore")].to_i
         cutDistanceScore = cols[fields.index("cutDistanceScore")].to_i
         finalScore = cols[fields.index("finalScore")].to_i
+        saberSpeed = cols[fields.index("saberSpeed")].to_f
         next if finalScore > 115
         beforeScore = finalScore - cutDistanceScore - afterScore
         if noteType == "NoteA"     #Ô(¶)
           left_score[finalScore] ||= 0
           left_score[finalScore] += 1
-          left_accuracy_sum += finalScore
-          left_accuracy_count += 1
+          left_count += 1
+          left_before_accuracy_sum += beforeScore
+          left_cut_accuracy_sum += cutDistanceScore
+          left_after_accuracy_sum += afterScore
+          left_speed_sum += saberSpeed
+          left_speed_min = saberSpeed if left_speed_min > saberSpeed
+          left_speed_max = saberSpeed if left_speed_max < saberSpeed
         elsif noteType == "NoteB"  #Â(‰E)
           right_score[finalScore] ||= 0
           right_score[finalScore] += 1
-          right_accuracy_sum += finalScore
-          right_accuracy_count += 1
+          right_count += 1
+          right_before_accuracy_sum += beforeScore
+          right_cut_accuracy_sum += cutDistanceScore
+          right_after_accuracy_sum += afterScore
+          right_speed_sum += saberSpeed
+          right_speed_min = saberSpeed if right_speed_min > saberSpeed
+          right_speed_max = saberSpeed if right_speed_max < saberSpeed
         end
         score[finalScore] ||= 0
         score[finalScore] += 1
@@ -1307,39 +1328,119 @@ class Form_main
                 end
               end
               out_f.puts "<table border=\"1\" align=\"center\">"
+              out_f.puts "<tr>"
+              out_f.puts "<th colspan = \"11\">ACCURACY</th>"
+              out_f.puts "</tr>"
               if total_play_count == 1
                 out_f.puts "<tr>"
-                out_f.puts "<th>ACCURACY RATIO</th>"
-                out_f.puts "<th>DELTA</th>"
-                out_f.puts "<th>MAX COMBO</th>"
+                out_f.puts "<th colspan = \"3\">ACCURACY RATIO</th>"
+                out_f.puts "<th colspan = \"3\">DELTA</th>"
+                out_f.puts "<th colspan = \"3\">MAX COMBO</th>"
                 out_f.puts "<th>MISSES</th>"
                 out_f.puts "<th>BLOQS</th>"
                 out_f.puts "</tr>"
                 out_f.puts "<tr>"
-                out_f.puts "<td>#{scorePercentage}%</td>"
+                out_f.puts "<td colspan = \"3\">#{scorePercentage}%</td>"
                 if delta_accuracy
                   if delta_accuracy > 0.0
-                    out_f.puts "<td>+#{delta_accuracy}%</td>"
+                    out_f.puts "<td colspan = \"3\">+#{delta_accuracy}%</td>"
                   else
-                    out_f.puts "<td>#{delta_accuracy}%</td>"
+                    out_f.puts "<td colspan = \"3\">#{delta_accuracy}%</td>"
                   end
                 else
-                  out_f.puts "<td>-</td>"
+                  out_f.puts "<td colspan = \"3\">-</td>"
                 end
-                out_f.puts "<td>#{maxCombo}</td>"
+                out_f.puts "<td colspan = \"3\">#{maxCombo}</td>"
                 out_f.puts "<td>#{missedNotes}</td>"
                 out_f.puts "<td>#{hitNotes}/#{passedNotes}</td>"
                 out_f.puts "</tr>"
               end
               out_f.puts "<tr>"
-              out_f.puts "<th>LEFT HAND ACCURACY</th>"
-              out_f.puts "<th>RIGHT HAND ACCURACY</th>"
-              out_f.puts "<th>AVERAGE ACCURACY</th>"
+              out_f.puts "<th colspan = \"3\">LEFT HAND ACCURACY</th>"
+              out_f.puts "<th colspan = \"3\">RIGHT HAND ACCURACY</th>"
+              out_f.puts "<th colspan = \"3\">BOTH HANDS ACCURACY</th>"
+              out_f.puts "</tr>"
+              left_accuracy_sum  = left_before_accuracy_sum + left_cut_accuracy_sum + left_after_accuracy_sum
+              right_accuracy_sum = right_before_accuracy_sum + right_cut_accuracy_sum + right_after_accuracy_sum
+              out_f.puts "<tr>"
+              out_f.puts "<td colspan = \"3\">#{ave_cal.call(left_accuracy_sum, left_count, 100)}</td>"
+              out_f.puts "<td colspan = \"3\">#{ave_cal.call(right_accuracy_sum, right_count, 100)}</td>"
+              out_f.puts "<td colspan = \"3\">#{ave_cal.call((left_accuracy_sum + right_accuracy_sum), (left_count + right_count), 100)}</td>"
               out_f.puts "</tr>"
               out_f.puts "<tr>"
-              out_f.puts "<td>#{ave_cal.call(left_accuracy_sum, left_accuracy_count, 100)}</td>"
-              out_f.puts "<td>#{ave_cal.call(right_accuracy_sum, right_accuracy_count, 100)}</td>"
-              out_f.puts "<td>#{ave_cal.call((left_accuracy_sum + right_accuracy_sum), (left_accuracy_count + right_accuracy_count), 100)}</td>"
+              out_f.puts "<th>BEFORE</th>"
+              out_f.puts "<th>CUT</th>"
+              out_f.puts "<th>AFTER</th>"
+              out_f.puts "<th>BEFORE</th>"
+              out_f.puts "<th>CUT</th>"
+              out_f.puts "<th>AFTER</th>"
+              out_f.puts "<th>BEFORE</th>"
+              out_f.puts "<th>CUT</th>"
+              out_f.puts "<th>AFTER</th>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<td>#{ave_cal.call(left_before_accuracy_sum, left_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_cut_accuracy_sum, left_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_after_accuracy_sum, left_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_before_accuracy_sum, right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_cut_accuracy_sum, right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_after_accuracy_sum, right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_before_accuracy_sum + right_before_accuracy_sum, left_count + right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_cut_accuracy_sum + right_cut_accuracy_sum, left_count + right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_after_accuracy_sum + right_after_accuracy_sum, left_count + right_count, 100)}</td>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<th colspan = \"11\">CUT SPEED</th>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<th colspan = \"3\">LEFT HAND CUT SPEED</th>"
+              out_f.puts "<th colspan = \"3\">RIGHT HAND CUT SPEED</th>"
+              out_f.puts "<th colspan = \"3\">BOTH HANDS CUT SPPED</th>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<th>AVERAGE</th>"
+              out_f.puts "<th>MAX</th>"
+              out_f.puts "<th>MIN</th>"
+              out_f.puts "<th>AVERAGE</th>"
+              out_f.puts "<th>MAX</th>"
+              out_f.puts "<th>MIN</th>"
+              out_f.puts "<th>AVERAGE</th>"
+              out_f.puts "<th>MAX</th>"
+              out_f.puts "<th>MIN</th>"
+              out_f.puts "</tr>"
+              if left_speed_max < right_speed_max
+                speed_max = right_speed_max
+              else
+                speed_max = left_speed_max
+              end
+              if left_speed_min < right_speed_min
+                speed_min = left_speed_min
+              else
+                speed_min = right_speed_min
+              end
+              out_f.puts "<tr>"
+              out_f.puts "<td>#{ave_cal.call(left_speed_sum, left_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_speed_max, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_speed_min, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_speed_sum, right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_speed_max, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_speed_min, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_speed_sum + right_speed_sum, left_count + right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(speed_max, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(speed_min, 1, 100)}</td>"
+              out_f.puts "<th colspan = \"2\">m/sec</th>"
+              out_f.puts "</tr>"
+              out_f.puts "<tr>"
+              out_f.puts "<td>#{ave_cal.call(left_speed_sum * 3.6, left_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_speed_max * 3.6, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(left_speed_min * 3.6, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_speed_sum * 3.6, right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_speed_max * 3.6, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(right_speed_min * 3.6, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call((left_speed_sum + right_speed_sum) * 3.6, left_count + right_count, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(speed_max * 3.6, 1, 100)}</td>"
+              out_f.puts "<td>#{ave_cal.call(speed_min * 3.6, 1, 100)}</td>"
+              out_f.puts "<th colspan = \"2\">km/h</th>"
               out_f.puts "</tr>"
               out_f.puts "</table>"
               out_f.puts "<table border=\"1\" align=\"center\">"
