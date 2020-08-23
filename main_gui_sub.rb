@@ -793,7 +793,7 @@ class Form_main
               missedNotes      = rows[rows_idx][fields.index('missedNotes')]
               combo            = rows[rows_idx][fields.index('combo')]
               maxCombo         = rows[rows_idx][fields.index('maxCombo')]
-              saberSpeed       = rows[rows_idx][fields.index('saberSpeed')].round
+              saberSpeed       = rows[rows_idx][fields.index('saberSpeed')]
               passedBombs      = rows[rows_idx][fields.index('passedBombs')]
               hitBombs         = rows[rows_idx][fields.index('hitBombs')]
               batteryEnergy    = rows[rows_idx][fields.index('batteryEnergy')]
@@ -801,6 +801,7 @@ class Form_main
               multiplierProgress  = rows[rows_idx][fields.index('multiplierProgress')]
               cutDistanceToCenter = (rows[rows_idx][fields.index('cutDistanceToCenter')] * 1000.0).round
               noteCount = noteID - passedBombs + 1
+              saberSpeedKmPerh    = (saberSpeed * 3.6).round
               if noteType == 'NoteA'
                 note_type = $subtitle_red_notes
               elsif noteType == 'NoteB'
