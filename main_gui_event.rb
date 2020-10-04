@@ -135,7 +135,7 @@ class Form_main
     else
       notes_sec = "err"
     end
-    text =  "#{STATUSBAR_INFO_ARTIST}: #{songAuthorName[0,12]}  #{STATUSBAR_INFO_MODE}: #{mode}  NSJ: #{njs.to_f.round}  BPM: #{bpm.to_f.round}  "
+    text =  "#{STATUSBAR_INFO_ARTIST}: #{songAuthorName[0,12]}  #{STATUSBAR_INFO_MODE}: #{mode}  NJS: #{njs.to_f.round}  BPM: #{bpm.to_f.round}  "
     text += "#{STATUSBAR_INFO_NOTES}: #{notes} [#{notes_sec}/s]  #{STATUSBAR_INFO_BOMBS}: #{bombs}  #{STATUSBAR_INFO_OBSTACLES}: #{obstacles}#{'  Mod: ' unless mod == ''}#{mod.sub(/,$/,'')}"
     text += "#{'  Set: ' unless player_setting == ''}#{player_setting.sub(/,$/,'')}"
     @statusbar.setTextOf(3,text,0)
