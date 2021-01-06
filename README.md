@@ -68,7 +68,7 @@ GUIフォーム画面の修正が必要な場合は、[FormDesigner](https://git
 私は2002年頃からRubyを触りはじめましたが、Rubyの楽しんでプログラミングするポリシーが好きです。Rubyで出来ることならRubyで作りたいと思っています。また、ちょっと便利なツールを作って人に配布するのが好きです。そんな私にExerbとVisualuRubyと言う最強のタッグはベストマッチしました。
 しかし、どちらも1.8.7でサポート終了しており、現在主流のRuby1.9系からの2.*系には対応していません。近い機能を有するものはありますが、デメリットが私にとって致命的なため、今でも1.8.7でExerbとVisualuRubyを使用しています。ただ、古いバージョンはセキュリティ面からも不特定なデータを開いて読むような用途には気をつける必要があります。今回のカットツールでも基本的には自分自身で記録したデータ(データベースや動画)しか触らないため、問題ないと判断しています。
 
-一応、Exerbの後継に近い候補として [Neri](https://github.com/nodai2hITC/neri/blob/master/README.ja.md)が、VisualuRubyの後継として[wrb](https://bitbucket.org/wrb/wrb/src/default/)があり、興味がありますが、まだ試すところまで来ていません。
+一応、Exerbの後継に近い候補として [Neri](https://github.com/nodai2hITC/neri/blob/master/README.ja.md)が、VisualuRubyの後継として[wrb](https://rubygems.org/gems/wrb)があり、興味がありますが、まだ試すところまで来ていません。(wrbはメンテされる見込み無さそうなので採用は無理そうです)
 
 # ライセンスと著作権について
 
