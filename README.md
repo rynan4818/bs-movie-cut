@@ -1,11 +1,9 @@
 # bs-movie-cut (BeatSaberプレイ動画カットツール)
 このツールは[OBS Studio](https://obsproject.com/ja)などで録画したBeatSaberのゲームプレイ動画を、下記画面の様にプレイした譜面に合わせて自動的に切り出しを行い、プレイ動画の編集や整理を支援する目的で作成しました。
 
-拙作の[Beat Saber HTTP Status +Database](https://github.com/rynan4818/beatsaber-http-status-db)を使用してBeatSaberのプレイ情報をデータベースに記録し、その情報を元に録画した動画を譜面毎に切り分けることが可能です。
+[DataRecorder](https://github.com/rynan4818/DataRecorder)を使用してBeatSaberのプレイ情報をデータベースに記録し、その情報を元に録画した動画を譜面毎に切り分けることが可能です。
 
 ![image](https://rynan4818.github.io/bs_movie_cut_image.png)
-
-なお、Beat Saber HTTP Status +Databaseの代わりに[MovieCutRecord](https://github.com/rynan4818/movie-cut-record)を使用したデータベースにも対応していますが、現在作者はMovieCutRecordを使用しておらず機能が劣るため、特に理由がなければ、Beat Saber HTTP Status +Databaseを使用して下さい。
 
 ## 主な機能
 - BeatSaberのプレイ録画した動画ファイルを読み込んでプレイした譜面をリスト表示し、譜面単位でプレビューや動画の自動切り出しが出来ます。
@@ -30,7 +28,7 @@
 
 # インストール方法
 
-1. [Beat Saber HTTP Status +Database](https://github.com/rynan4818/beatsaber-http-status-db)のインストールを行って、一度BeatSaberを起動しデータベースを作成しておいて下さい。
+1. [DataRecorder](https://github.com/rynan4818/DataRecorder)のインストールを行って、一度BeatSaberを起動しデータベースを作成しておいて下さい。
 
 2. [リリースページ](https://github.com/rynan4818/bs-movie-cut/releases)から最新のリリースをダウンロードします。または、Gitでクローンもしくは、`Code`から`Downlaod ZIP`しても構いません。
 その場合、リリースしていない最新のコミット版が取得出来ます。
