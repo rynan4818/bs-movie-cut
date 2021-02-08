@@ -539,16 +539,21 @@ end
 
 class Modaldlg_modsetting
   
+  def self.set(mod_setting)
+    @@mod_setting = mod_setting
+  end
+  
   def form_setting
     setting = JSON.parse(File.read(@edit_mod_setting_file.text.strip))
     if setting['dbfile'] && File.directory?(File.dirname(setting['dbfile']))
       @edit_dbfile.text = setting['dbfile']
       @edit_dbfile.readonly = false
+    elsif setting['DBFilePath'] || setting['DBFile']
+      close(['new',@edit_mod_setting_file.text.strip])
     else
       @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
       @edit_dbfile.readonly = true
     end
-    @edit_dbfile.text  ? true : setting['dbfile']
     @checkBox_scenechange.check setting['http_scenechange'] == nil ? true : setting['http_scenechange']
     @checkBox_scorechanged.check setting['http_scorechanged'] == nil ? true : setting['http_scorechanged']
     @checkBox_notecut.check setting['http_notecut'] == nil ? true : setting['http_notecut']
@@ -602,7 +607,12 @@ class Modaldlg_modsetting
   end
   
   def self_created
-    setting_load
+    if @@mod_setting
+      @edit_mod_setting_file.text = @@mod_setting
+      form_setting
+    else
+      setting_load
+    end
     dlg_move(self)
   end
   
@@ -685,7 +695,150 @@ class Modaldlg_modsetting
         file.puts line
       end
     end
-    close(true)
+    close(['ok'])
+  end
+  
+end
+
+class Modaldlg_modsetting2
+  
+  def self.set(mod_setting)
+    @@mod_setting = mod_setting
+  end
+  
+  def form_setting
+    setting = JSON.parse(File.read(@edit_mod_setting_file.text.strip))
+    if setting['DBFilePath'] && File.directory?(File.dirname(setting['DBFilePath'])) && setting['DBFilePath'] != ""
+      @edit_dbfile.text = setting['DBFilePath']
+      @edit_dbfile.readonly = false
+    elsif setting['DBFile'] && File.directory?(File.dirname(setting['DBFile'])) && setting['DBFile'] != ""
+      @edit_dbfile.text = setting['DBFile']
+      @edit_dbfile.readonly = false
+      @datarecorder_new = false
+    elsif setting['http_scenechange']
+      close(['old',@edit_mod_setting_file.text.strip])
+    else
+      @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
+      @edit_dbfile.readonly = true
+    end
+  end
+
+  def setting_load
+    if File.exist?($mod_setting_file.strip)
+      @edit_mod_setting_file.text = $mod_setting_file.strip
+      form_setting
+    else
+      default_load
+    end
+  end
+  
+  def setting_save
+    if File.exist?(@edit_mod_setting_file.text.strip)
+      setting = JSON.parse(File.read(@edit_mod_setting_file.text.strip))
+    else
+      setting = {}
+    end
+  end
+  
+  def default_load
+    folder = File.dirname($mod_setting_file)
+    if File.directory?(folder)
+      @edit_mod_setting_file.text = folder + "\\" + DEFALUT_MOD_SETTING_FILE_NAME
+    else
+      @edit_mod_setting_file.text = ""
+    end
+    @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
+    @edit_dbfile.readonly = true
+  end
+  
+  def self_created
+    @datarecorder_new = true
+    if @@mod_setting
+      @edit_mod_setting_file.text = @@mod_setting
+      form_setting
+    else
+      setting_load
+    end
+    dlg_move(self)
+  end
+  
+  def button_modsetting_select_clicked
+    folder = File.dirname(@edit_mod_setting_file.text)
+    folder = "" unless File.directory?(folder)
+    file = File.basename(@edit_mod_setting_file.text)
+    file = DEFALUT_MOD_SETTING_FILE_NAME if file.strip == ""
+    filename = SWin::CommonDialog::openFilename(self,[["json File (*.json)","*.json"],["All File (*.*)","*.*"]],0x4,MODSETTING_FILE_SELECT_TITLE,"*.json",folder,file)
+    return unless filename
+    @edit_mod_setting_file.text = filename
+    form_setting if File.exist?(filename)
+  end
+
+  def button_db_select_clicked
+    if @edit_dbfile.text == BEATSABER_USERDATA_FOLDER
+      folder = File.dirname(@edit_mod_setting_file.text)
+      file = DEFALUT_DB_FILE_NAME
+    else
+      folder = File.dirname(@edit_dbfile.text)
+      folder = File.dirname($beatsaber_dbfile) unless File.directory?(folder)
+      file = File.basename(@edit_dbfile.text)
+      file = File.basename($beatsaber_dbfile) if file.strip == ""
+      end
+    filename = SWin::CommonDialog::openFilename(self,[["db File (*.db)","*.db"],["All File (*.*)","*.*"]],0x4,DATABASE_FILE_SELECT_TITLE,"*.db",folder,file)
+    return unless filename
+    if (File.dirname(@edit_mod_setting_file.text) + "\\" + DEFALUT_DB_FILE_NAME) =~ /#{Regexp.escape(filename)}/i
+      @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
+      @edit_dbfile.readonly = true
+    else
+      @edit_dbfile.text = filename
+      @edit_dbfile.readonly = false
+      end
+  end
+
+  def button_bs_userfolder_clicked
+    @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
+    @edit_dbfile.readonly = true
+  end
+  
+  def button_cancel_clicked
+    close(false)
+  end
+  
+  def button_ok_clicked
+    folder = File.dirname(@edit_mod_setting_file.text)
+    unless File.directory?(folder)
+      messageBox("'#{folder.to_s}' #{DLG_MODSETTING_BUTTON_OK_NOT_DIR}", DLG_MODSETTING_BUTTON_OK_NOT_DIR_TITLE, 48)
+      return
+    end
+    file = File.basename(@edit_mod_setting_file.text)
+    if file.strip == ""
+      messageBox("'#{@edit_mod_setting_file.text}' #{DLG_MODSETTING_BUTTON_OK_NOT_FILE}", DLG_MODSETTING_BUTTON_OK_NOT_FILE_TITLE, 48)
+      return
+    end
+    if File.exist?(@edit_mod_setting_file.text)
+      setting = JSON.parse(File.read(@edit_mod_setting_file.text))
+    else
+      setting = {}
+    end
+    if @edit_dbfile.text == BEATSABER_USERDATA_FOLDER
+      if @datarecorder_new
+        setting['DBFilePath'] = ""
+      else
+        setting['DBFile'] = ""
+      end
+    else
+      if @datarecorder_new
+        setting['DBFilePath'] = @edit_dbfile.text.strip
+      else
+        setting['dbfile'] = @edit_dbfile.text.strip
+      end
+    end
+    $mod_setting_file = @edit_mod_setting_file.text.strip
+    File.open($mod_setting_file,'w') do |file|
+      JSON.pretty_generate(setting).each do |line|
+        file.puts line
+      end
+    end
+    close(['ok'])
   end
   
 end

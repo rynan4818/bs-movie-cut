@@ -21,7 +21,7 @@ $KCODE='s'
 #==============================================================================
 
 #Setting
-BEATSABER_USERDATA_FOLDER = "[BeatSaber UserData フォルダ]"
+BEATSABER_USERDATA_FOLDER = "[デフォルトフォルダ]"
 SUBTITLE_ALIGNMENT_SETTING = [['1: 左下','2: 中央下','3: 右下','5: 左上','6: 中央上','7: 右上','9: 中央左',
                               '10: 中央','11: 中央右'],[1,2,3,5,6,7,9,10,11]]
 

@@ -193,7 +193,7 @@ class Modaldlg_modsetting < VRModalDialog
   include VRContainersSet
 
   def construct
-    self.caption = 'mod Setting'
+    self.caption = 'mod Setting(HTTP Status+Database)'
     self.move(235,57,842,527)
     addControl(VRButton,'button_bs_userfolder',"BeatSaber UserData folder",488,120,216,24)
     addControl(VRButton,'button_cancel',"CANCEL",528,432,112,32)
@@ -218,6 +218,25 @@ class Modaldlg_modsetting < VRModalDialog
     addControl(VRStatic,'static3',"mod setting file",56,8,224,24)
     addControl(VRStatic,'static5',"Events sent by HTTP WebSocket.",32,240,328,24)
     addControl(VRStatic,'static6',"Mod behavior settings",32,152,216,24)
+  end 
+
+end
+
+class Modaldlg_modsetting2 < VRModalDialog
+  include VRContainersSet
+
+  def construct
+    self.caption = 'mod Setting(DataRecorder)'
+    self.move(235,57,842,268)
+    addControl(VRButton,'button_bs_userfolder',"Default folder",576,120,128,24)
+    addControl(VRButton,'button_cancel',"CANCEL",528,432,112,32)
+    addControl(VRButton,'button_db_select',"Select",736,120,64,24)
+    addControl(VRButton,'button_modsetting_select',"Select",736,56,64,24)
+    addControl(VRButton,'button_ok',"OK",688,432,112,32)
+    addControl(VREdit,'edit_dbfile',"",56,96,744,24)
+    addControl(VREdit,'edit_mod_setting_file',"",56,32,744,24)
+    addControl(VRStatic,'static2',"beatsaber.db File",56,72,128,24)
+    addControl(VRStatic,'static3',"mod setting file",56,8,224,24)
   end 
 
 end
@@ -410,7 +429,7 @@ class Form_main < VRForm
     addControl(VRButton,'button_songname_sort',"Song Name",608,128,304,24)
     addControl(VRButton,'button_speed_sort',"Speed",288,128,48,24)
     addControl(VRButton,'button_time_sort',"Time",192,128,48,24)
-    addControl(VRCheckbox,'checkBox_all_same_song',"All of the same song",184,656,168,24)
+    addControl(VRCheckbox,'checkBox_all_same_song',"Same song",272,656,104,24)
     addControl(VRCheckbox,'checkBox_diff',"Song and play time difference +-",488,656,256,24)
     addControl(VRCheckbox,'checkBox_failed',"failed",272,624,64,24)
     addControl(VRCheckbox,'checkBox_finished',"finished",184,624,88,24)
@@ -420,6 +439,7 @@ class Form_main < VRForm
     addControl(VRCheckbox,'checkBox_pause',"pause",336,624,72,24)
     addControl(VRCheckbox,'checkBox_printing',"subtitle printing",568,744,152,32)
     addControl(VRCheckbox,'checkBox_score',"Score >=",568,624,88,24)
+    addControl(VRCheckbox,'checkBox_softFail',"softFail",184,656,88,24)
     addControl(VRCheckbox,'checkBox_speed',"Normal Speed",432,624,120,24)
     addControl(VRCheckbox,'checkBox_subtitles',"With score subtitles",360,744,168,32)
     addControl(VRCombobox,'comboBox_ffmpeg',"",24,720,768,260)

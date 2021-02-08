@@ -336,6 +336,7 @@ class Form_main
       flag = true if @checkBox_finished.checked?  && @convert_list[idx][1][@fields.index("cleared")] == 'finished'
       flag = true if @checkBox_failed.checked?    && @convert_list[idx][1][@fields.index("cleared")] == 'failed'
       flag = true if @checkBox_pause.checked?     && @convert_list[idx][1][@fields.index("cleared")] == 'pause'
+      flag = true if @checkBox_softFail.checked?  && @convert_list[idx][1][@fields.index("cleared")] == 'softFail'
       flag = false if @checkBox_miss.checked?     && @convert_list[idx][1][@fields.index("missedNotes")].to_i > @edit_miss.text.to_i
       flag = false if @checkBox_score.checked?    && @convert_list[idx][1][@fields.index("scorePercentage")].to_f < @edit_score.text.to_f
       flag = false if @checkBox_diff.checked?     && (time - length).abs > @edit_difftime.text.to_i
@@ -713,7 +714,28 @@ class Form_main
   
   def menu_modsetting_clicked
     $main_windowrect = self.windowrect
-    return unless VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting,nil,nil)  #設定画面のモーダルダイアログを開く
+    if File.exist?($mod_setting_file.strip)
+      setting = JSON.parse(File.read($mod_setting_file.strip))
+      new_mod = true
+      new_mod = false if setting['http_scenechange']
+      result = [nil,nil]
+      until result[0] == 'ok'
+        if new_mod
+          Modaldlg_modsetting2.set(result[1])
+          result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting2,nil,nil)
+          return unless result
+        else
+          Modaldlg_modsetting.set(result[1])
+          result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting,nil,nil)
+          return unless result
+        end
+        if result[0] == 'new'
+          new_mod = true
+        else
+          new_mod = false
+        end
+      end
+    end
     setting_save(false)
   end
   

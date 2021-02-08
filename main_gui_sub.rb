@@ -426,6 +426,7 @@ class Form_main
       @checkBox_finished.check setting['finished']            unless setting['finished'] == nil
       @checkBox_failed.check setting['failed']                unless setting['failed'] == nil
       @checkBox_pause.check setting['pause']                  unless setting['pause'] == nil
+      @checkBox_softFail.check setting['softFail']            unless setting['softFail'] == nil
       @checkBox_miss.check setting['Miss']                    unless setting['Miss'] == nil
       @checkBox_score.check setting['Score']                  unless setting['Score'] == nil
       @checkBox_diff.check setting['Difference']              unless setting['Difference'] == nil
@@ -544,6 +545,7 @@ class Form_main
       setting['finished']              = @checkBox_finished.checked?
       setting['failed']                = @checkBox_failed.checked?
       setting['pause']                 = @checkBox_pause.checked?
+      setting['softFail']              = @checkBox_softFail.checked?
       setting['Miss']                  = @checkBox_miss.checked?
       setting['Score']                 = @checkBox_score.checked?
       setting['Difference']            = @checkBox_diff.checked?

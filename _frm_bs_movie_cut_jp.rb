@@ -193,7 +193,7 @@ class Modaldlg_modsetting < VRModalDialog
   include VRContainersSet
 
   def construct
-    self.caption = 'mod設定'
+    self.caption = 'mod設定(HTTP Status+Database)'
     self.move(235,57,842,527)
     addControl(VRButton,'button_bs_userfolder',"BeatSaberのUserDataフォルダに設定(デフォルト)",336,120,368,24)
     addControl(VRButton,'button_cancel',"キャンセル",528,432,112,32)
@@ -218,6 +218,25 @@ class Modaldlg_modsetting < VRModalDialog
     addControl(VRStatic,'static3',"mod設定ファイル",56,8,136,24)
     addControl(VRStatic,'static5',"HTTPStutusでWebSocket送信するイベント",32,240,328,24)
     addControl(VRStatic,'static6',"mod動作設定",32,152,112,24)
+  end 
+
+end
+
+class Modaldlg_modsetting2 < VRModalDialog
+  include VRContainersSet
+
+  def construct
+    self.caption = 'mod設定(DataRecorder)'
+    self.move(235,57,842,268)
+    addControl(VRButton,'button_bs_userfolder',"デフォルトに戻す",544,120,160,24)
+    addControl(VRButton,'button_cancel',"キャンセル",552,168,112,32)
+    addControl(VRButton,'button_db_select',"選択",736,120,64,24)
+    addControl(VRButton,'button_modsetting_select',"選択",736,56,64,24)
+    addControl(VRButton,'button_ok',"OK",688,168,112,32)
+    addControl(VREdit,'edit_dbfile',"",56,96,744,24)
+    addControl(VREdit,'edit_mod_setting_file',"",56,32,744,24)
+    addControl(VRStatic,'static2',"beatsaber.db ファイル",56,72,168,24)
+    addControl(VRStatic,'static3',"mod設定ファイル",56,8,136,24)
   end 
 
 end
@@ -390,7 +409,7 @@ class Form_main < VRForm
     addControl(VRButton,'button_ffmpeg_edit',"設定",144,696,40,24)
     addControl(VRButton,'button_file_sort',"動画",40,128,48,24)
     addControl(VRButton,'button_filename_edit',"設定",144,752,40,24)
-    addControl(VRButton,'button_filter',"フィルタ選択",376,656,104,32)
+    addControl(VRButton,'button_filter',"フィルタ選択",416,656,104,32)
     addControl(VRButton,'button_finished',"クリアを選択",24,608,128,32)
     addControl(VRButton,'button_fullcombo',"フルコンボ選択",24,648,128,32)
     addControl(VRButton,'button_levelauthor_sort',"作譜者",912,128,120,24)
@@ -410,7 +429,7 @@ class Form_main < VRForm
     addControl(VRButton,'button_songname_sort',"曲名",608,128,304,24)
     addControl(VRButton,'button_speed_sort',"速度",288,128,48,24)
     addControl(VRButton,'button_time_sort',"時間",192,128,48,24)
-    addControl(VRCheckbox,'checkBox_all_same_song',"同一曲も選択",184,664,168,24)
+    addControl(VRCheckbox,'checkBox_all_same_song',"同一曲も選択",280,664,128,24)
     addControl(VRCheckbox,'checkBox_diff',"曲時間とプレイ時間の差 ±",536,664,216,24)
     addControl(VRCheckbox,'checkBox_failed',"failed",272,632,64,24)
     addControl(VRCheckbox,'checkBox_finished',"finished",184,632,88,24)
@@ -420,6 +439,7 @@ class Form_main < VRForm
     addControl(VRCheckbox,'checkBox_pause',"pause",336,632,72,24)
     addControl(VRCheckbox,'checkBox_printing',"スコアを動画に焼き込む",568,744,200,32)
     addControl(VRCheckbox,'checkBox_score',"スコア >=",560,632,96,24)
+    addControl(VRCheckbox,'checkBox_softFail',"softFail",184,664,88,24)
     addControl(VRCheckbox,'checkBox_speed',"標準速度",448,632,96,24)
     addControl(VRCheckbox,'checkBox_subtitles',"スコアを字幕に埋め込む",328,744,200,32)
     addControl(VRCombobox,'comboBox_ffmpeg',"",24,720,768,260)
@@ -449,7 +469,7 @@ class Form_main < VRForm
     addControl(VRStatic,'static_message',"動画ファイルはドラッグ＆ドロップ可",352,0,288,24)
     addControl(VRStatic,'static_new_release',"",24,0,320,24)
     addControl(VRStatic,'tz_static',"",832,0,200,24)
-    addControl(VRStatusbar,'statusbar',"",0,857,1044,23,0x3)
+    addControl(VRStatusbar,'statusbar',"",0,859,1044,22,0x3)
   end 
 
 end
