@@ -369,8 +369,9 @@ class Modaldlg_db_view
     #データベースに登録済みのファイルのタイムスタンプの確認
     sql = "SELECT MIN(startTime) FROM MovieCutRecord;"
     fields, startdate = db_execute(sql, true, false)
-    if startdate.size == 0
+    if startdate == nil || startdate.size == 0
       @db.close
+      close(false)
       return
     end
     startdate = startdate[0][0].to_i / 1000
