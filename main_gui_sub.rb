@@ -383,6 +383,7 @@ class Form_main
     $subtitle_blue_notes  = DEFALUT_SUB_BLUE_NOTES
     $subtitle_cut_format  = DEFALUT_SUB_CUT_FORMAT
     $subtitle_miss_format = DEFALUT_SUB_MISS_FORMAT
+    $subtitle_force_style = ""
     $simultaneous_notes_time = DEFALUT_SIMULTANEOUS_NOTES_TIME
     $max_notes_display    = DEFALUT_MAX_NOTES_DISPLAY
     $last_notes_time      = DEFALUT_LAST_NOTES_TIME
@@ -410,6 +411,7 @@ class Form_main
       $subtitle_blue_notes  = setting['subtitle_blue_notes']  if setting['subtitle_blue_notes']
       $subtitle_cut_format  = setting['subtitle_cut_format']  if setting['subtitle_cut_format']
       $subtitle_miss_format = setting['subtitle_miss_format'] if setting['subtitle_miss_format']
+      $subtitle_force_style = setting['subtitle_force_style'] if setting['subtitle_force_style']
       $simultaneous_notes_time = setting['simultaneous_notes_time'] if setting['simultaneous_notes_time']
       $max_notes_display    = setting['max_notes_display']    if setting['max_notes_display']
       $last_notes_time      = setting['last_notes_time']      if setting['last_notes_time']
@@ -530,6 +532,7 @@ class Form_main
     setting['subtitle_blue_notes']   = $subtitle_blue_notes
     setting['subtitle_cut_format']   = $subtitle_cut_format
     setting['subtitle_miss_format']  = $subtitle_miss_format
+    setting['subtitle_force_style']  = $subtitle_force_style
     setting['simultaneous_notes_time'] = $simultaneous_notes_time
     setting['max_notes_display']     = $max_notes_display
     setting['last_notes_time']       = $last_notes_time
@@ -687,7 +690,12 @@ class Form_main
       if @checkBox_printing.checked? && @printing && vf
         vf_srt_file = str_file.gsub('\\','\\\\\\\\\\\\\\\\').gsub(':','\\\\\\\\:')
         alignment = SUBTITLE_ALIGNMENT_SETTING[1][$subtitle_alignment]
-        vf_option = %Q! -vf "subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}'"!
+        if $subtitle_force_style.strip == ""
+          add_force_style = ""
+        else
+          add_force_style = "," + $subtitle_force_style.strip.sub(/^,/,"").sub(/,$/,"").gsub(/\s/,"")
+        end
+        vf_option = %Q! -vf "subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}#{add_force_style}'"!
       end
       if @checkBox_subtitles.checked?
         command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{vf_option} "#{$subtitle_file}"!

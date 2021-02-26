@@ -48,7 +48,7 @@ require 'json'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2021/02/08'
+SOFT_VER        = '2021/02/26'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
@@ -78,8 +78,9 @@ CHECK_LENGTH_TIME    = 10.0
 DEFALUT_DB_FILE_NAME   = "beatsaber.db"
 DEFALUT1_DB_FILE       = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\UserData\\DataRecorder\\" + DEFALUT_DB_FILE_NAME
 
-DEFALUT_MOD_SETTING_FILE_NAME = "DataRecorder.json"
-DEFAULT_MOD_SETTING_FILE = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\UserData\\" + DEFALUT_MOD_SETTING_FILE_NAME
+DATARECORDER_MOD_SETTING_FILE_NAME = "DataRecorder.json"
+HTTPSTATUS_DB_MOD_SETTING_FILE_NAME = "movie_cut_record.json"
+DEFAULT_MOD_SETTING_FILE = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\UserData\\" + DATARECORDER_MOD_SETTING_FILE_NAME
 DEFAULT_TIMEFORMAT     = "%Y%m%d-%H%M%S"
 DEFAULT_PREVIEW_TOOL   = EXE_DIR + "ffplay.exe"
 DEFAULT_PREVIEW_FILE   = EXE_DIR + "temp.mp4"

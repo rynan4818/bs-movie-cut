@@ -493,6 +493,7 @@ class Modaldlg_subtitle_setting
     @edit_sim_notes_time.text = $simultaneous_notes_time.to_s
     @edit_last_notes.text = $last_notes_time.to_s
     @edit_max_score.text = $max_notes_display.to_s
+    @edit_force_style.text = $subtitle_force_style
     if $ascii_mode
       @button_msGothic.style = 0x8000000
       if @edit_font.text == DEFALUT_SUB_FONT
@@ -533,6 +534,7 @@ class Modaldlg_subtitle_setting
     $simultaneous_notes_time = @edit_sim_notes_time.text.to_i
     $max_notes_display  = @edit_max_score.text.to_i
     $last_notes_time    = @edit_last_notes.text.to_f
+    $subtitle_force_style = @edit_force_style.text
     close(true)
   end
 
@@ -545,13 +547,15 @@ class Modaldlg_modsetting
   end
   
   def form_setting
-    setting = JSON.parse(File.read(@edit_mod_setting_file.text.strip))
-    if setting['dbfile'] && File.directory?(File.dirname(setting['dbfile']))
+    setting = JSON.parse(File.read("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"))
+    if @mod_setting_file == HTTPSTATUS_DB_MOD_SETTING_FILE_NAME && setting['dbfile'] && File.directory?(File.dirname(setting['dbfile']))
       @edit_dbfile.text = setting['dbfile']
       @edit_dbfile.readonly = false
-    elsif setting['DBFilePath'] || setting['DBFile']
-      close(['new',@edit_mod_setting_file.text.strip])
+      @radioBtn_movie_cut_record.check true
+    elsif @mod_setting_file == DATARECORDER_MOD_SETTING_FILE_NAME || setting['DBFilePath'] || setting['DBFile']
+      close(['new',"#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"])
     else
+      @radioBtn_movie_cut_record.check true
       @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
       @edit_dbfile.readonly = true
     end
@@ -570,25 +574,19 @@ class Modaldlg_modsetting
 
   def setting_load
     if File.exist?($mod_setting_file.strip)
-      @edit_mod_setting_file.text = $mod_setting_file.strip
+      @edit_mod_setting_file.text = File.dirname($mod_setting_file.strip)
+      @mod_setting_file = File.basename($mod_setting_file.strip)
       form_setting
     else
       default_load
     end
   end
   
-  def setting_save
-    if File.exist?(@edit_mod_setting_file.text.strip)
-      setting = JSON.parse(File.read(@edit_mod_setting_file.text.strip))
-    else
-      setting = {}
-    end
-  end
-  
   def default_load
+    @mod_setting_file = HTTPSTATUS_DB_MOD_SETTING_FILE_NAME
     folder = File.dirname($mod_setting_file)
     if File.directory?(folder)
-      @edit_mod_setting_file.text = folder + "\\" + DEFALUT_MOD_SETTING_FILE_NAME
+      @edit_mod_setting_file.text = folder
     else
       @edit_mod_setting_file.text = ""
     end
@@ -605,27 +603,39 @@ class Modaldlg_modsetting
     @checkBox_bombmissed.check true
     @checkBox_beatmapevent.check true
     @checkBox_obstacle.check true
+    @radioBtn_DataRecorder.check false
+    @radioBtn_movie_cut_record.check true
   end
   
   def self_created
     if @@mod_setting
-      @edit_mod_setting_file.text = @@mod_setting
-      form_setting
+      @edit_mod_setting_file.text = File.dirname(@@mod_setting)
+      @mod_setting_file = File.basename(@@mod_setting)
+      if File.exist?(@@mod_setting.strip)
+        form_setting
+      else
+        default_load
+      end
     else
       setting_load
     end
     dlg_move(self)
   end
   
+  def radioBtn_DataRecorder_clicked
+    if @radioBtn_DataRecorder.checked?
+      close(['new',"#{@edit_mod_setting_file.text.strip}\\#{DATARECORDER_MOD_SETTING_FILE_NAME}"])
+    end
+  end
+
   def button_modsetting_select_clicked
-    folder = File.dirname(@edit_mod_setting_file.text)
-    folder = "" unless File.directory?(folder)
-    file = File.basename(@edit_mod_setting_file.text)
-    file = DEFALUT_MOD_SETTING_FILE_NAME if file.strip == ""
-    filename = SWin::CommonDialog::openFilename(self,[["json File (*.json)","*.json"],["All File (*.*)","*.*"]],0x4,MODSETTING_FILE_SELECT_TITLE,"*.json",folder,file)
-    return unless filename
-    @edit_mod_setting_file.text = filename
-    form_setting if File.exist?(filename)
+    defalut = @edit_mod_setting_file.text
+    defalut = nil unless File.directory?(defalut)
+    folder = SWin::CommonDialog::selectDirectory(self,SELECT_OPEN_MOVIE_FOLDER_TITLE,defalut,1)
+    return unless folder
+    return unless File.directory?(folder)
+    @edit_mod_setting_file.text = folder
+    form_setting if File.exist?("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}")
   end
 
   def button_db_select_clicked
@@ -659,18 +669,18 @@ class Modaldlg_modsetting
   end
   
   def button_ok_clicked
-    folder = File.dirname(@edit_mod_setting_file.text)
+    folder = @edit_mod_setting_file.text
     unless File.directory?(folder)
       messageBox("'#{folder.to_s}' #{DLG_MODSETTING_BUTTON_OK_NOT_DIR}", DLG_MODSETTING_BUTTON_OK_NOT_DIR_TITLE, 48)
       return
     end
-    file = File.basename(@edit_mod_setting_file.text)
+    file = @mod_setting_file
     if file.strip == ""
-      messageBox("'#{@edit_mod_setting_file.text}' #{DLG_MODSETTING_BUTTON_OK_NOT_FILE}", DLG_MODSETTING_BUTTON_OK_NOT_FILE_TITLE, 48)
+      messageBox("'#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}' #{DLG_MODSETTING_BUTTON_OK_NOT_FILE}", DLG_MODSETTING_BUTTON_OK_NOT_FILE_TITLE, 48)
       return
     end
-    if File.exist?(@edit_mod_setting_file.text)
-      setting = JSON.parse(File.read(@edit_mod_setting_file.text))
+    if File.exist?("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}")
+      setting = JSON.parse(File.read("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"))
     else
       setting = {}
     end
@@ -690,7 +700,7 @@ class Modaldlg_modsetting
     setting['http_obstacle'] = @checkBox_obstacle.checked?
     setting['db_notes_score'] = @checkBox_notesscore.checked?
     setting['gc_collect'] = @checkBox_gccollect.checked?
-    $mod_setting_file = @edit_mod_setting_file.text.strip
+    $mod_setting_file = "#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"
     File.open($mod_setting_file,'w') do |file|
       JSON.pretty_generate(setting).each do |line|
         file.puts line
@@ -708,17 +718,20 @@ class Modaldlg_modsetting2
   end
   
   def form_setting
-    setting = JSON.parse(File.read(@edit_mod_setting_file.text.strip))
-    if setting['DBFilePath'] && File.directory?(File.dirname(setting['DBFilePath'])) && setting['DBFilePath'] != ""
+    setting = JSON.parse(File.read("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"))
+    if @mod_setting_file == DATARECORDER_MOD_SETTING_FILE_NAME && setting['DBFilePath'] && File.directory?(File.dirname(setting['DBFilePath'])) && setting['DBFilePath'] != ""
       @edit_dbfile.text = setting['DBFilePath']
       @edit_dbfile.readonly = false
-    elsif setting['DBFile'] && File.directory?(File.dirname(setting['DBFile'])) && setting['DBFile'] != ""
+      @radioBtn_DataRecorder.check true
+    elsif @mod_setting_file == DATARECORDER_MOD_SETTING_FILE_NAME && setting['DBFile'] && File.directory?(File.dirname(setting['DBFile'])) && setting['DBFile'] != ""
       @edit_dbfile.text = setting['DBFile']
       @edit_dbfile.readonly = false
       @datarecorder_new = false
-    elsif setting['http_scenechange']
-      close(['old',@edit_mod_setting_file.text.strip])
+      @radioBtn_DataRecorder.check true
+    elsif @mod_setting_file == HTTPSTATUS_DB_MOD_SETTING_FILE_NAME || setting['http_scenechange']
+      close(['old',"#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"])
     else
+      @radioBtn_DataRecorder.check true
       @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
       @edit_dbfile.readonly = true
     end
@@ -726,52 +739,58 @@ class Modaldlg_modsetting2
 
   def setting_load
     if File.exist?($mod_setting_file.strip)
-      @edit_mod_setting_file.text = $mod_setting_file.strip
+      @edit_mod_setting_file.text = File.dirname($mod_setting_file.strip)
+      @mod_setting_file = File.basename($mod_setting_file.strip)
       form_setting
     else
       default_load
     end
   end
   
-  def setting_save
-    if File.exist?(@edit_mod_setting_file.text.strip)
-      setting = JSON.parse(File.read(@edit_mod_setting_file.text.strip))
-    else
-      setting = {}
-    end
-  end
-  
   def default_load
+    @mod_setting_file = DATARECORDER_MOD_SETTING_FILE_NAME
     folder = File.dirname($mod_setting_file)
     if File.directory?(folder)
-      @edit_mod_setting_file.text = folder + "\\" + DEFALUT_MOD_SETTING_FILE_NAME
+      @edit_mod_setting_file.text = folder
     else
       @edit_mod_setting_file.text = ""
     end
     @edit_dbfile.text = BEATSABER_USERDATA_FOLDER
     @edit_dbfile.readonly = true
+    @radioBtn_DataRecorder.check true
+    @radioBtn_movie_cut_record.check false
   end
   
   def self_created
     @datarecorder_new = true
     if @@mod_setting
-      @edit_mod_setting_file.text = @@mod_setting
-      form_setting
+      @edit_mod_setting_file.text = File.dirname(@@mod_setting)
+      @mod_setting_file = File.basename(@@mod_setting)
+      if File.exist?(@@mod_setting.strip)
+        form_setting
+      else
+        default_load
+      end
     else
       setting_load
     end
     dlg_move(self)
   end
   
+  def radioBtn_movie_cut_record_clicked
+    if @radioBtn_movie_cut_record.checked?
+      close(['old',"#{@edit_mod_setting_file.text.strip}\\#{HTTPSTATUS_DB_MOD_SETTING_FILE_NAME}"])
+    end
+  end
+  
   def button_modsetting_select_clicked
-    folder = File.dirname(@edit_mod_setting_file.text)
-    folder = "" unless File.directory?(folder)
-    file = File.basename(@edit_mod_setting_file.text)
-    file = DEFALUT_MOD_SETTING_FILE_NAME if file.strip == ""
-    filename = SWin::CommonDialog::openFilename(self,[["json File (*.json)","*.json"],["All File (*.*)","*.*"]],0x4,MODSETTING_FILE_SELECT_TITLE,"*.json",folder,file)
-    return unless filename
-    @edit_mod_setting_file.text = filename
-    form_setting if File.exist?(filename)
+    defalut = @edit_mod_setting_file.text
+    defalut = nil unless File.directory?(defalut)
+    folder = SWin::CommonDialog::selectDirectory(self,SELECT_OPEN_MOVIE_FOLDER_TITLE,defalut,1)
+    return unless folder
+    return unless File.directory?(folder)
+    @edit_mod_setting_file.text = folder
+    form_setting if File.exist?("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}")
   end
 
   def button_db_select_clicked
@@ -805,18 +824,18 @@ class Modaldlg_modsetting2
   end
   
   def button_ok_clicked
-    folder = File.dirname(@edit_mod_setting_file.text)
+    folder = @edit_mod_setting_file.text
     unless File.directory?(folder)
       messageBox("'#{folder.to_s}' #{DLG_MODSETTING_BUTTON_OK_NOT_DIR}", DLG_MODSETTING_BUTTON_OK_NOT_DIR_TITLE, 48)
       return
     end
-    file = File.basename(@edit_mod_setting_file.text)
+    file = @mod_setting_file
     if file.strip == ""
-      messageBox("'#{@edit_mod_setting_file.text}' #{DLG_MODSETTING_BUTTON_OK_NOT_FILE}", DLG_MODSETTING_BUTTON_OK_NOT_FILE_TITLE, 48)
+      messageBox("'#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}' #{DLG_MODSETTING_BUTTON_OK_NOT_FILE}", DLG_MODSETTING_BUTTON_OK_NOT_FILE_TITLE, 48)
       return
     end
-    if File.exist?(@edit_mod_setting_file.text)
-      setting = JSON.parse(File.read(@edit_mod_setting_file.text))
+    if File.exist?("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}")
+      setting = JSON.parse(File.read("#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"))
     else
       setting = {}
     end
@@ -833,7 +852,7 @@ class Modaldlg_modsetting2
         setting['dbfile'] = @edit_dbfile.text.strip
       end
     end
-    $mod_setting_file = @edit_mod_setting_file.text.strip
+    $mod_setting_file = "#{@edit_mod_setting_file.text.strip}\\#{@mod_setting_file}"
     File.open($mod_setting_file,'w') do |file|
       JSON.pretty_generate(setting).each do |line|
         file.puts line

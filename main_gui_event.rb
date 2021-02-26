@@ -714,26 +714,27 @@ class Form_main
   
   def menu_modsetting_clicked
     $main_windowrect = self.windowrect
+    new_mod = true
+    new_mod = false if File.basename($mod_setting_file.strip) == HTTPSTATUS_DB_MOD_SETTING_FILE_NAME
     if File.exist?($mod_setting_file.strip)
       setting = JSON.parse(File.read($mod_setting_file.strip))
-      new_mod = true
       new_mod = false if setting['http_scenechange']
-      result = [nil,nil]
-      until result[0] == 'ok'
-        if new_mod
-          Modaldlg_modsetting2.set(result[1])
-          result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting2,nil,nil)
-          return unless result
-        else
-          Modaldlg_modsetting.set(result[1])
-          result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting,nil,nil)
-          return unless result
-        end
-        if result[0] == 'new'
-          new_mod = true
-        else
-          new_mod = false
-        end
+    end
+    result = [nil,nil]
+    until result[0] == 'ok'
+      if new_mod
+        Modaldlg_modsetting2.set(result[1])
+        result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting2,nil,nil)
+        return unless result
+      else
+        Modaldlg_modsetting.set(result[1])
+        result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_modsetting,nil,nil)
+        return unless result
+      end
+      if result[0] == 'new'
+        new_mod = true
+      else
+        new_mod = false
       end
     end
     setting_save(false)
