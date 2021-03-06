@@ -1021,6 +1021,7 @@ class Modaldlg_setting
     @edit_offset.text        = $offset.to_s
     @edit_opendir.text       = $open_dir.to_s
     @edit_extension.text     = $movie_default_extension.to_s.downcase
+    @edit_max_volume.text    = $max_volume.to_s
     @checkBox_timesave.check $time_save
     @checkBox_ascii.check    $ascii_mode
     @checkBox_no_message.check $timestamp_nomsg
@@ -1130,6 +1131,7 @@ class Modaldlg_setting
     $time_format  = @edit_time_format.text.to_s.strip
     $open_dir      = @edit_opendir.text.to_s.strip
     $movie_default_extension = @edit_extension.text.to_s.strip.downcase
+    $max_volume   = @edit_max_volume.text.strip.to_f
     $time_save    = @checkBox_timesave.checked?
     $ascii_mode   = @checkBox_ascii.checked?
     $timestamp_nomsg = @checkBox_no_message.checked?

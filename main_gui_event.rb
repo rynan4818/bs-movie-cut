@@ -265,13 +265,18 @@ class Form_main
       else
         key_frame_data = nil
       end
+      if @normalize && @checkBox_normalize.checked?
+        max_volume_data = volume_check(file,startTime,target,stoptime)
+      else
+        max_volume_data = nil
+      end
       if @checkBox_printing.checked? && @printing || @checkBox_subtitles.checked?
         movie_sub_create(target,str_dir,str_file,startTime,stoptime,key_frame_data)
         offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,true,key_frame_data)
       else
         #字幕ファイル削除
         File.delete str_dir + str_file if File.exist? str_dir + str_file
-        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,false,true,key_frame_data)
+        offset_time, cut_time = ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,false,true,key_frame_data,max_volume_data)
       end
       #データベースに切り出し記録を残す
       db_open
@@ -391,10 +396,12 @@ class Form_main
         ffmpeg_option = ' ' + @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
         vf = true
         key_frame_cut = !@printing && @checkBox_key_frame.checked?
+        normalize_check = @normalize && @checkBox_normalize.checked?
       else
         ffmpeg_option = $preview_ffmpeg
         vf = false
         key_frame_cut = $preview_keycut
+        normalize_check = false
       end
       startTime           =  target[1][@fields.index('startTime')]
       endTime             =  target[1][@fields.index('endTime')]
@@ -414,13 +421,18 @@ class Form_main
       else
         key_frame_data = nil
       end
+      if normalize_check
+        max_volume_data = volume_check(file,startTime,target,stoptime)
+      else
+        max_volume_data = nil
+      end
       if @checkBox_printing.checked? && @printing && vf || @checkBox_subtitles.checked?
         movie_sub_create(target,str_dir,str_file,startTime,stoptime,key_frame_data)
-        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf,key_frame_data)
+        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf,key_frame_data,max_volume_data)
       else
         #字幕ファイル削除
         File.delete str_dir + str_file if File.exist? str_dir + str_file
-        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf,key_frame_data)
+        ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_dir + str_file,vf,key_frame_data,max_volume_data)
       end
       @button_preview.style     = 1342177280
       refresh

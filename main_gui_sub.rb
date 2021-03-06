@@ -34,6 +34,13 @@ class Form_main
       @checkBox_key_frame.style = 0x58000003
       @printing = true
     end
+    if encode_option =~ /-(c|codec|acodec) +copy/i || encode_option =~ /-(c|codec):(a|A) +copy/i || encode_option =~ /-(c|codec):(a|A):\d +copy/i
+      @checkBox_normalize.style = 0x58000003
+      @normalize = false
+    else
+      @checkBox_normalize.style = 0x50000003
+      @normalize = true
+    end
     refresh(true)
   end
   
@@ -392,6 +399,7 @@ class Form_main
     $input_movie_search_dir  = []
     $post_commnet         = DEFALUT_POST_COMMENT
     $ss_option_after      = false
+    $max_volume           = 0.0
     if File.exist?(SETTING_FILE)
       setting = JSON.parse(File.read(SETTING_FILE))
       $time_format      = setting['time_format'].to_s         if setting['time_format']
@@ -403,6 +411,7 @@ class Form_main
       $preview_keycut   = setting['preview_keycut']           if setting['preview_keycut']
       $subtitle_file    = setting['subtitle_file'].to_s       if setting['subtitle_file']
       $offset           = setting['offset'].to_f              if setting['offset']
+      $max_volume       = setting['max_volume']               if setting['max_volume']
       $mod_setting_file = setting['mod_setting_file'].to_s    if setting['mod_setting_file']
       $subtitle_font        = setting['subtitle_font']        if setting['subtitle_font']
       $subtitle_font_size   = setting['subtitle_font_size']   if setting['subtitle_font_size']
@@ -435,6 +444,7 @@ class Form_main
       @checkBox_speed.check setting['Speed']                  unless setting['Speed'] == nil
       @checkBox_length.check setting['Movie length']          unless setting['Movie length'] == nil
       @checkBox_key_frame.check setting['Key frame']          unless setting['Key frame'] == nil
+      @checkBox_normalize.check setting['normalize']          unless setting['normalize'] == nil
       @radioBtn_footer_cut.check setting['footer cut']        unless setting['footer cut'] == nil
       @radioBtn_header_cut.check setting['header cut']        unless setting['header cut'] == nil
       @radioBtn_header_cut.check true                         unless setting['header cut'] || setting['footer cut']
@@ -524,6 +534,7 @@ class Form_main
     setting['preview_file']          = $preview_file
     setting['subtitle_file']         = $subtitle_file
     setting['offset']                = $offset
+    setting['max_volume']            = $max_volume
     setting['mod_setting_file']      = $mod_setting_file
     setting['subtitle_font']         = $subtitle_font
     setting['subtitle_font_size']    = $subtitle_font_size
@@ -556,6 +567,7 @@ class Form_main
       setting['with subtitles']        = @checkBox_subtitles.checked?
       setting['subtitle printing']     = @checkBox_printing.checked?
       setting['Key frame']             = @checkBox_key_frame.checked?
+      setting['normalize']             = @checkBox_normalize.checked?
       setting['footer cut']            = @radioBtn_footer_cut.checked?
       setting['header cut']            = @radioBtn_header_cut.checked?
       setting['Speed']                 = @checkBox_speed.checked?
@@ -641,8 +653,35 @@ class Form_main
     return [ss_key_time,end_key_time,ss_key_time - ss_time,end_key_time - (ss_time + cut_time)]
   end
   
+  def volume_check(file,startTime,target,stoptime)
+    #ボリュームレベル調査
+    create_time = target[3]
+    ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
+    cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
+    if @checkBox_length.checked?
+      length_time = @edit_length.text.strip.to_f
+      if cut_time > length_time
+        if @radioBtn_header_cut.checked?
+          ss_time += cut_time - length_time
+        end
+        cut_time = length_time
+      end
+    end
+    command = %Q!ffmpeg -i "#{file}" -ss #{ss_time} -t #{cut_time} -vn -af volumedetect -f null - 2>&1!
+    puts command
+    puts MAX_VOLUME_CHECK_MES
+    volume_data =`#{command}`
+    puts volume_data
+    volume_data.each_line do |line|
+      if line =~ / ?max_volume: *(\-?\d+\.?\d*) *dB/
+        return $1.to_f
+      end
+    end
+    return false
+  end
+  
   #ffmpeg実行処理
-  def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true,key_frame_data = nil)
+  def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true,key_frame_data = nil,max_volume_data= nil)
     create_time = target[3]
     ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
     cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
@@ -685,6 +724,10 @@ class Form_main
     else
       ss_option = %Q! -ss #{ss_time} -i "#{file}"!
     end
+    af_option = ""
+    if max_volume_data
+      af_option = " -af volume=#{$max_volume - max_volume_data}dB"
+    end
     if str_file && File.exist?(str_file)
       vf_option = ""
       if @checkBox_printing.checked? && @printing && vf
@@ -698,16 +741,16 @@ class Form_main
         vf_option = %Q! -vf "subtitles=#{vf_srt_file}:force_style='FontName=#{$subtitle_font},FontSize=#{$subtitle_font_size},Alignment=#{alignment}#{add_force_style}'"!
       end
       if @checkBox_subtitles.checked?
-        command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{vf_option} "#{$subtitle_file}"!
+        command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{vf_option}#{af_option} "#{$subtitle_file}"!
         puts command
         `#{command}`
         command  = %Q!ffmpeg -i "#{$subtitle_file}" -i "#{str_file}" -y -map 0 -map 1 -c:a copy -c:v copy -c:s mov_text -metadata:s:s:0 language=eng !
         command += %Q!-metadata:s:s:0 title="Notes score"#{metadata} "#{out_dir}#{file_name}"!
       else
-        command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{vf_option} "#{out_dir}#{file_name}"!
+        command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{vf_option}#{af_option} "#{out_dir}#{file_name}"!
       end
     else
-      command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{metadata} "#{out_dir}#{file_name}"!
+      command = %Q!ffmpeg#{ss_option} -t #{cut_time} -y #{ffmpeg_option}#{metadata}#{af_option} "#{out_dir}#{file_name}"!
     end
     puts command
     `#{command}`
