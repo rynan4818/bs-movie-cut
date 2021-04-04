@@ -7,6 +7,22 @@ require 'vr/vruby'
 require 'vr/vrcontrol'
 require 'vr/vrcomctl'
 
+class Modaldlg_miss_summary < VRModalDialog
+  include VRContainersSet
+
+  def construct
+    self.caption = 'ミス箇所まとめ'
+    self.move(531,264,500,382)
+    addControl(VRButton,'button_cancel',"キャンセル",192,280,128,40)
+    addControl(VRButton,'button_preview',"プレビュー",336,280,120,40)
+    addControl(VREdit,'edit_after_time',"",136,88,88,32)
+    addControl(VREdit,'edit_before_time',"",136,40,88,32)
+    addControl(VRStatic,'static1',"前",48,40,80,24)
+    addControl(VRStatic,'static2',"後",48,88,72,24)
+  end 
+
+end
+
 class Modaldlg_playlist < VRModalDialog
   include VRContainersSet
 
@@ -392,7 +408,8 @@ class Form_main < VRForm
           ["BeastSaber譜面ページ(&S)", "menu_beastsaber"],
           ["選択プレイCSV詳細出力(&M)", "menu_maplist"],
           ["ノーツスコアCSV出力(&N)", "menu_notescore"],
-          ["プレイリスト作成(&P)", "menu_playlist"]]
+          ["プレイリスト作成(&P)", "menu_playlist"],
+          ["ミス箇所まとめ", "menu_miss_summary"]]
         ],
         ["統計情報(&S)",[
           ["作譜者情報(&M)", "menu_stat_mapper"],

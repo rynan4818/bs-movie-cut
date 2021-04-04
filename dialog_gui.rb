@@ -20,6 +20,116 @@ $KCODE='s'
 #                  sqlite3 (1.3.3 x86-mswin32-60)
 #==============================================================================
 
+class Modaldlg_miss_summary
+
+  def self.set(target, fields ,ffmpeg_option)
+    @@target = target
+    @@fields = fields
+    @@ffmpeg_option = ffmpeg_option
+  end
+  
+  def self_created
+    self.caption += " : " + @@target[1][@@fields.index("songName")]
+    @edit_before_time.text = 0.5
+    @edit_after_time.text = 0.5
+    dlg_move(self)
+  end
+  
+  def button_cancel_clicked
+    close(false)
+  end
+
+  def miss_notes_create(startTime)
+    sql = "SELECT * FROM NoteScore WHERE startTime = #{startTime} AND event = 'noteMissed';"
+    result = db_execute(sql,true,true,false)
+    if result
+      return false if result == "no_table"
+      fields,rows = result
+    else
+      return false
+    end
+    return false if rows.size == 0
+    
+    before_time = (@edit_before_time.text.to_f * 1000).to_i
+    after_time  = (@edit_after_time.text.to_f * 1000).to_i
+    miss_temp_times = []
+    rows.each do |record|
+      start_time = record[fields.index('time')].to_i - before_time
+      end_time   = record[fields.index('time')].to_i + after_time
+      miss_temp_times.push [start_time, end_time]
+    end
+    miss_times = []
+    miss_temp_times.each_with_index do |cut_time, idx|
+      if idx == 0
+        miss_times.push cut_time
+        next
+      end
+      if miss_temp_times[idx - 1][1] >= cut_time[0]
+        cut_time[0] = miss_temp_times[idx - 1][0]
+        if (miss_temp_times.size - 1) == idx
+          miss_times.push cut_time
+        end
+      else
+        miss_times.push cut_time
+      end
+    end
+    filter_option = ""
+    File.open(EXE_DIR + "filter.txt", "w") do |file|
+      miss_times.each_with_index do |cut_time, idx|
+        start_time  = (cut_time[0] - @@target[3]).to_f / 1000.0 + $offset
+        end_time    = (cut_time[1] - @@target[3]).to_f / 1000.0 + $offset
+        file.puts "[0:v]trim=start=#{start_time}:end=#{end_time},setpts=PTS-STARTPTS[v_#{idx + 1}];\n"
+        file.puts "[0:a]atrim=start=#{start_time}:end=#{end_time},asetpts=PTS-STARTPTS[a_#{idx + 1}];\n"
+        filter_option += "[v_#{idx + 1}][a_#{idx + 1}]"
+      end
+      file.puts "#{filter_option}concat=n=#{miss_times.size}:v=1:a=1[outv][outa]"
+    end
+    return true
+  end
+
+  def button_preview_clicked
+    #丸コピのテストコード
+    
+    Dir.chdir(EXE_DIR)
+    unless File.exist? $preview_tool.to_s
+      messageBox("'#{$preview_tool.to_s}' #{MAIN_BUTTON_PREVIEW_TOOL_CHECK}", MAIN_BUTTON_PREVIEW_TOOL_CHECK_TITLE, 48)
+      return
+    end
+    target = @@target
+    return if target[7] == 2
+    file = target[0]
+    out_dir  = File.dirname($preview_file.to_s.strip) + "\\"
+    file_name = File.basename($preview_file.to_s.strip)
+    unless File.directory?(out_dir)
+      messageBox("'#{out_dir}'\r\n#{MAIN_BUTTON_PREVIEW_DIR_CHECK}", MAIN_BUTTON_PREVIEW_DIR_CHECK_TITLE, 48)
+      return
+    end
+    if file_name.strip == ''
+      messageBox(MAIN_BUTTON_PREVIEW_FILE_CHECK, MAIN_BUTTON_PREVIEW_FILE_CHECK_TITLE, 48)
+      return
+    end
+    startTime = target[1][@@fields.index('startTime')]
+    return unless miss_notes_create(startTime)
+    script_file = EXE_DIR + "filter.txt"
+    command = %Q!ffmpeg -i "#{file}" -y -filter_complex_script "#{script_file}" -map [outv] -map [outa] #{@@ffmpeg_option} "#{out_dir}#{file_name}"!
+    puts command
+    `#{command}`
+    SWin::Application.doevents
+    preview_movie = out_dir + file_name
+    begin
+      #外部プログラム呼び出しで、処理待ちしないためWSHのRunを使う
+      option = ""
+      option = " " + $preview_tool_option.strip unless $preview_tool_option.strip == ""
+      $winshell.Run(%Q!"#{$preview_tool.to_s}"#{option} "#{preview_movie}"!)
+    rescue Exception => e
+      messageBox("#{MAIN_BUTTON_PREVIEW_ERROR}\r\n#{e.inspect}", MAIN_BUTTON_PREVIEW_ERROR_TITLE, 48)
+    end
+    
+    #丸コピのテストコード
+  end
+  
+end
+
 class Modaldlg_playlist
   include VRDropFileTarget
 

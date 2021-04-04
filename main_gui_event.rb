@@ -1929,4 +1929,17 @@ class Form_main
     end
   end
   
+  def menu_miss_summary_clicked
+    ffmpeg_option = @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
+    return if ffmpeg_option =~ /-(c|codec|vcodec) +copy/i || ffmpeg_option =~ /-(c|codec):(v|V) +copy/i || ffmpeg_option =~ /-(c|codec):(v|V):\d +copy/i
+    return if ffmpeg_option =~ /-(c|codec|acodec) +copy/i || ffmpeg_option =~ /-(c|codec):(a|A) +copy/i || ffmpeg_option =~ /-(c|codec):(a|A):\d +copy/i
+    $main_windowrect = self.windowrect
+    unless target = @convert_list[@listBox_map.selectedString]
+      messageBox(MAIN_NOT_SELECT_MES, MAIN_NOT_SELECT_MES_TITLE, 48)
+      return
+    end
+    Modaldlg_miss_summary.set(target, @fields, ffmpeg_option)
+    return unless result = VRLocalScreen.openModalDialog(self,nil,Modaldlg_miss_summary,nil,nil)  #検索画面のモーダルダイアログを開く
+  end
+  
 end
