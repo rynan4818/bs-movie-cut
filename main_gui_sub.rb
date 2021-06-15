@@ -228,7 +228,7 @@ class Form_main
       movie_file_list.push "#{file_idx + 1}\t#{file}" #変換元動画ファイル リスト作成
       create_time, access_time, write_time = movie_file_timestamp(file)
       #レコードの取得処理
-      sql = "SELECT * FROM MovieCutRecord WHERE startTime > #{create_time} AND menuTime < #{write_time};"
+      sql = "SELECT * FROM MovieCutRecord WHERE startTime < #{write_time} AND menuTime > #{create_time};"
       result = db_execute(sql,false,false)
       if result
         @fields,rows = result
@@ -683,8 +683,13 @@ class Form_main
   #ffmpeg実行処理
   def ffmpeg_run(file,file_name,ffmpeg_option,out_dir,startTime,target,stoptime,str_file = false,vf = true,key_frame_data = nil,max_volume_data= nil)
     create_time = target[3]
-    ss_time  = (startTime - create_time).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
-    cut_time = (stoptime - startTime).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
+    write_time  = target[5]
+    movie_start_offset = 0
+    movie_end_offset = 0
+    movie_start_offset = create_time - startTime if create_time > startTime
+    movie_end_offset = stoptime - write_time if stoptime > write_time
+    ss_time  = (startTime - create_time + movie_start_offset).to_f / 1000.0 + @edit_start_offset.text.strip.to_f + $offset
+    cut_time = (stoptime - startTime - movie_end_offset).to_f / 1000.0 - @edit_start_offset.text.strip.to_f + @edit_end_offset.text.strip.to_f + $offset
     if @checkBox_length.checked?
       length_time = @edit_length.text.strip.to_f
       if cut_time > length_time
@@ -880,8 +885,13 @@ class Form_main
         end
         #字幕用時間計算
         create_time = target[3]
-        movie_start_time  = startTime + (@edit_start_offset.text.strip.to_f * 1000.0).to_i + ($offset * 1000.0).to_i
-        movie_stop_time   = stoptime + (@edit_end_offset.text.strip.to_f * 1000.0).to_i + ($offset * 1000.0).to_i
+        write_time  = target[5]
+        movie_start_offset = 0
+        movie_end_offset = 0
+        movie_start_offset = create_time - startTime if create_time > startTime
+        movie_end_offset = stoptime - write_time if stoptime > write_time
+        movie_start_time  = startTime + movie_start_offset + (@edit_start_offset.text.strip.to_f * 1000.0).to_i + ($offset * 1000.0).to_i
+        movie_stop_time   = stoptime - movie_end_offset + (@edit_end_offset.text.strip.to_f * 1000.0).to_i + ($offset * 1000.0).to_i
         cut_time = movie_stop_time - movie_start_time
         if @checkBox_length.checked?
           length_time = (@edit_length.text.strip.to_f * 1000.0).to_i
