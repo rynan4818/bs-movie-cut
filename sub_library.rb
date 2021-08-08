@@ -222,8 +222,8 @@ def bsr_search(songHash)
   beatsaver_data = {}
   if songHash =~ /^[0-9A-F]{40}/i
     begin
-      beatsaver_data = JSON.parse(`BeatSaverAPI.exe #{songHash[0,40]} #{HTTP_TIMEOUT}`)
-      bsr = beatsaver_data['key']
+      beatsaver_data = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT} #{BEATSAVER_BYHASH_URL}#{songHash[0,40]}`)
+      bsr = beatsaver_data['id']
     rescue
       bsr = 'err'
     end
@@ -245,7 +245,7 @@ def ranked_check(main_self,song_hash,difficulty,mode)
       begin
         page += 1
         url = SCORESABAER_URL.sub(/page=1/,"page=#{page}")
-        temp = JSON.parse(`curl.exe --connect-timeout #{HTTP_TIMEOUT * 4} #{url}`)
+        temp = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT * 4} #{url}`)
         $scoresaber_ranked["songs"] += temp["songs"]
         rank_map_count = $scoresaber_ranked["songs"].size
       end while rank_map_count >= limit * page

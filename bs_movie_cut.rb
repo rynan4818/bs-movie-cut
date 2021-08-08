@@ -48,7 +48,7 @@ require 'json'
 #ERR_LOG ・・・ エラーログファイル名
 
 #ソフトバージョン
-SOFT_VER        = '2021/06/15'
+SOFT_VER        = '2021/08/09'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
@@ -62,7 +62,8 @@ MAP_STAT_HTML      = EXE_DIR + 'map_stat.html'
 PLAY_STAT_HTML     = EXE_DIR + 'play_stat.html'
 
 #サイト設定
-BEATSAVER_URL        = "https://beatsaver.com/beatmap/#bsr#"
+BEATSAVER_URL        = "https://beatsaver.com/maps/#bsr#"
+BEATSAVER_BYHASH_URL = "https://beatsaver.com/api/maps/hash/"
 BEASTSABER_URL       = "https://bsaber.com/songs/#bsr#/"
 SCORESABAER_URL      = "https://scoresaber.com/api.php?function=get-leaderboards&cat=1&page=1&limit=500&ranked=1"
 NEW_CHECK_URL        = "https://rynan4818.github.io/release_info.json"
@@ -113,7 +114,7 @@ DEFALUT_POST_COMMENT    = ["Song:#songname#\r\nMapper:#mapper#\r\n!bsr #bsr#\r\n
 DEFALUT_STAT_Y_COUNT    = 40  #統計出力するときのY軸の数
 
 #定数
-HTTP_TIMEOUT            = 5
+CURL_TIMEOUT            = 5
 
 $winshell  = WIN32OLE.new("WScript.Shell")
 $scoresaber_ranked = nil  #ScoreSaber のランク譜面JSONデータ
@@ -150,7 +151,7 @@ end
 if $new_version_check && $last_version_check != Time.now.strftime("%Y/%m/%d")
   puts "#{NEW_VERSION_CHECK}"
   begin
-    release_info = JSON.parse(`curl.exe --connect-timeout #{HTTP_TIMEOUT} #{NEW_CHECK_URL}`)
+    release_info = JSON.parse(`curl.exe --connect-timeout #{CURL_TIMEOUT} #{NEW_CHECK_URL}`)
   rescue
     release_info = {}
   end
