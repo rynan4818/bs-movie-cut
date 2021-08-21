@@ -46,6 +46,12 @@
 
 ツールの使用方法は[プレイ動画カットツールマニュアル](https://drive.google.com/open?id=1zyJ4o_rPToMF0anGCDlScW0-ZLSYKSyA6VPamWQS-h0)を参照して下さい。
 
+# 音ズレについて
+
+環境によってカットツールが原因で音ズレが発生する場合があるようです。対処法は下記を参照して下さい。
+
+**[Tips 音ズレについて](https://github.com/rynan4818/bs-movie-cut/blob/master/doc/Tips.md)**
+
 # 開発者向け
 
 本ツールはRuby ver1.8.7 で動作するように開発しています。
