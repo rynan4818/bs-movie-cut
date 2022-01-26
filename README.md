@@ -96,6 +96,9 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 - ライセンス：Ruby Licence
 
 ## GUIフォームビルダー入手先
+### Exerb化済み
+- https://github.com/rynan4818/formdesigner
+### オリジナル
 - FormDesigner for Project VisualuRuby Ver 060501
 - https://ja.osdn.net/projects/fdvr/
 - Subversion リポジトリ r71(r65以降)の/formdesigner/trunk を使用
