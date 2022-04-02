@@ -63,7 +63,7 @@ PLAY_STAT_HTML     = EXE_DIR + 'play_stat.html'
 
 #ÉTÉCÉgê›íË
 BEATSAVER_URL        = "https://beatsaver.com/maps/#bsr#"
-BEATSAVER_BYHASH_URL = "https://beatsaver.com/api/maps/hash/"
+BEATSAVER_BYHASH_URL = "https://api.beatsaver.com/maps/hash/"
 BEASTSABER_URL       = "https://bsaber.com/songs/#bsr#/"
 SCORESABAER_URL      = "https://scoresaber.com/api.php?function=get-leaderboards&cat=1&page=1&limit=500&ranked=1"
 NEW_CHECK_URL        = "https://rynan4818.github.io/release_info.json"
