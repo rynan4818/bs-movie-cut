@@ -46,6 +46,12 @@
 
 ツールの使用方法は[プレイ動画カットツールマニュアル](https://drive.google.com/open?id=1zyJ4o_rPToMF0anGCDlScW0-ZLSYKSyA6VPamWQS-h0)を参照して下さい。
 
+# 音ズレについて
+
+環境によってカットツールが原因で音ズレが発生する場合があるようです。対処法は下記を参照して下さい。
+
+**[Tips 音ズレについて](https://github.com/rynan4818/bs-movie-cut/blob/master/doc/Tips.md)**
+
 # 開発者向け
 
 本ツールはRuby ver1.8.7 で動作するように開発しています。
@@ -90,6 +96,9 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 - ライセンス：Ruby Licence
 
 ## GUIフォームビルダー入手先
+### Exerb化済み
+- https://github.com/rynan4818/formdesigner
+### オリジナル
 - FormDesigner for Project VisualuRuby Ver 060501
 - https://ja.osdn.net/projects/fdvr/
 - Subversion リポジトリ r71(r65以降)の/formdesigner/trunk を使用
