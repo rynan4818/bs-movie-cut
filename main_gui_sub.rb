@@ -858,6 +858,7 @@ class Form_main
               multiplier       = rows[rows_idx][fields.index('multiplier')]
               multiplierProgress  = rows[rows_idx][fields.index('multiplierProgress')]
               cutDistanceToCenter = (rows[rows_idx][fields.index('cutDistanceToCenter')] * 1000.0).round
+              timeDependence   = rows[rows_idx][fields.index('cutNormalZ')].abs
               noteCount = noteID - passedBombs + 1
               saberSpeedKmPerh    = (saberSpeed * 3.6).round
               if noteType == 'NoteA'
