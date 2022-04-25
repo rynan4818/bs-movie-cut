@@ -787,7 +787,11 @@ class Form_main
         line << "#{movie_time_min}:#{movie_time_sec}"
         line << cols[fields.index("event")]
         line << cols[fields.index("score")]
-        line << (cols[fields.index("score")].to_f / cols[fields.index("currentMaxScore")].to_f * 1000.0).round / 10.0
+        if cols[fields.index("currentMaxScore")].to_f == 0.0
+          line << 100.0
+        else
+          line << (cols[fields.index("score")].to_f / cols[fields.index("currentMaxScore")].to_f * 1000.0).round / 10.0
+        end
         line << cols[fields.index("rank")]
         line << cols[fields.index("hitNotes")]
         line << cols[fields.index("missedNotes")]
@@ -1719,7 +1723,11 @@ class Form_main
       ave_cut_data.push [time,((sum_cut_score.to_f / cut_count.to_f) * 10.0).round.to_f / 10.0] if cut_count > 0
       ave_cut_data_r.push [time,((sum_cut_score_r.to_f / cut_count_r.to_f) * 10.0).round.to_f / 10.0] if cut_count_r > 0
       ave_cut_data_l.push [time,((sum_cut_score_l.to_f / cut_count_l.to_f) * 10.0).round.to_f / 10.0] if cut_count_l > 0
-      scorePercentage = ((cols[fields.index("score")].to_f / cols[fields.index("currentMaxScore")].to_f) * 10000.0).round.to_f / 100.0
+      if cols[fields.index("currentMaxScore")].to_f == 0.0
+        scorePercentage = 100.00
+      else
+        scorePercentage = ((cols[fields.index("score")].to_f / cols[fields.index("currentMaxScore")].to_f) * 10000.0).round.to_f / 100.0
+      end
       score_data.push [time,scorePercentage]
       miss_data.push  [time,cols[fields.index("missedNotes")]]
       notes_count += 1 unless cols[fields.index("noteType")] == "Bomb"
