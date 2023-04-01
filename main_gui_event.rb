@@ -62,7 +62,7 @@ class Form_main
     #リストボックスにタブストップを設定
     #[0x192,タブストップの数,[タブストップの位置,…]]  FormDesignerでstyleのLBS_USETABSTOPSのチェックが必要
     #0x192:LB_SETTABSTOPS  l*:32bit符号つき整数
-    @listBox_map.sendMessage(0x192, 12,[7,31,87,109,135,156,188,209,234,260,290,442].pack('l*'))
+    @listBox_map.sendMessage(0x192, 13,[7,31,87,109,135,156,188,209,234,260,290,310,462].pack('l*'))
     @listBox_file.sendMessage(0x192, 1,[24].pack('l*'))
     @statusbar.setparts(4,[80,160,240,-1])
     @statusbar.setTextOf(0,"0 #{STATUSBAR_FILE}",0)
@@ -217,6 +217,7 @@ class Form_main
       noHUD               =  target[1][@fields.index('noHUD')]
       advancedHUD         =  target[1][@fields.index('advancedHUD')]
       autoRestart         =  target[1][@fields.index('autoRestart')]
+      hdt                 =  target[8].to_i
       
       ##分割処理
       time_name = Time.at(startTime.to_i / 1000).localtime.strftime($time_format)
@@ -505,6 +506,10 @@ class Form_main
     listbox_sort("NotesScore")
   end
 
+  def button_hdt_sort_clicked
+    listbox_sort("HDT")
+  end
+
   def button_organizing_reversing_clicked
     @listBox_map.countStrings.times do |idx|
       select = false
@@ -636,7 +641,7 @@ class Form_main
                      "combo","maxCombo","multiplier","obstacles","instaFail","noFail","batteryEnergy",
                      "disappearingArrows","noBombs","songSpeed","songSpeedMultiplier","noArrows","ghostNotes",
                      "failOnSaberClash","strictAngles","fastNotes","staticLights","leftHanded","playerHeight",
-                     "reduceDebris","noHUD","advancedHUD","autoRestart"]
+                     "reduceDebris","noHUD","advancedHUD","autoRestart","hdt"]
     target = []
     @comboBox_filename.eachString {|a| target.push a}
     Modaldlg_list_option_setting.set(target,variable_list, false, $out_file_name_select, FILENAME_EDIT_TITLE, true, true, OUT_FOLDER_EDIT_NOTES)

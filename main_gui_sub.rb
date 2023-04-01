@@ -126,6 +126,7 @@ class Form_main
                                   record[fields.index("access_time")].to_i, record[fields.index("write_time")].to_i]
       end
     end
+    hdt_load
     #レコードの取得処理
     if allread
       sql = "SELECT * FROM MovieCutRecord;"
@@ -201,7 +202,13 @@ class Form_main
           end
         end
       end
-      map_data = [file,cols,idx,create_time,access_time,write_time,file_idx,file_type]
+      if rows[idx + 1]
+        next_start_time = rows[idx + 1][@fields.index("startTime")].to_i
+      else
+        next_start_time = nil
+      end
+      hdt = hdt_get(cols[@fields.index("levelId")].to_s, start_time, menu_time, next_start_time)
+      map_data = [file,cols,idx,create_time,access_time,write_time,file_idx,file_type,hdt]
       @convert_list.push map_data
       @original_convert_list.push map_data
     end
@@ -224,6 +231,7 @@ class Form_main
     listBox_map_idx_end = 0  #リストボックスの最終追加場所(idx)
     db_open
     notes_score_check
+    hdt_load
     @movie_files.each_with_index do |file,file_idx|
       movie_file_list.push "#{file_idx + 1}\t#{file}" #変換元動画ファイル リスト作成
       create_time, access_time, write_time = movie_file_timestamp(file)
@@ -236,7 +244,13 @@ class Form_main
         return
       end
       rows.each_with_index do |cols,idx|
-        map_data = [file,cols,listBox_map_idx_end + idx,create_time,access_time,write_time,file_idx,1]
+        if rows[idx + 1]
+          next_start_time = rows[idx + 1][@fields.index("startTime")].to_i
+        else
+          next_start_time = nil
+        end
+        hdt = hdt_get(cols[@fields.index("levelId")].to_s, cols[@fields.index("startTime")].to_i, cols[@fields.index("menuTime")].to_i, next_start_time)
+        map_data = [file,cols,listBox_map_idx_end + idx,create_time,access_time,write_time,file_idx,1,hdt]
         @convert_list.push map_data
         @original_convert_list.push map_data
       end
@@ -306,6 +320,15 @@ class Form_main
       temp.push cols[@fields.index("scorePercentage")].to_s
       temp.push cols[@fields.index("missedNotes")].to_s
       temp.push cols[@fields.index("difficulty")].to_s
+      if map_cols[8] == -1
+        temp.push "-"
+      elsif map_cols[8] < 1000.0
+        temp.push map_cols[8].to_i.to_s
+      elsif map_cols[8] >= 1000.0 && map_cols[8] < 100000.0
+        temp.push(((map_cols[8] / 1000.0).to_i).to_s + "k")
+      else
+        temp.push "Err"
+      end
       temp.push cols[@fields.index("songName")].to_s[0,39]
       temp.push cols[@fields.index("levelAuthorName")].to_s[0,12]
       if $ascii_mode
@@ -353,6 +376,8 @@ class Form_main
       end
     elsif sort_target == "NotesScore"
       @convert_list = @convert_list.sort_by {|a| [@notes_score_check[a[1][@fields.index('startTime')]].to_i,i += 1] }
+    elsif sort_target == "HDT"
+      @convert_list = @convert_list.sort_by {|a| [a[8],i += 1] }
     else
       if cnv_type == "i"
         @convert_list = @convert_list.sort_by {|a| [a[1][@fields.index(sort_target)].to_i,i += 1] }
@@ -370,6 +395,11 @@ class Form_main
   def setting_load
     $time_format          = DEFAULT_TIMEFORMAT
     $beatsaber_dbfile     = nil
+    if File.exist?(DEFAULT_HDT_FILE)
+      $hdt_file             = DEFAULT_HDT_FILE
+    else
+      $hdt_file             = nil
+    end
     $preview_tool         = DEFAULT_PREVIEW_TOOL
     $preview_tool_option  = ""
     $preview_file         = DEFAULT_PREVIEW_FILE
@@ -404,6 +434,7 @@ class Form_main
       setting = JSON.parse(File.read(SETTING_FILE))
       $time_format      = setting['time_format'].to_s         if setting['time_format']
       $beatsaber_dbfile = setting['beatsaber_dbfile'].to_s    if setting['beatsaber_dbfile']
+      $hdt_file         = setting['hdt_file'].to_s            if setting['hdt_file']
       $preview_tool     = setting['preview_tool'].to_s        if setting['preview_tool']
       $preview_tool_option = setting['preview_tool_option'].to_s if setting['preview_tool_option']
       $preview_file     = setting['preview_file'].to_s        if setting['preview_file']
@@ -523,6 +554,7 @@ class Form_main
     setting['Remove non-ASCII code'] = $ascii_mode
     setting['time_format']           = $time_format
     setting['beatsaber_dbfile']      = $beatsaber_dbfile
+    setting['hdt_file']              = $hdt_file
     setting['preview_tool']          = $preview_tool
     setting['preview_tool_option']   = $preview_tool_option
     setting['preview_ffmpeg']        = $preview_ffmpeg
@@ -967,6 +999,44 @@ class Form_main
     end
     result.unshift [69,under70]
     return result
+  end
+  
+  def hdt_load
+    @hdt_data = {}
+    return unless $hdt_file
+    return unless File.exist?($hdt_file)
+    return unless hdt_json_data = JSON.parse(File.read($hdt_file))["BeatmapResults"]
+    hdt_json_data.each do |play|
+      id = play["LevelID"]
+      time = play["CreatedAt"]
+      dist = play["Distance"]
+      next unless id && time && dist
+      begin
+        time = Time.parse(time)
+      rescue ArgumentError
+        next
+      end
+      created_time = time.to_i * 1000 + (time.usec / 1000).to_i
+      dist = dist.to_f
+      @hdt_data[id] ||= []
+      @hdt_data[id].push [created_time, dist]
+    end
+    @hdt_data.keys.each do |key|
+      @hdt_data[key].sort! do |a, b|
+        b[0] <=> a[0]
+      end
+    end
+  end
+  
+  def hdt_get(id, start_time, menu_time, next_start_time)
+    return -1 unless data = @hdt_data[id]
+    next_start_time = menu_time + 10000 unless next_start_time
+    data.each do |play|
+      if play[0] >= start_time && play[0] <= next_start_time
+        return play[1]
+      end
+    end
+    return -1
   end
   
 end

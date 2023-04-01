@@ -1022,6 +1022,7 @@ class Modaldlg_setting
     @edit_opendir.text       = $open_dir.to_s
     @edit_extension.text     = $movie_default_extension.to_s.downcase
     @edit_max_volume.text    = $max_volume.to_s
+    @edit_hdtfile.text       = $hdt_file.to_s
     @checkBox_timesave.check $time_save
     @checkBox_ascii.check    $ascii_mode
     @checkBox_no_message.check $timestamp_nomsg
@@ -1066,6 +1067,37 @@ class Modaldlg_setting
     @edit_dbfile.text = filename
   end
 
+  def button_hdt_select_clicked
+    folder = nil
+    if $hdt_file
+      if File.exist? $hdt_file
+        folder = File.dirname($hdt_file)
+        file   = File.basename($hdt_file)
+      else
+        folder = File.dirname($hdt_file)
+        if File.directory? folder
+          file = DEFALUT_HDT_FILE_NAME
+        end
+      end
+    end
+    unless folder
+      if File.directory? File.dirname(DEFAULT_HDT_FILE)
+        folder = File.dirname(DEFAULT_HDT_FILE)
+        file = DEFALUT_HDT_FILE_NAME
+      elsif File.directory? EXE_DIR
+        folder = EXE_DIR
+        file = DEFALUT_HDT_FILE_NAME
+      else
+        folder = ''
+        file = DEFALUT_HDT_FILE_NAME
+      end
+    end
+    #ファイルを開くダイアログを開く(第7引数のデフォルトファイル名は標準のVisualuRubyだと対応していない、swin.soの改造が必要
+    filename = SWin::CommonDialog::openFilename(self,[["dat File (*.dat)","*.dat"],["All File (*.*)","*.*"]],0x4,HDT_FILE_SELECT_TITLE,"*.dat",folder,file)
+    return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
+    @edit_hdtfile.text = filename
+  end
+
   def button_opendir_select_clicked
     if @edit_opendir.text.to_s.strip == ""
       defalut = nil
@@ -1104,6 +1136,11 @@ class Modaldlg_setting
           return
         end
       end
+    end
+    if File.exist? @edit_hdtfile.text.to_s.strip
+      $hdt_file = @edit_hdtfile.text.to_s.strip
+    else
+      $hdt_file = nil
     end
     if File.exist? @edit_previewtool.text.to_s.strip
       $preview_tool = @edit_previewtool.text.to_s.strip

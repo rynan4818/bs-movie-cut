@@ -47,8 +47,10 @@ require 'json'
 #MAIN_RB ・・・ メインのrubyスクリプトファイル名
 #ERR_LOG ・・・ エラーログファイル名
 
+$winshell  = WIN32OLE.new("WScript.Shell")
+
 #ソフトバージョン
-SOFT_VER        = '2022/04/25'
+SOFT_VER        = '2023/04/01'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
@@ -78,6 +80,9 @@ CHECK_LENGTH_TIME    = 10.0
 #beatsaberのデータベースファイル名 1,2は検索順序
 DEFALUT_DB_FILE_NAME   = "beatsaber.db"
 DEFALUT1_DB_FILE       = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\UserData\\DataRecorder\\" + DEFALUT_DB_FILE_NAME
+
+DEFALUT_HDT_FILE_NAME  = "HMDDistance.dat"
+DEFAULT_HDT_FILE       = $winshell.SpecialFolders(5).sub(/\\Roaming$/,'') + "\\LocalLow\\Hyperbolic Magnetism\\Beat Saber\\" + DEFALUT_HDT_FILE_NAME
 
 DATARECORDER_MOD_SETTING_FILE_NAME = "DataRecorder.json"
 HTTPSTATUS_DB_MOD_SETTING_FILE_NAME = "movie_cut_record.json"
@@ -116,7 +121,6 @@ DEFALUT_STAT_Y_COUNT    = 40  #統計出力するときのY軸の数
 #定数
 CURL_TIMEOUT            = 5
 
-$winshell  = WIN32OLE.new("WScript.Shell")
 $scoresaber_ranked = nil  #ScoreSaber のランク譜面JSONデータ
 
 #切り出しファイルの保存先  .\\OUT\\はこの実行ファイルのあるフォルダ下の"OUT"フォルダ  フルパスでも可  \は\\にすること  末尾は\\必要
