@@ -58,7 +58,7 @@
 
 Rubyはスクリプト言語のため、本来はRuby本体のインストールが別途必要ですが、本ツールは加藤勇也氏が製作した[Exerb](http://exerb.osdn.jp/man/README.ja.html)を使用して、実行に必要な各種ライブラリと、実行ファイルと同名のrubyスクリプトファイルを読み込んで起動する[スクリプト](source/core_cui.rb)を、一つの実行ファイル `bs_movie_cut.exe` に変換しています。これにより、ユーザへの配布が容易になり、スクリプト修正時の実行ファイルへの変換作業が不要になるため、スクリプト言語としての開発しやすさを損なうことがないようにしています。
 
-GUIライブラリはにゃす氏が製作した[VisualuRuby](http://www.osk.3web.ne.jp/~nyasu/software/vrproject.html)を使用して作成しています。Win32APIを直接利用しているため、Windowsと親和性が高く、使いやすいライブラリになっていますが、同時に本来OS依存の無いRubyがWindows OS限定の動作となっています。
+GUIライブラリはにゃす氏が製作した[VisualuRuby](https://web.archive.org/web/20210507035606/http://www.osk.3web.ne.jp/~nyasu/software/vrproject.html)を使用して作成しています。Win32APIを直接利用しているため、Windowsと親和性が高く、使いやすいライブラリになっていますが、同時に本来OS依存の無いRubyがWindows OS限定の動作となっています。
 
 通常の開発はExerbによるexe化作業は不要なため、特にRuby環境の構築をしなくてもスクリプトの修正やデバッグが可能です。
 
@@ -127,6 +127,7 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 
 ### VisualuRuby                      #開発はActiveScriptRuby(1.8.7-p330)同封版を使用 ※swin.soを改造
 - http://www.osk.3web.ne.jp/~nyasu/software/vrproject.html
+- 公式サイト閉鎖のため、Internet Archive：https://web.archive.org/web/20210507035606/http://www.osk.3web.ne.jp/~nyasu/software/vrproject.html
 - 開発者:にゃす
 - ライセンス：Ruby Licence
 
