@@ -692,6 +692,22 @@ class Form_main
     listbox_load
   end
   
+  def menu_latest_open_clicked
+    if File.directory?($open_dir)
+      movie_list = []
+      Dir.glob("#{$open_dir}\\*.#{$movie_default_extension.downcase}".gsub(/\\/,'/')) do |file|
+        movie_list.push [File.stat(file).mtime, file]
+      end
+      movie_list.sort!{|a,b| b[0] <=> a[0]}
+      if movie_list[0]
+        @movie_files = [movie_list[0][1].gsub(/\//,'\\')]
+        listbox_load
+        return
+      end
+    end
+    messageBox("#{LATEST_MOVIE_OPEN_ERR_MES}", LATEST_MOVIE_OPEN_ERR_MES_TITLE, 48)
+  end
+  
   def menu_exit_clicked
     close
   end

@@ -376,6 +376,7 @@ class Form_main < VRForm
       [
         ["ファイル(&F)",[
           ["動画を開く(&O)", "menu_open"],
+          ["最新動画を開く(&L)", "menu_latest_open"],
           ["sep", "_vrmenusep", 2048],
           ["DB閲覧モード(&D)", "menu_dbopen"],
           ["sep", "_vrmenusep", 2048],

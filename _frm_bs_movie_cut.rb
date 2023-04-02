@@ -376,6 +376,7 @@ class Form_main < VRForm
       [
         ["File(&F)",[
           ["Open movie(&O)", "menu_open"],
+          ["Open latest movie(&L)", "menu_latest_open"],
           ["sep", "_vrmenusep", 2048],
           ["Database view mode(&D)", "menu_dbopen"],
           ["sep", "_vrmenusep", 2048],
