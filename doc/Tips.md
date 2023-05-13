@@ -1,3 +1,31 @@
+# YouTube ショート動画用 FFmpegオプションについて
+
+YouTube ショート動画用のFFmpegオプションとして以下の２つがあります。
+
+## YouTube Shorts
+    -vf crop=x=in_w*0.28:y=0:w=in_h*9/16:h=in_h,scale=w=1080:h=1920,yadif=0:-1:1 -b:v 12M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -profile:v high -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1
+
+こちらのオプションは、画面の中央部分(左から画面の幅の28%の位置を左上とした)、縦長(9:16)の動画にします。
+
+切り出し基準点はオプション最初にある`crop=x=in_w*0.28`の`0.28`を変更して位置を変えられます。
+
+
+## YouTube Shorts Stack
+    -filter_complex "[0:v]crop=x=in_w*0.2:y=in_h*0.3:w=in_w*0.4:h=out_w*8/9,scale=w=1080:h=960,yadif=0:-1:1[v0];[0:v]crop=x=in_w*0.6:y=in_h*0.3:w=in_w*0.4:h=out_w*8/9,scale=w=1080:h=960,yadif=0:-1:1[v1];[v0][v1]vstack=inputs=2" -b:v 12M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -profile:v high -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1
+
+こちらのオプションは、画面の指定部分２箇所を9:8の比率で切り出して上下に合成し、縦長(9:16)の動画にします。
+
+上側動画の切り出しの基準点はオプションにある`crop=x=in_w*0.2:y=in_h*0.3:w=in_w*0.4`の各数値を変更します。
+
+- x=in_w*0.2 ・・・ 画面左から画面幅の20%の位置を切り出しの左基準とする
+- y=in_h*0.3 ・・・ 画面上から画面高の30%の位置を切り出しの上基準とする
+- w=in_w*0.4 ・・・ 画面幅の40%を切り出しの幅とする
+
+※切り出しの高さは幅の8/9倍となります。
+
+下側動画は、２つめの`crop=x=in_w*0.6:y=in_h*0.3:w=in_w*0.4`で同様に指定します。
+
+
 # 音ズレについて
 PCで録画を行うと様々な原因で音ズレが発生しますが、カット前の元動画でズレておらず、
 カットツールで切り出しを行う際にズレが発生する場合の対処法を記載します。
