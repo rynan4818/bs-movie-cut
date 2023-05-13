@@ -30,10 +30,7 @@
 
 1. [DataRecorder](https://github.com/rynan4818/DataRecorder)のインストールを行って、一度BeatSaberを起動しデータベースを作成しておいて下さい。
 
-2. [リリースページ](https://github.com/rynan4818/bs-movie-cut/releases)から最新のリリースをダウンロードします。または、Gitでクローンもしくは、`Code`から`Downlaod ZIP`しても構いません。
-その場合、リリースしていない最新のコミット版が取得出来ます。
-
-![imange](https://rynan4818.github.io/clone_or_download.png)
+2. [リリースページ](https://github.com/rynan4818/bs-movie-cut/releases)から最新のリリースをダウンロードします。
 
 3. zipを適当なフォルダに解凍します。例：C:\TOOL\bs_movie_cut\
 **※注意　フルパスに半角空白' 'が含まれない場所を推奨します。(字幕データの保存で問題が発生します)**\
@@ -163,6 +160,8 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 - https://www.gyan.dev/ffmpeg/builds/
 - 製作者:Gyan Doshi
 - ライセンス：GPL3.0
+
+  ※ffmpegはサイズが大きいのでリポジトリには入れていません
 
 #### curl 7.71.1 for Windows 32bit
 - https://curl.haxx.se/windows/
