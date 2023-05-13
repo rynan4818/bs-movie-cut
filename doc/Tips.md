@@ -9,6 +9,7 @@ YouTube ショート動画用のFFmpegオプションとして以下の２つが
 
 切り出し基準点はオプション最初にある`crop=x=in_w*0.28`の`0.28`を変更して位置を変えられます。
 
+![image](https://github.com/rynan4818/bs-movie-cut/assets/14249877/e6f3341a-03a9-4c24-9682-7c1c570a19e0)
 
 ## YouTube Shorts Stack
     -filter_complex "[0:v]crop=x=in_w*0.2:y=in_h*0.3:w=in_w*0.4:h=out_w*8/9,scale=w=1080:h=960,yadif=0:-1:1[v0];[0:v]crop=x=in_w*0.6:y=in_h*0.3:w=in_w*0.4:h=out_w*8/9,scale=w=1080:h=960,yadif=0:-1:1[v1];[v0][v1]vstack=inputs=2" -b:v 12M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -profile:v high -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1
@@ -25,6 +26,7 @@ YouTube ショート動画用のFFmpegオプションとして以下の２つが
 
 下側動画は、２つめの`crop=x=in_w*0.6:y=in_h*0.3:w=in_w*0.4`で同様に指定します。
 
+![image](https://github.com/rynan4818/bs-movie-cut/assets/14249877/5ca9e745-cfbf-4387-8df9-8541a120fe8a)
 
 # 音ズレについて
 PCで録画を行うと様々な原因で音ズレが発生しますが、カット前の元動画でズレておらず、
