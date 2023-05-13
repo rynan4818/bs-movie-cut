@@ -159,9 +159,9 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 
 ### 実行ファイル
 
-#### FFmpeg 4.3 win64 Static
-- https://ffmpeg.zeranoe.com/builds/
-- 製作者:Zeranoe
+#### FFmpeg win64 Static
+- https://www.gyan.dev/ffmpeg/builds/
+- 製作者:Gyan Doshi
 - ライセンス：GPL3.0
 
 #### curl 7.71.1 for Windows 32bit

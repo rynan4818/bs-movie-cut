@@ -50,7 +50,7 @@ require 'json'
 $winshell  = WIN32OLE.new("WScript.Shell")
 
 #ソフトバージョン
-SOFT_VER        = '2023/04/02'
+SOFT_VER        = '2023/05/13'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
@@ -96,9 +96,16 @@ DEFAULT_SUBTITLE_FILE  = EXE_DIR + "subtitle_temp.mp4"
 DEFAULT_FFMPEG_OPTION  = ["#DEFALUT#  -c copy -async 1",
                           "#Twitter 2Mbps#  -r 40 -c:v libx264 -pix_fmt yuv420p -strict -2 -c:a aac -b:v 1878k -minrate 1878k -maxrate 1878k -bufsize 1878k -b:a 128k -async 1 -vsync cfr -s 1280x720",
                           "#Twitter 15.5Mbps#  -c:v libx264 -pix_fmt yuv420p -strict -2 -c:a aac -b:a 512k -b:v 15360k -async 1",
+                          "#Twitter 15.5Mbps NoAudio#  -c:v libx264 -pix_fmt yuv420p -strict -2 -an -b:v 15360k",
                           "#YouTube 7.5Mbps#  -b:v 7.5M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -vf yadif=0:-1:1 -profile:v high  -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1",
                           "#YouTube 12Mbps#  -b:v 12M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -vf yadif=0:-1:1 -profile:v high  -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1",
-                          "#NVENC_Acopy#  -r 60 -vsync cfr -async 1 -c:a copy -c:v h264_nvenc -b:v 22M","#NO COPY#  -async 1"]
+                          "#YouTube Shorts#  -vf crop=x=in_w*0.28:y=0:w=in_h*9/16:h=in_h,scale=w=1080:h=1920,yadif=0:-1:1 -b:v 12M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -profile:v high -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1",
+                          "#YouTube Shorts Stack#  -filter_complex \"[0:v]crop=x=in_w*0.2:y=in_h*0.3:w=in_w*0.4:h=out_w*8/9,scale=w=1080:h=960,yadif=0:-1:1[v0];[0:v]crop=x=in_w*0.7:y=in_h*0.3:w=in_w*0.4:h=out_w*8/9,scale=w=1080:h=960,yadif=0:-1:1[v1];[v0][v1]vstack=inputs=2\" -b:v 12M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -profile:v high -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1",
+                          "#NVENC_Acopy#  -r 60 -vsync cfr -async 1 -c:a copy -c:v h264_nvenc -b:v 22M",
+                          "#NVENC_A512k#  -r 60 -vsync cfr -async 1 -c:a aac -c:v h264_nvenc -b:a 512k -b:v 22M",
+                          "#Twitter NVENC 15.5Mbps#  -c:v h264_nvenc -pix_fmt yuv420p -strict -2 -c:a aac -b:a 512k -b:v 15360k -async 1",
+                          "#Twitter NVENC 15.5Mbps NoAudio#  -c:v h264_nvenc -pix_fmt yuv420p -strict -2 -an -b:v 15360k",
+                          "#NO COPY#  -async 1"]
 DEFAULT_OUT_FILE_NAME  = ['#DEFALUT#  #{time_name}_#{cleared}_#{songName}_#{levelAuthorName}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}.mp4',
                           '#SongNameTop#  #{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4',
                           '#bsrTop#  #{bsr}_#{songName}_#{levelAuthorName}_#{cleared}_#{difficulty}_#{rank}_#{scorePercentage}%_#{miss}_#{time_name}.mp4']

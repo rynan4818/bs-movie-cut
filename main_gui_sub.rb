@@ -25,7 +25,7 @@ class Form_main
   #subtitle printing(スコアを動画に焼き込み)の有効判定
   def printing_check
     encode_option = @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
-    if encode_option =~ /-(c|codec|vcodec) +copy/i || encode_option =~ /-(c|codec):(v|V) +copy/i || encode_option =~ /-(c|codec):(v|V):\d +copy/i
+    if encode_option =~ /-(c|codec|vcodec) +copy/i || encode_option =~ /-(c|codec):(v|V) +copy/i || encode_option =~ /-(c|codec):(v|V):\d +copy/i || encode_option =~ /-filter_complex/i
       @checkBox_printing.style = 0x58000003
       @checkBox_key_frame.style = 0x50000003
       @printing = false
@@ -648,7 +648,7 @@ class Form_main
     end
     stert_check_time = "#{ss_time - CHECK_BACK_TIME}%+#{CHECK_LENGTH_TIME}"
     end_check_time   = "#{ss_time + cut_time}%+#{CHECK_LENGTH_TIME}"
-    probe_option = %Q! -show_frames -select_streams 0 -show_entries frame=key_frame,pkt_pts_time:side_data= -of csv=p=0 "#{file}"!
+    probe_option = %Q! -show_frames -select_streams 0 -show_entries frame=key_frame,pts_time:side_data= -of csv=p=0 "#{file}"!
     command = %Q!ffprobe -v quiet -read_intervals #{stert_check_time}#{probe_option}!
     puts command
     start_frame_data =`#{command}`
