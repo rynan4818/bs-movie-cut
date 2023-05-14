@@ -33,6 +33,8 @@ YouTube ショート動画用のFFmpegオプションとして以下の２つが
 
 （こちらはデフォルトオプションに入れていません）
 
+**[このオプションを簡単に作れるスプレッドシート](https://docs.google.com/spreadsheets/d/1UaUtj_4lQ9ZGRUpr7i67xCn6xY2f0WncSuLWj1SP_64/edit?usp=sharing)**
+
 ![image](https://github.com/rynan4818/bs-movie-cut/assets/14249877/f6835425-b61b-444a-b7d5-18b5a1b5b2bb)
 
     -filter_complex "[0:v]crop=x=in_w*0.15:y=in_h*0:w=in_w*0.5:h=in_h*1,scale=w=1080:h=1216,yadif=0:-1:1[v0];[0:v]crop=x=in_w*0.65:y=in_h*0.2:w=in_w*0.25:h=in_h*0.8,setsar=1,pad=x=-1:aspect=1080/704,scale=w=1080:h=704,yadif=0:-1:1[v1];[v0][v1]vstack=inputs=2" -b:v 12M -b:a 384k -ar 48000 -r 60 -g 30 -movflags +faststart -c:a aac -profile:a aac_low -ac 2 -c:v libx264 -profile:v high -bf 2 -coder 1 -pix_fmt yuv420p -vsync cfr -async 1
