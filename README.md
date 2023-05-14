@@ -43,11 +43,17 @@
 
 ツールの使用方法は[プレイ動画カットツールマニュアル](https://drive.google.com/open?id=1zyJ4o_rPToMF0anGCDlScW0-ZLSYKSyA6VPamWQS-h0)を参照して下さい。
 
+# YouTube ショート動画用 FFmpegオプションについて
+
+YouTube ショート動画用のFFmpegオプションは切り出す位置の設定が必要です。詳細は以下を参照して下さい。
+
+**[Tips YouTube ショート動画用 FFmpegオプションについて](https://github.com/rynan4818/bs-movie-cut/blob/master/doc/Tips.md#youtube-%E3%82%B7%E3%83%A7%E3%83%BC%E3%83%88%E5%8B%95%E7%94%BB%E7%94%A8-ffmpeg%E3%82%AA%E3%83%97%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6)**
+
 # 音ズレについて
 
 環境によってカットツールが原因で音ズレが発生する場合があるようです。対処法は下記を参照して下さい。
 
-**[Tips 音ズレについて](https://github.com/rynan4818/bs-movie-cut/blob/master/doc/Tips.md)**
+**[Tips 音ズレについて](https://github.com/rynan4818/bs-movie-cut/blob/master/doc/Tips.md#%E9%9F%B3%E3%82%BA%E3%83%AC%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6)**
 
 # 開発者向け
 
