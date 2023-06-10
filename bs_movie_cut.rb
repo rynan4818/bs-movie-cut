@@ -50,7 +50,7 @@ require 'json'
 $winshell  = WIN32OLE.new("WScript.Shell")
 
 #ソフトバージョン
-SOFT_VER        = '2023/05/13'
+SOFT_VER        = '2023/06/10'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
