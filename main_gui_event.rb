@@ -261,7 +261,7 @@ class Form_main
       end
       str_dir = File.dirname($subtitle_file.to_s.strip) + "\\"
       str_file = File.basename($subtitle_file, ".*") + '.srt'
-      if !@printing && @checkBox_key_frame.checked?
+      if @keyframecut && @checkBox_key_frame.checked?
         key_frame_data = key_frame_check(file,startTime,target,stoptime)
       else
         key_frame_data = nil
@@ -396,7 +396,7 @@ class Form_main
       if $preview_encode
         ffmpeg_option = ' ' + @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
         vf = true
-        key_frame_cut = !@printing && @checkBox_key_frame.checked?
+        key_frame_cut = @keyframecut && @checkBox_key_frame.checked?
         normalize_check = @normalize && @checkBox_normalize.checked?
       else
         ffmpeg_option = $preview_ffmpeg

@@ -25,14 +25,22 @@ class Form_main
   #subtitle printing(スコアを動画に焼き込み)の有効判定
   def printing_check
     encode_option = @comboBox_ffmpeg.getTextOf(@comboBox_ffmpeg.selectedString).strip.sub(/^#[^#]+#/,'').strip
-    if encode_option =~ /-(c|codec|vcodec) +copy/i || encode_option =~ /-(c|codec):(v|V) +copy/i || encode_option =~ /-(c|codec):(v|V):\d +copy/i || encode_option =~ /-filter_complex/i
+    if encode_option =~ /-(c|codec|vcodec) +copy/i || encode_option =~ /-(c|codec):(v|V) +copy/i || encode_option =~ /-(c|codec):(v|V):\d +copy/i
       @checkBox_printing.style = 0x58000003
       @checkBox_key_frame.style = 0x50000003
+      @keyframecut = true
       @printing = false
     else
-      @checkBox_printing.style = 0x50000003
-      @checkBox_key_frame.style = 0x58000003
-      @printing = true
+      @keyframecut = false
+      if encode_option =~ /-filter_complex/i
+        @checkBox_printing.style = 0x58000003
+        @checkBox_key_frame.style = 0x58000003
+        @printing = false
+      else
+        @checkBox_printing.style = 0x50000003
+        @checkBox_key_frame.style = 0x58000003
+        @printing = true
+      end
     end
     if encode_option =~ /-(c|codec|acodec) +copy/i || encode_option =~ /-(c|codec):(a|A) +copy/i || encode_option =~ /-(c|codec):(a|A):\d +copy/i
       @checkBox_normalize.style = 0x58000003
