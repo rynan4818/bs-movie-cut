@@ -55,6 +55,11 @@ class Form_main
   #動画ファイルのタイムスタンプ取得処理
   def movie_file_timestamp(file,db_save_check = false)
     create_time, access_time, write_time = get_file_timestamp(file)
+    if $obs_log_check && $obs_log_time[file]
+      create_time = $obs_log_time[file][:start_time]
+      access_time = $obs_log_time[file][:end_time]
+      write_time  = $obs_log_time[file][:end_time]
+    end
     ##データベース処理
     if $time_save
       #データベースに登録済みのファイルのタイムスタンプの確認
@@ -286,6 +291,7 @@ class Form_main
   
   #動画の読み込み＆リストボックス更新
   def listbox_load
+    obs_log_check
     db_map_load_movie
     listbox_refresh
   end
@@ -404,9 +410,14 @@ class Form_main
     $time_format          = DEFAULT_TIMEFORMAT
     $beatsaber_dbfile     = nil
     if File.exist?(DEFAULT_HDT_FILE)
-      $hdt_file             = DEFAULT_HDT_FILE
+      $hdt_file           = DEFAULT_HDT_FILE
     else
-      $hdt_file             = nil
+      $hdt_file           = nil
+    end
+    if File.directory?(DEFAULT_OBS_LOG_DIR)
+      $obs_log_dir        = DEFAULT_OBS_LOG_DIR
+    else
+      $obs_log_dir        = nil
     end
     $preview_tool         = DEFAULT_PREVIEW_TOOL
     $preview_tool_option  = ""
@@ -419,6 +430,7 @@ class Form_main
     $time_save            = true
     $offset               = 0.0
     $timestamp_nomsg      = false
+    $obs_log_check        = true
     $use_endtime          = false
     $preview_encode       = false
     $subtitle_font        = DEFALUT_SUB_FONT
@@ -443,6 +455,7 @@ class Form_main
       $time_format      = setting['time_format'].to_s         if setting['time_format']
       $beatsaber_dbfile = setting['beatsaber_dbfile'].to_s    if setting['beatsaber_dbfile']
       $hdt_file         = setting['hdt_file'].to_s            if setting['hdt_file']
+      $obs_log_dir      = setting['obs_log_dir'].to_s         if setting['obs_log_dir']
       $preview_tool     = setting['preview_tool'].to_s        if setting['preview_tool']
       $preview_tool_option = setting['preview_tool_option'].to_s if setting['preview_tool_option']
       $preview_file     = setting['preview_file'].to_s        if setting['preview_file']
@@ -470,6 +483,7 @@ class Form_main
       $ascii_mode       = setting['Remove non-ASCII code']    unless setting['Remove non-ASCII code'] == nil
       $time_save        = setting['time_save']                unless setting['time_save'] == nil
       $timestamp_nomsg  = setting['timestamp_nomsg']          unless setting['timestamp_nomsg'] == nil
+      $obs_log_check    = setting['obs_log_check']            unless setting['obs_log_check'] == nil
       $use_endtime      = setting['use_endtime']              unless setting['use_endtime'] == nil
       $preview_encode   = setting['preview_encode']           unless setting['preview_encode'] == nil
       $ss_option_after  = setting['ss option after']          unless setting['ss option after'] == nil
@@ -563,12 +577,14 @@ class Form_main
     setting['time_format']           = $time_format
     setting['beatsaber_dbfile']      = $beatsaber_dbfile
     setting['hdt_file']              = $hdt_file
+    setting['obs_log_dir']           = $obs_log_dir
     setting['preview_tool']          = $preview_tool
     setting['preview_tool_option']   = $preview_tool_option
     setting['preview_ffmpeg']        = $preview_ffmpeg
     setting['preview_keycut']        = $preview_keycut
     setting['time_save']             = $time_save
     setting['timestamp_nomsg']       = $timestamp_nomsg
+    setting['obs_log_check']         = $obs_log_check
     setting['use_endtime']           = $use_endtime
     setting['preview_encode']        = $preview_encode
     setting['preview_file']          = $preview_file

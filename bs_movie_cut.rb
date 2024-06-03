@@ -84,6 +84,8 @@ DEFALUT1_DB_FILE       = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Bea
 DEFALUT_HDT_FILE_NAME  = "HMDDistance.dat"
 DEFAULT_HDT_FILE       = $winshell.SpecialFolders(5).sub(/\\Roaming$/,'') + "\\LocalLow\\Hyperbolic Magnetism\\Beat Saber\\" + DEFALUT_HDT_FILE_NAME
 
+DEFAULT_OBS_LOG_DIR    = $winshell.SpecialFolders(5) + "\\obs-studio\\logs"
+
 DATARECORDER_MOD_SETTING_FILE_NAME = "DataRecorder.json"
 HTTPSTATUS_DB_MOD_SETTING_FILE_NAME = "movie_cut_record.json"
 DEFAULT_MOD_SETTING_FILE = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\UserData\\" + DATARECORDER_MOD_SETTING_FILE_NAME
@@ -129,6 +131,7 @@ DEFALUT_STAT_Y_COUNT    = 40  #統計出力するときのY軸の数
 CURL_TIMEOUT            = 5
 
 $scoresaber_ranked = nil  #ScoreSaber のランク譜面JSONデータ
+$obs_log_time = {}        #OBSの動画ファイルの開始終了時間データ
 
 #切り出しファイルの保存先  .\\OUT\\はこの実行ファイルのあるフォルダ下の"OUT"フォルダ  フルパスでも可  \は\\にすること  末尾は\\必要
 DEFAULT_OUT_FOLDER     = ["#DEFAULT#  " + EXE_DIR + "OUT\\","#sample#  D:\\"]

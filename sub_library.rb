@@ -110,6 +110,48 @@ def get_file_timestamp(file)
   return([create_time,access_time,write_time])
 end
 
+###obsのログの読み取りと録画情報の取得
+def obs_log_check()
+  return unless $obs_log_dir
+  return unless File.directory?($obs_log_dir)
+  Dir.glob("#{$obs_log_dir}\\*.txt".gsub(/\\/,'/')) do |logfile|
+    next if $obs_log_time[logfile] == File.size(logfile)
+    File.open(logfile,"r") do |f|
+      year = 0
+      mon = 0
+      day = 0
+      while line = f.gets
+        if line =~ /Current Date\/Time: *(\d+)-(\d+)-(\d+)[, ]+(\d+):(\d+):(\d+) *$/i
+          year = $1.to_i
+          mon = $2.to_i
+          day = $3.to_i
+          hour = $4.to_i
+        end
+        next if year == 0
+        if line =~ /^(\d+):(\d+):(\d+)\.(\d+):.+ffmpeg muxer.+Writing file *'(.+)' *...$/i
+          start_time = Time.local(year, mon, day, $1.to_i, $2.to_i, $3.to_i).to_i * 1000 + $4.to_i
+          if $1.to_i < hour
+            start_time += 60*60*24*1000
+          end
+          movie_file = $5.gsub('/','\\\\')
+          $obs_log_time[movie_file] ||= {}
+          $obs_log_time[movie_file][:start_time] = start_time
+        end
+        if line =~ /^(\d+):(\d+):(\d+)\.(\d+):.+ffmpeg muxer.+Output of file *'(.+)' *stopped$/i
+          end_time = Time.local(year, mon, day, $1.to_i, $2.to_i, $3.to_i).to_i * 1000 + $4.to_i
+          movie_file = $5.gsub('/','\\\\')
+          next if $obs_log_time[movie_file] == nil
+          while $obs_log_time[movie_file][:start_time] > end_time
+            end_time += 60*60*24*1000
+          end
+          $obs_log_time[movie_file][:end_time] = end_time
+        end
+      end
+    end
+    $obs_log_time[logfile] = File.size(logfile)
+  end
+end
+
 ###beatsaberのデータベースを開く処理###
 def db_open
   #データーベースのオープン処理

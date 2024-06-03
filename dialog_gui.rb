@@ -1023,12 +1023,14 @@ class Modaldlg_setting
     @edit_extension.text     = $movie_default_extension.to_s.downcase
     @edit_max_volume.text    = $max_volume.to_s
     @edit_hdtfile.text       = $hdt_file.to_s
+    @edit_obs_dir.text       = $obs_log_dir.to_s
     @checkBox_timesave.check $time_save
     @checkBox_ascii.check    $ascii_mode
     @checkBox_no_message.check $timestamp_nomsg
     @checkBox_stop_time_menu.check $use_endtime
     @checkBox_japanese.check $japanese_mode
     @checkBox_newcheck.check $new_version_check
+    @checkBox_obs_log_check.check $obs_log_check
     @groupBox_Preview.radioBtn_copy.check true unless $preview_encode
     @groupBox_Preview.radioBtn_select.check $preview_encode
     @groupBox_Preview.checkBox_preview_keycut.check $preview_keycut
@@ -1096,6 +1098,18 @@ class Modaldlg_setting
     filename = SWin::CommonDialog::openFilename(self,[["dat File (*.dat)","*.dat"],["All File (*.*)","*.*"]],0x4,HDT_FILE_SELECT_TITLE,"*.dat",folder,file)
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     @edit_hdtfile.text = filename
+  end
+
+  def button_obs_dir_select_clicked
+    if @edit_obs_dir.text.to_s.strip == ""
+      defalut = nil
+    else
+      defalut = @edit_obs_dir.text.to_s.strip
+    end
+    folder = SWin::CommonDialog::selectDirectory(self,SELECT_OPEN_OBSLOG_FOLDER_TITLE,defalut,1)
+    return unless folder                                 #ファイルが選択されなかった場合、キャンセルされた場合は戻る
+    return unless File.exist?(folder)                    #folderのファイルが存在しなければ戻る
+    @edit_obs_dir.text = folder
   end
 
   def button_opendir_select_clicked
@@ -1167,6 +1181,7 @@ class Modaldlg_setting
     $offset       = @edit_offset.text.strip.to_f
     $time_format  = @edit_time_format.text.to_s.strip
     $open_dir      = @edit_opendir.text.to_s.strip
+    $obs_log_dir   = @edit_obs_dir.text.to_s.strip
     $movie_default_extension = @edit_extension.text.to_s.strip.downcase
     $max_volume   = @edit_max_volume.text.strip.to_f
     $time_save    = @checkBox_timesave.checked?
@@ -1177,6 +1192,7 @@ class Modaldlg_setting
     $japanese_mode = @checkBox_japanese.checked?
     $new_version_check = @checkBox_newcheck.checked?
     $preview_keycut = @groupBox_Preview.checkBox_preview_keycut.checked?
+    $obs_log_check = @checkBox_obs_log_check.checked?
     close(true)
   end
 
