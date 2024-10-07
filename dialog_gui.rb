@@ -1095,7 +1095,7 @@ class Modaldlg_setting
       end
     end
     #ファイルを開くダイアログを開く(第7引数のデフォルトファイル名は標準のVisualuRubyだと対応していない、swin.soの改造が必要
-    filename = SWin::CommonDialog::openFilename(self,[["dat File (*.dat)","*.dat"],["All File (*.*)","*.*"]],0x4,HDT_FILE_SELECT_TITLE,"*.dat",folder,file)
+    filename = SWin::CommonDialog::openFilename(self,[["litedb File (*.litedb)","*.litedb"],["dat File (*.dat)","*.dat"],["All File (*.*)","*.*"]],0x4,HDT_FILE_SELECT_TITLE,"*.litedb",folder,file)
     return unless filename                               #ファイルが選択されなかった場合、キャンセルされた場合は戻る
     @edit_hdtfile.text = filename
   end

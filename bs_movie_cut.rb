@@ -50,7 +50,7 @@ require 'json'
 $winshell  = WIN32OLE.new("WScript.Shell")
 
 #ソフトバージョン
-SOFT_VER        = '2024/06/03'
+SOFT_VER        = '2024/10/07'
 APP_VER_COOMENT = "BeatSaber Movie Cut TOOL Ver#{SOFT_VER}\r\n for ActiveScriptRuby(1.8.7-p330)\r\nCopyright 2020 リュナン [Rynan] (Twitter @rynan4818)"
 
 #設定ファイル
@@ -81,7 +81,7 @@ CHECK_LENGTH_TIME    = 10.0
 DEFALUT_DB_FILE_NAME   = "beatsaber.db"
 DEFALUT1_DB_FILE       = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Beat Saber\\UserData\\DataRecorder\\" + DEFALUT_DB_FILE_NAME
 
-DEFALUT_HDT_FILE_NAME  = "HMDDistance.dat"
+DEFALUT_HDT_FILE_NAME  = "HMDDistance.litedb"
 DEFAULT_HDT_FILE       = $winshell.SpecialFolders(5).sub(/\\Roaming$/,'') + "\\LocalLow\\Hyperbolic Magnetism\\Beat Saber\\" + DEFALUT_HDT_FILE_NAME
 
 DEFAULT_OBS_LOG_DIR    = $winshell.SpecialFolders(5) + "\\obs-studio\\logs"

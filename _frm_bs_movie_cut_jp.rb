@@ -345,7 +345,7 @@ class Modaldlg_setting < VRModalDialog
     addControl(VRStatic,'static12',"音声の正規化",344,470,96,24)
     addControl(VRStatic,'static13',"dB",584,470,24,24)
     addControl(VRStatic,'static14',"最大値=",456,470,64,24)
-    addControl(VRStatic,'static15',"HMDDistance.dat ファイル",24,72,200,24)
+    addControl(VRStatic,'static15',"HMDDistanceファイル(.litedb 又は .dat)",24,72,330,24)
     addControl(VRStatic,'static16',"OBS Studioログフォルダ",24,128,192,24)
     addControl(VRStatic,'static2',"時間表記",32,642,72,24)
     addControl(VRStatic,'static3',"(注意:インストールパスはASCII文字以外不可)",24,762,336,24)

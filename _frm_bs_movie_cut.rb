@@ -345,7 +345,7 @@ class Modaldlg_setting < VRModalDialog
     addControl(VRStatic,'static12',"dB",568,470,24,24)
     addControl(VRStatic,'static13',"Audio normalize",344,470,120,24)
     addControl(VRStatic,'static14',"max=",472,470,40,24)
-    addControl(VRStatic,'static15',"HMDDistance.dat file",24,72,176,24)
+    addControl(VRStatic,'static15',"HMDDistance file(.litedb or .dat)",24,72,330,24)
     addControl(VRStatic,'static16',"OBS Studio Log Folder",24,128,192,24)
     addControl(VRStatic,'static2',"time format",24,642,80,24)
     addControl(VRStatic,'static3',"(WARNING:tool install path ASCII only)",24,762,288,24)

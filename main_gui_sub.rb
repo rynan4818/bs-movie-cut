@@ -1029,7 +1029,14 @@ class Form_main
     @hdt_data = {}
     return unless $hdt_file
     return unless File.exist?($hdt_file)
-    return unless hdt_json_data = JSON.parse(File.read($hdt_file))["BeatmapResults"]
+    if File.extname($hdt_file) =~ /litedb/i
+      return unless hdt_json_data = JSON.parse(`HMDDistanceReader.exe "#{$hdt_file}"`)["BeatmapResults"]
+      if hdt_json_data == nil
+        puts hdt_json_data["Error"]
+      end
+    else
+      return unless hdt_json_data = JSON.parse(File.read($hdt_file))["BeatmapResults"]
+    end
     hdt_json_data.each do |play|
       id = play["LevelID"]
       time = play["CreatedAt"]
