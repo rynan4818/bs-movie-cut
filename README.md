@@ -160,6 +160,16 @@ bs_movie_cut.exe に内包している具体的なライブラリファイルの
 - 開発元:D. Richard Hipp
 - ライセンス：パブリックドメイン
 
+#### LiteDB  (LiteDB.dll)
+- https://www.litedb.org/
+- 製作者:Copyright (c) 2014-2022 Mauricio David
+- ライセンス : https://github.com/mbdavid/LiteDB/blob/master/LICENSE
+
+#### Json.NET (Newtonsoft.Json.dll)
+- https://www.newtonsoft.com/json
+- 制作者:Copyright (c) 2007 James Newton-King
+- ライセンス : https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md
+
 ### 実行ファイル
 
 #### FFmpeg win64 Static
